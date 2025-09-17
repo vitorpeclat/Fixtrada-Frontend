@@ -1,26 +1,26 @@
+// styles.ts do componente Input
 import { Colors } from '@/theme/colors'
 import { StyleSheet } from "react-native"
 
 export const styles = StyleSheet.create({
-    wrapper: {
-        width: "80%",
-
-    },
     wrapperWithLabel: {
         marginVertical: 12,
     },
-
     container: {
         backgroundColor: Colors.background,
-        paddingHorizontal: 16,
         height: 48,
         borderRadius: 8,
         borderWidth: 2,
         borderColor: Colors.primary,
-        fontSize: 16,
-        color: Colors.primary
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
     },
-    
+    inputField: {
+        flex: 1, 
+        fontSize: 16,
+        color: Colors.primary,
+    },
     label: {
         position: 'absolute',
         top: -12,
