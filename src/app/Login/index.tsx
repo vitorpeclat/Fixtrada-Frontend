@@ -1,20 +1,48 @@
-import { useState } from "react";
-import { Image, View } from "react-native";
-
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { KeyboardShiftView } from "@/components/KeyboardShiftView";
 import { FilterStatus } from "@/types/FilterStatus";
+import { useState } from "react";
+import { Alert, Image, Text, View } from "react-native";
 
+import { router } from "expo-router";
 import { styles } from "./styles";
 
 export default function Login() {
     const [passwordStatus, setPasswordStatus] = useState(FilterStatus.HIDE);
+    const [login, setLogin] = useState('');
+    const [senha, setSenha] = useState('');
 
     function handleTogglePasswordVisibility() {
         setPasswordStatus(prevState => 
             prevState === FilterStatus.HIDE ? FilterStatus.SHOW : FilterStatus.HIDE
         );
+    }
+
+    async function handleLogin() {
+        try {
+            const response = await fetch('http://192.168.15.16:3333/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ login, senha }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log("login efetuado com sucesso", data.message)
+                Alert.alert("Login bem-sucedido!", data.message);
+                // Salvar o token e redirecionar o usuário
+            } else {
+              console.log(data.message)
+                Alert.alert("Falha no Login", data.message);
+            }
+        } catch (error) {
+            console.error("Erro na requisição:", error);
+            Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+        }
     }
 
     return (
@@ -29,6 +57,8 @@ export default function Login() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     containerStyle={{ width: '90%' }}
+                    value={login}
+                    onChangeText={setLogin}
                   />
                   <Input
                     label="Senha"
@@ -37,12 +67,18 @@ export default function Login() {
                     onEyeIconPress={handleTogglePasswordVisibility}
                     secureTextEntry={passwordStatus === FilterStatus.HIDE}
                     containerStyle={{ width: '90%' }}
+                    value={senha}
+                    onChangeText={setSenha}
                   />
                  <Button 
                     title="Logar-se"
                     containerStyle={{ width: '50%' }} 
-                    //onPress={() => Alert.alert("Falha no Login", "email e/ou senha inválidos")}
+                    onPress={handleLogin}
                   />
+                  <Text  onPress={() => router.push("/Cadastro")}>
+                    Não tem conta? Cadastre-se
+                  </Text>
+                  
                 </View>
             </KeyboardShiftView>
         </View>
