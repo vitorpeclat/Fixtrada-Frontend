@@ -17,13 +17,13 @@ export default function Login() {
     const [senha, setSenha] = useState('');
 
     function handleTogglePasswordVisibility() {
-        setPasswordStatus(prevState => 
+        setPasswordStatus(prevState =>
             prevState === FilterStatus.HIDE ? FilterStatus.SHOW : FilterStatus.HIDE
         );
     }
 
     function handleToggleCheckbox() {
-        setCheckboxStatus(currentStatus => 
+        setCheckboxStatus(currentStatus =>
         currentStatus === FilterStatus.UNCHECKED
             ? FilterStatus.CHECKED
             : FilterStatus.UNCHECKED
@@ -47,7 +47,7 @@ export default function Login() {
                 Alert.alert("Login bem-sucedido!", data.message);
                 // Salvar o token e redirecionar o usuário
             } else {
-              console.log(data.message)
+                console.log(data.message)
                 Alert.alert("Falha no Login", data.message);
             }
         } catch (error) {
@@ -60,49 +60,50 @@ export default function Login() {
         <View style={styles.container}>
             <KeyboardShiftView style={styles.content}>
                 <Image source={require("@/assets/logo-fixtrada.png")} style={styles.logo} resizeMode="contain" />
-
                 <View style={styles.form}>
-                  <Input
-                    label="Email"
-                    placeholder="exemplo@domínio.com"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    containerStyle={{ width: '90%' }}
-                    value={login}
-                    onChangeText={setLogin}
-                  />
-                  <Input
-                    label="Senha"
-                    placeholder="Digite sua senha"
-                    status={passwordStatus}
-                    onEyeIconPress={handleTogglePasswordVisibility}
-                    secureTextEntry={passwordStatus === FilterStatus.HIDE}
-                    containerStyle={{ width: '90%' }}
-                    value={senha}
-                    onChangeText={setSenha}
-                  />
-                  <View style={styles.row}>
-                    <TouchableOpacity style={styles.checkboxContainer} onPress={handleToggleCheckbox}>
-                        <SquareIcon status={checkboxStatus} style={{ marginTop: 2 }}/>
-                        <AppText>
-                        Lembre de mim
+                    <Input
+                        label="Email"
+                        placeholder="exemplo@domínio.com"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        containerStyle={{ width: '90%' }}
+                        value={login}
+                        onChangeText={setLogin}
+                    />
+                    <Input
+                        label="Senha"
+                        placeholder="Digite sua senha"
+                        status={passwordStatus}
+                        onEyeIconPress={handleTogglePasswordVisibility}
+                        secureTextEntry={passwordStatus === FilterStatus.HIDE}
+                        containerStyle={{ width: '90%' }}
+                        value={senha}
+                        onChangeText={setSenha}
+                    />
+                    <View style={styles.row}>
+                        <TouchableOpacity style={styles.checkboxContainer} onPress={handleToggleCheckbox}>
+                            <SquareIcon status={checkboxStatus} style={{ marginTop: 2 }}/>
+                            <AppText>
+                                Lembre de mim
+                            </AppText>
+                        </TouchableOpacity>
+                        {/* A linha abaixo foi corrigida para não levar para /Cadastro, talvez para /EsqueciSenha */}
+                        <AppText textAlign="right" onPress={() => Alert.alert("Funcionalidade", "Implementar recuperação de senha.")}>
+                            Esqueci minha senha.
                         </AppText>
-                    </TouchableOpacity>
-                    <AppText textAlign="right" onPress={() => router.push("/Cadastro")}>
-                        Esqueci minha senha.
+                    </View>
+                    <Button
+                        title="Logar-se"
+                        containerStyle={{ width: '50%' }}
+                        onPress={handleLogin}
+                    />
+                    {/* Este é o gatilho da navegação. Nenhuma mudança necessária aqui! */}
+                    <AppText onPress={() => router.push("/Cadastro")}>
+                        Não tem conta?{' '}
+                        <AppText fontWeight="800" underline>
+                            Cadastrar-se
+                        </AppText>
                     </AppText>
-                  </View>
-                  <Button 
-                    title="Logar-se"
-                    containerStyle={{ width: '50%' }} 
-                    onPress={handleLogin}
-                  />
-                  <AppText onPress={() => router.push("/Cadastro")}>
-                    Não tem conta?{' '}
-                    <AppText fontWeight="800" underline>
-                      Cadastrar-se
-                    </AppText>
-                  </AppText>
                 </View>
             </KeyboardShiftView>
         </View>

@@ -7,4 +7,6 @@ export enum FilterStatus{
     //Estados temporários para definir a rota do app
     USER = "user",
     WORKER = "worker",
+    //Estados de login
+    
 }
