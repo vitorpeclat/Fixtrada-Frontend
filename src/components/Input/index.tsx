@@ -1,5 +1,5 @@
 // Importe o que vamos precisar
-import { StatusIcon } from "@/components/StatusIconShow"; // Importe o componente do ícone
+import { EyeIcon } from "@/components/EyeIcon"; // Importe o componente do ícone
 import { FilterStatus } from "@/types/FilterStatus"; // Importe seu enum
 import { StyleProp, Text, TextInput, TextInputProps, TouchableOpacity, View, ViewStyle } from "react-native";
 
@@ -26,7 +26,7 @@ export function Input({ label, containerStyle, status, onEyeIconPress, ...rest }
                 />
                 {status && (
                     <TouchableOpacity onPress={onEyeIconPress}>
-                        <StatusIcon status={status} />
+                        <EyeIcon status={status} />
                     </TouchableOpacity>
                 )}
             </View>

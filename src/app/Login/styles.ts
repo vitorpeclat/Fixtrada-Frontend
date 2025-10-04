@@ -18,6 +18,19 @@ export const styles = StyleSheet.create ({
     form: {
         width: "100%",
         alignItems: "center",
-        gap: 7,
+        gap:8,
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center', // Alinha verticalmente os itens
+        width: '90%',
+        marginBottom: 7,
+        gap: 8,
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 3,
     },
 })

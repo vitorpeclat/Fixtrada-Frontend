@@ -1,21 +1,32 @@
+import { AppText } from "@/components/AppText";
 import { Button } from "@/components/Button";
+import { SquareIcon } from "@/components/CheckBoxIcon";
 import { Input } from "@/components/Input";
 import { KeyboardShiftView } from "@/components/KeyboardShiftView";
 import { FilterStatus } from "@/types/FilterStatus";
 import { useState } from "react";
-import { Alert, Image, Text, View } from "react-native";
+import { Alert, Image, TouchableOpacity, View } from "react-native";
 
 import { router } from "expo-router";
 import { styles } from "./styles";
 
 export default function Login() {
     const [passwordStatus, setPasswordStatus] = useState(FilterStatus.HIDE);
+    const [checkboxStatus, setCheckboxStatus] = useState(FilterStatus.UNCHECKED);
     const [login, setLogin] = useState('');
     const [senha, setSenha] = useState('');
 
     function handleTogglePasswordVisibility() {
         setPasswordStatus(prevState => 
             prevState === FilterStatus.HIDE ? FilterStatus.SHOW : FilterStatus.HIDE
+        );
+    }
+
+    function handleToggleCheckbox() {
+        setCheckboxStatus(currentStatus => 
+        currentStatus === FilterStatus.UNCHECKED
+            ? FilterStatus.CHECKED
+            : FilterStatus.UNCHECKED
         );
     }
 
@@ -70,15 +81,28 @@ export default function Login() {
                     value={senha}
                     onChangeText={setSenha}
                   />
-                 <Button 
+                  <View style={styles.row}>
+                    <TouchableOpacity style={styles.checkboxContainer} onPress={handleToggleCheckbox}>
+                        <SquareIcon status={checkboxStatus} style={{ marginTop: 2 }}/>
+                        <AppText>
+                        Lembre de mim
+                        </AppText>
+                    </TouchableOpacity>
+                    <AppText textAlign="right" onPress={() => router.push("/Cadastro")}>
+                        Esqueci minha senha.
+                    </AppText>
+                  </View>
+                  <Button 
                     title="Logar-se"
                     containerStyle={{ width: '50%' }} 
                     onPress={handleLogin}
                   />
-                  <Text  onPress={() => router.push("/Cadastro")}>
-                    Não tem conta? Cadastre-se
-                  </Text>
-                  
+                  <AppText onPress={() => router.push("/Cadastro")}>
+                    Não tem conta?{' '}
+                    <AppText fontWeight="800" underline>
+                      Cadastrar-se
+                    </AppText>
+                  </AppText>
                 </View>
             </KeyboardShiftView>
         </View>
