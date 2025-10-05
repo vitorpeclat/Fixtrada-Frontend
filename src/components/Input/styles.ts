@@ -4,7 +4,7 @@ import { StyleSheet } from "react-native"
 
 export const styles = StyleSheet.create({
     wrapperWithLabel: {
-        marginVertical: 12,
+        marginVertical: 8,
     },
     container: {
         backgroundColor: Colors.background,
@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
         borderColor: Colors.primary,
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
+        paddingHorizontal: 8,
     },
     inputField: {
         flex: 1, 

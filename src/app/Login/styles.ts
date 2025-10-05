@@ -12,18 +12,18 @@ export const styles = StyleSheet.create ({
         paddingHorizontal: 30,
         width: '100%',
     },
-    logo: {
-        marginBottom: 20,
-    },
     form: {
         width: "100%",
         alignItems: "center",
         gap:8,
     },
+    logo: {
+        marginBottom: 20,
+    },
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center', // Alinha verticalmente os itens
+        alignItems: 'center',
         width: '90%',
         marginBottom: 7,
         gap: 8,
