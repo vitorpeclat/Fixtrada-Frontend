@@ -8,7 +8,6 @@ interface AnimationProps {
   delay: number;
 }
 
-// 1. ADICIONADO 'fadeOutDown' AO TIPO DE ANIMAÇÃO
 type AnimationType = 'fadeInUp' | 'slideInLeft' | 'zoomIn' | 'fadeInRight' | 'fadeInDown' | 'fadeOutUp' | 'fadeOutDown';
 
 interface AnimationContextType {
@@ -47,8 +46,6 @@ export function AnimationProvider({ children, defaultAnimation = 'fadeInUp' }: A
         return { animation: 'fadeInDown', duration: 700, delay };
       case 'fadeOutUp':
         return { animation: 'fadeOutUp', duration: 500, delay };
-      
-      // 2. ADICIONADO O CASE PARA A NOVA ANIMAÇÃO 'fadeOutDown'
       case 'fadeOutDown':
         return { animation: 'fadeOutDown', duration: 500, delay };
 

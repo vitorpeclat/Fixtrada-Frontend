@@ -1,6 +1,5 @@
-// Importe o que vamos precisar
-import { EyeIcon } from "@/components/EyeIcon"; // Importe o componente do ícone
-import { FilterStatus } from "@/types/FilterStatus"; // Importe seu enum
+import { EyeIcon } from "@/components/EyeIcon";
+import { FilterStatus } from "@/types/FilterStatus";
 import { StyleProp, Text, TextInput, TextInputProps, TouchableOpacity, View, ViewStyle } from "react-native";
 
 import { Colors } from "@/theme/colors";

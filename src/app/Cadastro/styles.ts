@@ -20,7 +20,7 @@ export const styles = StyleSheet.create({
     backButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginLeft: '5%', // Alinha com os inputs
+        marginLeft: '5%', 
     },
     backButtonText: {
         color: Colors.primary,
@@ -29,18 +29,39 @@ export const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: Colors.secondary, // Laranja do print
+        color: Colors.secondary,
         textAlign: 'center'
     },
     form: {
         width: "100%",
         alignItems: "center",
-        gap: 12, // Um pouco mais de espaço entre os campos
+        gap: 12,
     },
-    // Estilo genérico para linhas com mais de um componente
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '90%',
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 12,
+        marginTop: 4,
+        marginLeft: 2,
+    },
+    criteriaContainer: {
+        width: '90%',
+        paddingHorizontal: 5,
+        marginTop: 8,
+        gap: 4,
+    },
+    criterionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    criterionIcon: {
+        marginRight: 8,
+    },
+    criterionText: {
+        fontSize: 13,
     },
 });

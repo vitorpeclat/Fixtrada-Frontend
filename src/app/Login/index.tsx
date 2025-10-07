@@ -1,39 +1,42 @@
-import { AnimatedView, AnimationProvider } from "@/components/AnimationProvider";
-import { AppText } from "@/components/AppText";
-import { Button } from "@/components/Button";
-import { SquareIcon } from "@/components/CheckBoxIcon";
-import { Input } from "@/components/Input";
-import { KeyboardShiftView } from "@/components/KeyboardShiftView";
-import { FilterStatus } from "@/types/FilterStatus";
-import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useRef, useState } from "react";
-import { Alert, Image, TouchableOpacity, View } from "react-native";
-import * as Animatable from 'react-native-animatable';
-import { styles } from "./styles";
+import {
+    AnimatedView,
+    AnimationProvider,
+    AppText,
+    Button,
+    Input,
+    KeyboardShiftView,
+    SquareIcon
+} from '@/components'
+import { FilterStatus } from "@/types/FilterStatus"
+import { router, useFocusEffect } from "expo-router"
+import React, { useCallback, useRef, useState } from "react"
+import { Alert, Image, TouchableOpacity, View } from "react-native"
+import * as Animatable from 'react-native-animatable'
+import { styles } from "./styles"
 
 type ScreenAnimation = 'fadeInUp' | 'fadeInDown' | 'fadeOutUp' | 'fadeOutDown';
 
 export default function Login() {
     const [passwordStatus, setPasswordStatus] = useState(FilterStatus.HIDE);
     const [checkboxStatus, setCheckboxStatus] = useState(FilterStatus.UNCHECKED);
-    const [login, setLogin] = useState('');
-    const [senha, setSenha] = useState('');
+    const [login, setLogin] = useState('')
+    const [senha, setSenha] = useState('')
     
     const [animationKey, setAnimationKey] = useState(0);
     const [animationType, setAnimationType] = useState<ScreenAnimation>('fadeInUp');
-    const isFirstRun = useRef(true);
+    const isFirstRun = useRef(true)
 
     const formRef = useRef<Animatable.View & { shake: (duration: number) => void }>(null);
 
     useFocusEffect(
         useCallback(() => {
             if (isFirstRun.current) {
-                isFirstRun.current = false;
-                setAnimationType('fadeInUp');
+                isFirstRun.current = false
+                setAnimationType('fadeInUp')
             } else {
-                setAnimationType('fadeInDown');
+                setAnimationType('fadeInDown')
             }
-            setAnimationKey(prevKey => prevKey + 1);
+            setAnimationKey(prevKey => prevKey + 1)
         }, [])
     );
 
