@@ -53,11 +53,22 @@ export default function Cadastro() {
     const isFirstRun = useRef(true)
 
     useFocusEffect(useCallback(() => { if (isFirstRun.current) { isFirstRun.current = false; setAnimationType('fadeInUp'); } else { setAnimationType('fadeInDown'); } setAnimationKey(prevKey => prevKey + 1); }, []));
+    
     const handleGoBack = (exitAnimation: 'fadeOutUp' | 'fadeOutDown') => {
         setAnimationType(exitAnimation)
         setAnimationKey(prevKey => prevKey + 1)
         setTimeout(() => { if (router.canGoBack()) { router.back() } }, 600)
     }
+
+    // **1. Função de navegação para frente adicionada**
+    const handleNavigatePush = (path: string, exitAnimation: 'fadeOutUp' | 'fadeOutDown') => {
+        setAnimationType(exitAnimation);
+        setAnimationKey(prevKey => prevKey + 1);
+        setTimeout(() => {
+            router.push(path as any);
+        }, 600);
+    };
+
     const handleTogglePasswordVisibility = () => setPasswordStatus(
         s => s === FilterStatus.HIDE ? FilterStatus.SHOW : FilterStatus.HIDE
     )
@@ -119,13 +130,20 @@ export default function Cadastro() {
             formRef.current?.shake(800)
             return
         }
-        try { const response = { ok: true, json: () => ({ message: "Cadastro realizado com sucesso!" }) }
-        const data = await response.json()
-        if (response.ok) { Alert.alert("Cadastro realizado!", data.message)
-            handleGoBack('fadeOutUp')
-        } else { Alert.alert("Falha no Cadastro", data.message)} 
+        try { 
+            // Lógica de envio para API viria aqui
+            const response = { ok: true, json: () => ({ message: "Cadastro realizado com sucesso!" }) }
+            const data = await response.json()
+            if (response.ok) { 
+                // **2. Mensagem do alerta e navegação alteradas**
+                Alert.alert("Cadastro realizado!", "Agora, cadastre seu veículo para continuar.")
+                handleNavigatePush('/CadastroVeiculo', 'fadeOutUp')
+            } else { 
+                Alert.alert("Falha no Cadastro", data.message)
+            } 
         } 
-        catch (error) { console.error("Erro na requisição:", error)
+        catch (error) { 
+            console.error("Erro na requisição:", error)
             Alert.alert("Erro", "Não foi possível conectar ao servidor.")
         }
     }
@@ -134,15 +152,12 @@ export default function Cadastro() {
         <AnimationProvider key={animationKey} defaultAnimation={animationType}>
             <View style={styles.container}>
                 <KeyboardShiftView style={styles.content}>
-
                     <AnimatedView style={styles.header}>
                         <TouchableOpacity 
                             style={styles.backButton} 
                             onPress={() => handleGoBack('fadeOutDown')} 
-                            activeOpacity={0.7}><Feather 
-                            name="chevron-left" 
-                            size={24} 
-                            color={Colors.primary} />
+                            activeOpacity={0.7}>
+                            <Feather name="chevron-left" size={24} color={Colors.primary} />
                             <AppText style={styles.backButtonText}>voltar ao login</AppText>
                         </TouchableOpacity>
                     </AnimatedView>
@@ -184,7 +199,7 @@ export default function Cadastro() {
                                 keyboardType="email-address" 
                                 autoCapitalize="none" 
                                 containerStyle={{ width: '90%' }} />
-                        </AnimatedView>
+                            </AnimatedView>
                         
                         <AnimatedView>
                             <Input

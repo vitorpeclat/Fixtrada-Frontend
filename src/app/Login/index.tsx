@@ -126,7 +126,10 @@ export default function Login() {
                                 <SquareIcon status={checkboxStatus} style={{ marginTop: 2 }}/>
                                 <AppText>Lembre de mim</AppText>
                             </TouchableOpacity>
-                            <AppText textAlign="right" onPress={() => Alert.alert("Funcionalidade", "Implementar recuperação de senha.")}>
+                            <AppText 
+                                textAlign="right" 
+                                onPress={() => handleNavigatePush("/RecuperarSenha", 'fadeOutUp')}
+                            >
                                 Esqueci minha senha.
                             </AppText>
                         </AnimatedView>
