@@ -5,48 +5,22 @@ import {
     Button,
     Input,
     KeyboardShiftView,
-    SquareIcon
-} from '@/components'
-import { FilterStatus } from "@/types/FilterStatus"
-import { router, useFocusEffect } from "expo-router"
-import React, { useCallback, useRef, useState } from "react"
-import { Alert, Image, TouchableOpacity, View } from "react-native"
-import * as Animatable from 'react-native-animatable'
-import { styles } from "./styles"
+    SquareIcon,
+    useScreenAnimation
+} from '@/components';
+import { FilterStatus } from "@/types/FilterStatus";
+import React, { useRef, useState } from "react";
+import { Alert, Image, TouchableOpacity, View } from "react-native";
+import * as Animatable from 'react-native-animatable';
+import { styles } from "./styles";
 
-type ScreenAnimation = 'fadeInUp' | 'fadeInDown' | 'fadeOutUp' | 'fadeOutDown';
-
-export default function Login() {
+function LoginContent() {
     const [passwordStatus, setPasswordStatus] = useState(FilterStatus.HIDE);
     const [checkboxStatus, setCheckboxStatus] = useState(FilterStatus.UNCHECKED);
-    const [login, setLogin] = useState('')
-    const [senha, setSenha] = useState('')
-    
-    const [animationKey, setAnimationKey] = useState(0);
-    const [animationType, setAnimationType] = useState<ScreenAnimation>('fadeInUp');
-    const isFirstRun = useRef(true)
-
+    const [login, setLogin] = useState('');
+    const [senha, setSenha] = useState('');
     const formRef = useRef<Animatable.View & { shake: (duration: number) => void }>(null);
-
-    useFocusEffect(
-        useCallback(() => {
-            if (isFirstRun.current) {
-                isFirstRun.current = false
-                setAnimationType('fadeInUp')
-            } else {
-                setAnimationType('fadeInDown')
-            }
-            setAnimationKey(prevKey => prevKey + 1)
-        }, [])
-    );
-
-    const handleNavigatePush = (path: string, exitAnimation: 'fadeOutUp' | 'fadeOutDown') => {
-        setAnimationType(exitAnimation);
-        setAnimationKey(prevKey => prevKey + 1);
-        setTimeout(() => {
-            router.push(path as any);
-        }, 600);
-    };
+    const { handleNavigatePush } = useScreenAnimation();
 
     function handleTogglePasswordVisibility() {
         setPasswordStatus(prevState =>
@@ -56,9 +30,7 @@ export default function Login() {
 
     function handleToggleCheckbox() {
         setCheckboxStatus(currentStatus =>
-            currentStatus === FilterStatus.UNCHECKED
-                ? FilterStatus.CHECKED
-                : FilterStatus.UNCHECKED
+            currentStatus === FilterStatus.UNCHECKED ? FilterStatus.CHECKED : FilterStatus.UNCHECKED
         );
     }
 
@@ -69,14 +41,13 @@ export default function Login() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ login, senha }),
             });
-
             const data = await response.json();
-
             if (response.ok) {
-                console.log("login efetuado com sucesso", data.message)
+                console.log("login efetuado com sucesso", data.message);
                 Alert.alert("Login bem-sucedido!", data.message);
+                // Exemplo: handleNavigatePush('/home', 'fadeOutUp');
             } else {
-                formRef.current?.shake(800); 
+                formRef.current?.shake(800);
                 Alert.alert("Falha no Login", data.message);
             }
         } catch (error) {
@@ -87,74 +58,75 @@ export default function Login() {
     }
 
     return (
-        <AnimationProvider key={animationKey} defaultAnimation={animationType}>
-            <View style={styles.container}>
-                <KeyboardShiftView style={styles.content}>
+        <View style={styles.container}>
+            <KeyboardShiftView style={styles.content}>
+                <AnimatedView>
+                    <Image source={require("@/assets/logo-fixtrada.png")} style={styles.logo} resizeMode="contain" />
+                </AnimatedView>
 
+                <Animatable.View ref={formRef} style={styles.form}>
                     <AnimatedView>
-                        <Image source={require("@/assets/logo-fixtrada.png")} style={styles.logo} resizeMode="contain" />
+                        <Input
+                            label="Email"
+                            placeholder="exemplo@domínio.com"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            containerStyle={{ width: '90%' }}
+                            value={login}
+                            onChangeText={setLogin}
+                        />
                     </AnimatedView>
-
-                    <Animatable.View ref={formRef} style={styles.form}>
-                        <AnimatedView>
-                            <Input
-                                label="Email"
-                                placeholder="exemplo@domínio.com"
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                containerStyle={{ width: '90%' }}
-                                value={login}
-                                onChangeText={setLogin}
-                            />
-                        </AnimatedView>
-
-                        <AnimatedView>
-                            <Input
-                                label="Senha"
-                                placeholder="Digite sua senha"
-                                status={passwordStatus}
-                                onEyeIconPress={handleTogglePasswordVisibility}
-                                secureTextEntry={passwordStatus === FilterStatus.HIDE}
-                                containerStyle={{ width: '90%' }}
-                                value={senha}
-                                onChangeText={setSenha}
-                            />
-                        </AnimatedView>
-                        
-                        <AnimatedView style={styles.row}>
-                            <TouchableOpacity style={styles.checkboxContainer} onPress={handleToggleCheckbox} activeOpacity={0.7} >
-                                <SquareIcon status={checkboxStatus} style={{ marginTop: 2 }}/>
-                                <AppText>Lembre de mim</AppText>
-                            </TouchableOpacity>
-                            <AppText 
-                                textAlign="right" 
-                                onPress={() => handleNavigatePush("/RecuperarSenha", 'fadeOutUp')}
-                            >
-                                Esqueci minha senha.
-                            </AppText>
-                        </AnimatedView>
-                        
-                        <AnimatedView style={{ marginBottom: 5 }}>
-                            <Button
-                                title="Logar-se"
-                                containerStyle={{ width: '50%' }}
-                                onPress={handleLogin}
-                            />
-                        </AnimatedView>
-
-                        <AnimatedView>
-                            <TouchableOpacity activeOpacity={0.7} onPress={() => handleNavigatePush("/Cadastro", 'fadeOutUp')} >
-                                <AppText>
-                                    Não tem conta?{' '}
-                                    <AppText fontWeight="800" underline>
-                                        Cadastrar-se
-                                    </AppText>
+                    <AnimatedView>
+                        <Input
+                            label="Senha"
+                            placeholder="Digite sua senha"
+                            status={passwordStatus}
+                            onEyeIconPress={handleTogglePasswordVisibility}
+                            secureTextEntry={passwordStatus === FilterStatus.HIDE}
+                            containerStyle={{ width: '90%' }}
+                            value={senha}
+                            onChangeText={setSenha}
+                        />
+                    </AnimatedView>
+                    <AnimatedView style={styles.row}>
+                        <TouchableOpacity style={styles.checkboxContainer} onPress={handleToggleCheckbox} activeOpacity={0.7} >
+                            <SquareIcon status={checkboxStatus} style={{ marginTop: 2 }} />
+                            <AppText>Lembre de mim</AppText>
+                        </TouchableOpacity>
+                        <AppText
+                            textAlign="right"
+                            onPress={() => handleNavigatePush("/RecuperarSenha", 'fadeOutUp')}
+                        >
+                            Esqueci minha senha.
+                        </AppText>
+                    </AnimatedView>
+                    <AnimatedView style={{ marginBottom: 5 }}>
+                        <Button
+                            title="Logar-se"
+                            containerStyle={{ width: '50%' }}
+                            onPress={handleLogin}
+                        />
+                    </AnimatedView> 
+                    <AnimatedView>
+                        <TouchableOpacity activeOpacity={0.7} onPress={() => handleNavigatePush("/Cadastro", 'fadeOutUp')} >
+                            <AppText>
+                                Não tem conta?{' '}
+                                <AppText fontWeight="800" underline>
+                                    Cadastrar-se
                                 </AppText>
-                            </TouchableOpacity>
-                        </AnimatedView>
-                    </Animatable.View>
-                </KeyboardShiftView>
-            </View>
+                            </AppText>
+                        </TouchableOpacity>
+                    </AnimatedView>
+                </Animatable.View>
+            </KeyboardShiftView>
+        </View>
+    );
+}
+
+export default function Login() {
+    return (
+        <AnimationProvider>
+            <LoginContent />
         </AnimationProvider>
     );
 }

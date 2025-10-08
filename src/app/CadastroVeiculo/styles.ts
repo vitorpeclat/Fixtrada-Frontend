@@ -7,14 +7,14 @@ export const styles = StyleSheet.create({
         backgroundColor: Colors.background,
     },
     content: {
-        flex: 1,
         alignItems: 'center',
         paddingHorizontal: 20,
+        paddingBottom: 40,
     },
     header: {
         width: '100%',
         alignItems: 'flex-start',
-        marginTop: 20,
+        paddingTop: 20,
         marginBottom: 10,
     },
     backButton: {
@@ -30,10 +30,8 @@ export const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: 'bold',
         color: Colors.secondary,
-        textAlign: 'center',
-        alignSelf: 'flex-start',
-        marginLeft: '5%',
         marginBottom: 20,
+        textAlign: 'center',
     },
     form: {
         width: "100%",
@@ -43,7 +41,15 @@ export const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '90%',
+        gap: 8,
+    },
+    rowItem: {
+        flex: 1,
+    },
+    optionalContainer: {
+        width: '100%',
+        alignItems: 'center',
+        gap: 16,
     },
     optionalToggle: {
         flexDirection: 'row',
@@ -51,25 +57,17 @@ export const styles = StyleSheet.create({
         gap: 4,
         alignSelf: 'flex-start',
         marginLeft: '5%',
-        marginVertical: 10,
+        marginVertical: 5,
     },
     optionalText: {
         color: Colors.secondary,
         fontWeight: 'bold',
         fontSize: 16,
     },
-    optionalSectionTitle: {
-        color: Colors.secondary,
-        fontWeight: 'bold',
-        fontSize: 14,
-        alignSelf: 'flex-start',
-        marginLeft: '5%',
-        marginTop: 10,
-        marginBottom: -5
-    },
     buttonContainer: {
         width: '100%',
         alignItems: 'center',
         paddingVertical: 20,
+        backgroundColor: Colors.background,
     },
 });
