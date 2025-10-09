@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, BackHandler, TouchableOpacity, View } from "react-native";
 import * as Animatable from 'react-native-animatable';
 
@@ -23,7 +23,7 @@ function CadastroContent() {
     const [confirmarSenha, setConfirmarSenha] = useState('');
     const [usuNome, setUsuNome] = useState('');
     const [usuCpf, setUsuCpf] = useState('');
-    const [usuDataNasc, setUsuDataNascimento] = useState('');
+    const [usuDataNasc, setUsuDataNasc] = useState('');
     const [erroData, setErroData] = useState('');
     const [passwordVisibility, setPasswordVisibility] = useState(FilterStatus.HIDE);
     const [passwordCriteria, setPasswordCriteria] = useState({
@@ -48,10 +48,10 @@ function CadastroContent() {
         const arePasswordsMatching = usuSenha.length > 0 && usuSenha === confirmarSenha;
         setPasswordCriteria(prev => ({ ...prev, match: arePasswordsMatching }));
     }, [usuSenha, confirmarSenha]);
-
+    
     async function handleCadastro() {
         const campos = [usuNome, usuCpf, usuDataNasc, usuLogin, usuSenha, confirmarSenha];
-       /* if (campos.some(campo => campo.trim() === '')) {
+       if (campos.some(campo => campo.trim() === '')) {
             Alert.alert("Atenção", "Por favor, preencha todos os campos.");
             formRef.current?.shake(800);
             return;
@@ -65,10 +65,28 @@ function CadastroContent() {
             Alert.alert("Senha Inválida", "Cumpra todos os requisitos de senha para continuar.");
             formRef.current?.shake(800);
             return;
-        }*/
+        }
+
+        const [dia, mes, ano] = usuDataNasc.split('/');
+        const dataFormatada = `${ano}-${mes}-${dia}`;
+
         try {
-            const response = { ok: true, json: () => ({ message: "Cadastro realizado com sucesso!" }) };
+            const response = await fetch('http://192.168.15.16:3333/cadastro', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    usuNome,
+                    usuCpf: usuCpf.replace(/\D/g, ''),
+                    usuDataNasc: dataFormatada,
+                    usuLogin,
+                    usuSenha,
+                }),
+            });
+
             const data = await response.json();
+
             if (response.ok) {
                 Alert.alert("Cadastro realizado!", "Agora, cadastre seu veículo para continuar.");
                 handleNavigatePush('/CadastroVeiculo', 'fadeOutUp');
@@ -121,7 +139,7 @@ function CadastroContent() {
                                 type="date"
                                 minAge={10}
                                 onDateChange={({ date, error }) => {
-                                    setUsuDataNascimento(date)
+                                    setUsuDataNasc(date)
                                     setErroData(error)
                                 }}
                             />

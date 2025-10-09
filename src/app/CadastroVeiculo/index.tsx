@@ -36,8 +36,6 @@ function CadastroVeiculoContent() {
     const optionalRef1 = useRef<AnimatableViewRef>(null);
     const optionalRef2 = useRef<AnimatableViewRef>(null);
 
-    const handleCadastro = () => {  };
-
     const handleHideOptional = () => {
         optionalRef1.current?.fadeOutUp(200);
         setTimeout(() => optionalRef2.current?.fadeOutUp(200), 100);
@@ -45,6 +43,10 @@ function CadastroVeiculoContent() {
         setTimeout(() => {
             setShowOptional(false);
         }, 400); 
+    };
+
+    const handleCadastro = async () => {
+        
     };
     
     // --- NOVA FUNÇÃO DE VALIDAÇÃO PARA O ANO ---
