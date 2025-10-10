@@ -36,7 +36,7 @@ function LoginContent() {
 
     async function handleLogin() {
         try {
-            const response = await fetch('http://192.168.15.16:3333/login', {
+            const response = await fetch('http://192.168.15.18:3333/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ login, senha }),

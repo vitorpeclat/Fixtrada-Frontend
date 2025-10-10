@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useRef, useState } from "react";
 import { Alert, BackHandler, TouchableOpacity, View } from "react-native";
 import * as Animatable from 'react-native-animatable';
@@ -51,7 +52,7 @@ function CadastroContent() {
     
     async function handleCadastro() {
         const campos = [usuNome, usuCpf, usuDataNasc, usuLogin, usuSenha, confirmarSenha];
-       if (campos.some(campo => campo.trim() === '')) {
+       /* if (campos.some(campo => campo.trim() === '')) {
             Alert.alert("Atenção", "Por favor, preencha todos os campos.");
             formRef.current?.shake(800);
             return;
@@ -66,12 +67,14 @@ function CadastroContent() {
             formRef.current?.shake(800);
             return;
         }
+        */
+        handleNavigatePush('/CadastroVeiculo', 'fadeOutUp');
 
         const [dia, mes, ano] = usuDataNasc.split('/');
         const dataFormatada = `${ano}-${mes}-${dia}`;
 
         try {
-            const response = await fetch('http://192.168.15.16:3333/cadastro', {
+            const response = await fetch('http://192.168.15.18:3333/cadastro', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,9 +89,11 @@ function CadastroContent() {
             });
 
             const data = await response.json();
-
             if (response.ok) {
-                Alert.alert("Cadastro realizado!", "Agora, cadastre seu veículo para continuar.");
+                if (data.usuarioID) {
+                    await AsyncStorage.setItem('usuID', String(data.usuarioID));
+                }
+                Alert.alert("Cadastro realizado!", " Cadastre seu veículo para continuar.");
                 handleNavigatePush('/CadastroVeiculo', 'fadeOutUp');
             } else {
                 Alert.alert("Falha no Cadastro", data.message);
