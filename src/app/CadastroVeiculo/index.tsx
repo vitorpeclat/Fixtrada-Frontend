@@ -1,14 +1,14 @@
-import { Feather } from "@expo/vector-icons"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { useEffect, useRef, useState } from "react"
+import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   BackHandler,
   ScrollView,
   TouchableOpacity,
   View,
-} from "react-native"
-import * as Animatable from "react-native-animatable"
+} from "react-native";
+import * as Animatable from "react-native-animatable";
 
 import {
   AnimatedView,
@@ -17,74 +17,79 @@ import {
   Button,
   Input,
   useScreenAnimation,
-} from "@/components"
-import { Colors } from "@/theme/colors"
-import { styles } from "./styles"
+} from "@/components";
+import { Colors } from "@/theme/colors";
+import { styles } from "./styles";
 
 type AnimatableViewRef = Animatable.View &
   View & {
-    fadeOutUp: (duration: number) => void
-  }
+    fadeOutUp: (duration: number) => void;
+  };
 
 function CadastroVeiculoContent() {
-  const [marca, setMarca] = useState("")
-  const [modelo, setModelo] = useState("")
-  const [ano, setAno] = useState("")
-  const [quilometragem, setQuilometragem] = useState("")
-  const [tipoCombustivel, setTipoCombustivel] = useState("")
-  const [cor, setCor] = useState("")
-  const [tracao, setTracao] = useState("")
-  const [trocaOleo, setTrocaOleo] = useState("")
-  const [trocaPneu, setTrocaPneu] = useState("")
-  const [versao, setVersao] = useState("")
-  const [showOptional, setShowOptional] = useState(false)
-  const [usuarioID, setUsuarioID] = useState<string | null>(null)
+  const [placa, setPlaca] = useState("");
+  const [marca, setMarca] = useState("");
+  const [modelo, setModelo] = useState("");
+  const [ano, setAno] = useState("");
+  const [quilometragem, setQuilometragem] = useState("");
+  const [tipoCombustivel, setTipoCombustivel] = useState("");
+  const [cor, setCor] = useState("");
+  const [tracao, setTracao] = useState("");
+  const [trocaOleo, setTrocaOleo] = useState("");
+  const [trocaPneu, setTrocaPneu] = useState("");
+  const [versao, setVersao] = useState("");
+  const [showOptional, setShowOptional] = useState(false);
+  const [usuarioID, setUsuarioID] = useState<string | null>(null);
   const formRef = useRef<
     Animatable.View & { shake: (duration: number) => void }
-  >(null)
-  const { handleGoBack, handleHardwareBackPress } = useScreenAnimation()
+  >(null);
+  const { handleGoBack, handleHardwareBackPress } = useScreenAnimation();
 
-  const optionalRef1 = useRef<AnimatableViewRef>(null)
-  const optionalRef2 = useRef<AnimatableViewRef>(null)
+  const optionalRef1 = useRef<AnimatableViewRef>(null);
+  const optionalRef2 = useRef<AnimatableViewRef>(null);
+  const optionalRef3 = useRef<AnimatableViewRef>(null);
 
   const handleHideOptional = () => {
-    optionalRef1.current?.fadeOutUp(200)
-    setTimeout(() => optionalRef2.current?.fadeOutUp(200), 100)
+    optionalRef1.current?.fadeOutUp(200);
+    setTimeout(() => optionalRef2.current?.fadeOutUp(200), 100);
 
     setTimeout(() => {
-      setShowOptional(false)
-    }, 400)
-  }
+      setShowOptional(false);
+    }, 400);
+  };
 
   const fetchUsuarioID = async () => {
     try {
-      const id = await AsyncStorage.getItem("usuID")
+      const id = await AsyncStorage.getItem("usuID");
       if (id !== null) {
-        setUsuarioID(id)
+        setUsuarioID(id);
       } else {
         Alert.alert(
           "Erro",
           "Não foi possível encontrar seu ID de usuário. Tente fazer o login novamente."
-        )
-        handleGoBack("fadeOutDown")
+        );
+        handleGoBack("fadeOutDown");
       }
     } catch (error) {
-      console.error("Erro ao resgatar o ID do usuário do AsyncStorage", error)
+      console.error("Erro ao resgatar o ID do usuário do AsyncStorage", error);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchUsuarioID()
-    console.log("Usuário ID:", usuarioID)
-  }, [])
+    fetchUsuarioID();
+  }, []);
+
+  const dataFormatter = (dado: string) => {
+    const [dia, mes, ano] = dado.split("/");
+    return `${ano}-${mes}-${dia}`;
+  };
 
   const handleCadastro = async () => {
-
     // Limpar e validar os campos obrigatórios (apenas os definidos no vehicleSchema)
-    const kmLimpo = quilometragem.replace(/\D/g, "")
-    const anoNumerico = Number.parseInt(ano, 10)
-    const kmNumerica = Number.parseInt(kmLimpo, 10)
-    const anoAtual = new Date().getFullYear()
+    const kmLimpo = quilometragem.replace(/\D/g, "");
+    const anoNumerico = Number.parseInt(ano, 10);
+    const kmNumerica = Number.parseInt(kmLimpo, 10);
+    const anoAtual = new Date().getFullYear();
 
     if (
       !(marca && modelo) ||
@@ -93,81 +98,83 @@ function CadastroVeiculoContent() {
       !kmLimpo ||
       !cor
     ) {
-      formRef.current?.shake(800)
+      formRef.current?.shake(800);
       Alert.alert(
         "Erro de Validação",
         "Preencha a Marca, Modelo, Ano (AAAA), Quilometragem e Cor com dados válidos."
-      )
-      return
+      );
+      return;
     }
 
     try {
-      const response = await fetch("http://192.168.15.18:3333/vehicles", {
+      const placaFormatada = placa.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const response = await fetch("http://192.168.15.16:3333/vehicles", {
         // Usando /vehicles (plural)
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          carPlaca: placaFormatada,
           carMarca: marca,
           carModelo: modelo,
           carAno: anoNumerico, // Enviado como number
           carCor: cor,
           carKM: kmNumerica, // Enviado como number
           usuID: usuarioID, // Associando ao usuário logado
-          carCombustivel: tipoCombustivel || undefined,
-          carTracao: tracao || undefined,
-          carVersao: versao || undefined,
-          carTrocaOleo: trocaOleo || undefined,
-          carTrocaPneu: trocaPneu || undefined,
+          carTpCombust: tipoCombustivel || undefined,
+          carOpTracao: tracao || undefined,
+          carOpTrocaOleo: dataFormatter(trocaOleo) || undefined,
+          carOpTrocaPneu: dataFormatter(trocaPneu) || undefined,
           // Outros campos opcionais podem ser adicionados aqui se o schema do back-end for atualizado
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
       if (response.ok) {
-        Alert.alert("Sucesso!", "Veículo cadastrado com sucesso!")
+        Alert.alert("Sucesso!", "Veículo cadastrado com sucesso!");
         //handleNavigatePush("/Home", "fadeOutUp")
       } else {
-        formRef.current?.shake(800)
+        formRef.current?.shake(800);
         Alert.alert(
           "Falha no Cadastro",
           data.message || "Erro desconhecido ao cadastrar veículo."
-        )
+        );
+        console.log(dataFormatter(trocaOleo));
       }
     } catch (error) {
-      console.error("Erro na requisição:", error)
-      formRef.current?.shake(800)
-      Alert.alert("Erro", "Não foi possível conectar ao servidor.")
+      console.error("Erro na requisição:", error);
+      formRef.current?.shake(800);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
     }
-  }
+  };
 
   // --- NOVA FUNÇÃO DE VALIDAÇÃO PARA O ANO ---
   const handleAnoChange = (text: string) => {
     // Garante que apenas números sejam inseridos
-    const numericText = text.replace(/[^0-9]/g, "")
-    const currentYear = new Date().getFullYear()
+    const numericText = text.replace(/[^0-9]/g, "");
+    const currentYear = new Date().getFullYear();
 
     // Valida se o ano inserido é maior que o ano atual
     if (numericText.length === 4) {
-      const inputYear = Number.parseInt(numericText, 10)
+      const inputYear = Number.parseInt(numericText, 10);
       if (inputYear > currentYear) {
         // Se for maior, define o ano para o ano atual
-        setAno(String(currentYear))
-        return
+        setAno(String(currentYear));
+        return;
       }
     }
     // Atualiza o estado com o texto numérico
-    setAno(numericText)
-  }
+    setAno(numericText);
+  };
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
       handleHardwareBackPress
-    )
-    return () => backHandler.remove()
-  }, [handleHardwareBackPress])
+    );
+    return () => backHandler.remove();
+  }, [handleHardwareBackPress]);
 
   return (
     <View style={styles.container}>
@@ -192,9 +199,9 @@ function CadastroVeiculoContent() {
             <Input
               containerStyle={{ width: "90%" }}
               label="Placa"
-              onChangeText={setMarca}
-              placeholder="DFGA"
-              value={marca}
+              onChangeText={setPlaca}
+              placeholder="Ex: ABC-1234"
+              value={placa}
             />
           </AnimatedView>
           <AnimatedView>
@@ -290,14 +297,6 @@ function CadastroVeiculoContent() {
                     value={tracao}
                   />
                 </View>
-                <View style={styles.rowItem}>
-                  <Input
-                    label="Versão"
-                    onChangeText={setVersao}
-                    placeholder="Ex: 1.6 MSI"
-                    value={versao}
-                  />
-                </View>
               </Animatable.View>
 
               <Animatable.View
@@ -308,20 +307,27 @@ function CadastroVeiculoContent() {
               >
                 <View style={styles.rowItem}>
                   <Input
-                    label="Troca de óleo"
-                    onDateChange={({ date }) => setTrocaOleo(date)}
-                    placeholder="dd/mm/aaaa"
-                    type="date"
-                    value={trocaOleo}
-                  />
-                </View>
-                <View style={styles.rowItem}>
-                  <Input
                     label="Troca de pneu"
                     onDateChange={({ date }) => setTrocaPneu(date)}
                     placeholder="dd/mm/aaaa"
                     type="date"
                     value={trocaPneu}
+                  />
+                </View>
+              </Animatable.View>
+              <Animatable.View
+                animation="fadeInDown"
+                duration={400}
+                ref={optionalRef3}
+                style={[styles.row, { width: "90%" }]}
+              >
+                <View style={styles.rowItem}>
+                  <Input
+                    label="Troca de óleo"
+                    onDateChange={({ date }) => setTrocaOleo(date)}
+                    placeholder="dd/mm/aaaa"
+                    type="date"
+                    value={trocaOleo}
                   />
                 </View>
               </Animatable.View>
@@ -338,7 +344,7 @@ function CadastroVeiculoContent() {
         />
       </View>
     </View>
-  )
+  );
 }
 
 export default function CadastroVeiculo() {
@@ -346,5 +352,5 @@ export default function CadastroVeiculo() {
     <AnimationProvider>
       <CadastroVeiculoContent />
     </AnimationProvider>
-  )
+  );
 }
