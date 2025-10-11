@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, BackHandler, TouchableOpacity, View } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 

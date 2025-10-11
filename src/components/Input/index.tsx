@@ -16,7 +16,7 @@ interface InputProps extends TextInputProps {
     containerStyle?: StyleProp<ViewStyle>;
     status?: FilterStatus;
     onEyeIconPress?: () => void;
-    type?: 'text' | 'password' | 'date' | 'cpf' | 'ano';
+    type?: 'text' | 'password' | 'date' | 'cpf' | 'ano' | 'placa';
     onPasswordChange?: (details: PasswordChangeDetails) => void;
     onDateChange?: (details: DateChangeDetails) => void;
     onYearChange?: (details: YearChangeDetails) => void;
