@@ -5,14 +5,14 @@ import { Alert, BackHandler, TouchableOpacity, View } from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
-  AnimatedView,
-  AnimationProvider,
-  AppText,
-  Button,
-  Input,
-  KeyboardShiftView,
-  PasswordValidation,
-  useScreenAnimation,
+    AnimatedView,
+    AnimationProvider,
+    AppText,
+    Button,
+    Input,
+    KeyboardShiftView,
+    PasswordValidation,
+    useScreenAnimation,
 } from "@/components";
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus";
@@ -70,22 +70,21 @@ function CadastroContent() {
       usuSenha,
       confirmarSenha,
     ];
-    /* if (campos.some(campo => campo.trim() === '')) {
+       if (campos.some(campo => campo.trim() === '')) {
             Alert.alert("Atenção", "Por favor, preencha todos os campos.");
-            formRef.current?.shake(800);
-            return;
+            formRef.current?.shake(800)
+            return
         }
         if (erroData) {
             Alert.alert("Data Inválida", "Corrija a data de nascimento para continuar.");
-            formRef.current?.shake(800);
-            return;
+            formRef.current?.shake(800)
+            return
         }
         if (!passwordCriteria.length || !passwordCriteria.uppercase || !passwordCriteria.specialChar || !passwordCriteria.match) {
             Alert.alert("Senha Inválida", "Cumpra todos os requisitos de senha para continuar.");
-            formRef.current?.shake(800);
-            return;
+            formRef.current?.shake(800)
+            return
         }
-        */
     handleNavigatePush("/CadastroVeiculo", "fadeOutUp");
 
     const [dia, mes, ano] = usuDataNasc.split("/");
@@ -232,7 +231,7 @@ function CadastroContent() {
         </Animatable.View>
       </KeyboardShiftView>
     </View>
-  );
+  )
 }
 
 export default function Cadastro() {
@@ -240,5 +239,5 @@ export default function Cadastro() {
     <AnimationProvider>
       <CadastroContent />
     </AnimationProvider>
-  );
+  )
 }
