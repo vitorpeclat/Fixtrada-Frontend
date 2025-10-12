@@ -14,7 +14,6 @@ export default function RootLayout() {
                 }}
             >
                 <StatusBar style="dark" />
-
                 <AnimationProvider>
                     <Stack
                         screenOptions={{
@@ -55,7 +54,6 @@ export default function RootLayout() {
                         />
                     </Stack>
                 </AnimationProvider>
-
             </SafeAreaView>
         </SafeAreaProvider>
     );
