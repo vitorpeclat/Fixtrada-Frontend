@@ -1,95 +1,48 @@
+// src/screens/HomeScreen/styles.ts
+
 import { Colors } from '@/theme/colors';
 import { StyleSheet } from 'react-native';
 
-
 export const styles = StyleSheet.create({
-    // Container principal
-    container: {
-        flex: 1,
-        backgroundColor: Colors.background,
-        padding: 20, // Adiciona um espaçamento geral
+    // Container principal da página
+    pageContainer: {
+        flex: 1, // Garante que o container ocupe toda a tela
+        backgroundColor: Colors.lightGray, // Cor de fundo da página
     },
-    // Cabeçalho com a saudação
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 24,
+    // Estilo para o ScrollView
+    scrollContainer: {
+        paddingHorizontal: 20, // Espaçamento nas laterais do conteúdo
     },
-    greetingContainer: {
-        flex: 1,
-    },
-    greetingText: {
-        fontSize: 22,
-        color: Colors.gray,
-    },
-    userName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: Colors.text,
-    },
-    // Cartão principal de CTA (Call to Action)
-    mainCard: {
+    // Estilo para o cartão de ação
+    card: {
         backgroundColor: Colors.white,
         borderRadius: 12,
-        padding: 20,
-        alignItems: 'center',
-        marginBottom: 30,
-        // Sombra para dar elevação (iOS)
+        padding: 24,
+        alignItems: 'center', // Centraliza os itens horizontalmente
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        // Sombra (Android)
-        elevation: 5,
+        shadowRadius: 4,
+        elevation: 3,
     },
+    // Ícone dentro do cartão
     cardIcon: {
-        marginBottom: 12,
+        marginBottom: 16,
     },
-        pageContainer: {
-        flex: 1,
-        backgroundColor: Colors.white, // Ou a cor de fundo do seu app
+    // Título principal do cartão
+    cardTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: Colors.darkGray,
+        marginBottom: 8,
     },
-    scrollContainer: {
-        flex: 1,
-        paddingHorizontal: 20, // Adicionei um padding horizontal para o conteúdo
-    },
+    // Subtítulo descritivo do cartão
     cardSubtitle: {
         fontSize: 16,
         textAlign: 'center',
-        marginBottom: 24,
         color: Colors.gray,
-        lineHeight: 24,
+        marginBottom: 24,
+        lineHeight: 24, // Melhora a legibilidade do texto
     },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 8,
-        textAlign: 'center',
-    },
-    // Seção de Acesso Rápido
-    quickActionsTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: Colors.text,
-        marginBottom: 12,
-    },
-    quickActionsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        gap: 12,
-    },
-    actionButton: {
-        flex: 1, // Faz os botões dividirem o espaço igualmente
-        backgroundColor: Colors.lightGray,
-        paddingVertical: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-    },
-    actionButtonText: {
-        fontWeight: '500',
-        color: Colors.text,
-    }
 });
