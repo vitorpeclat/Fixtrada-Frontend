@@ -4,32 +4,36 @@ import { Colors } from '@/theme/colors';
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
-    // Container principal da página
-    pageContainer: {
-        flex: 1, // Garante que o container ocupe toda a tela
-        backgroundColor: Colors.lightGray, // Cor de fundo da página
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: Colors.background,
     },
-    // Estilo para o ScrollView
-    scrollContainer: {
-        paddingHorizontal: 20, // Espaçamento nas laterais do conteúdo
+    content: {
+        alignItems: 'center',
+        paddingHorizontal: 30,
     },
-    // Estilo para o cartão de ação
+    // NOVO: Estilo para o ícone no cabeçalho
+    headerIcon: {
+        position: 'absolute',
+        left: 20,
+        zIndex: 10, // Garante que o ícone fique sobre outros elementos
+    },
     card: {
         backgroundColor: Colors.white,
         borderRadius: 12,
         padding: 24,
-        alignItems: 'center', // Centraliza os itens horizontalmente
-        shadowColor: '#000',
+        alignItems: 'center',
+        shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
+        width: '100%',
     },
-    // Ícone dentro do cartão
     cardIcon: {
         marginBottom: 16,
     },
-    // Título principal do cartão
     cardTitle: {
         fontSize: 22,
         fontWeight: 'bold',
@@ -37,12 +41,11 @@ export const styles = StyleSheet.create({
         color: Colors.darkGray,
         marginBottom: 8,
     },
-    // Subtítulo descritivo do cartão
     cardSubtitle: {
         fontSize: 16,
         textAlign: 'center',
         color: Colors.gray,
         marginBottom: 24,
-        lineHeight: 24, // Melhora a legibilidade do texto
+        lineHeight: 24,
     },
 });
