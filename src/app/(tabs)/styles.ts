@@ -1,6 +1,7 @@
 import { Colors } from '@/theme/colors';
 import { StyleSheet } from 'react-native';
 
+
 export const styles = StyleSheet.create({
     // Container principal
     container: {

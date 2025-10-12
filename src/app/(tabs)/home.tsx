@@ -7,9 +7,9 @@ import { Car } from 'lucide-react-native';
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { styles } from './styles'; // Importando os estilos que acabamos de criar
+import { styles } from "./styles";
 
-export default function HomeScreen() {
+export default function PerfilScreen() {
     const insets = useSafeAreaInsets();
 
     return (

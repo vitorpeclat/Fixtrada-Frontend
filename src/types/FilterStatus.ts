@@ -1,12 +1,8 @@
 export enum FilterStatus{
-    //Estados para os ícones
     SHOW = "show",
     HIDE = "hide",
-    CHECKED = "checkED",
+    CHECKED = "checked",
     UNCHECKED = "unchecked",
-    //Estados temporários para definir a rota do app
-    USER = "user",
-    WORKER = "worker",
-    //Estados de login
-    
+    SELECTED = "selected",
+    UNSELECTED = "unselected",
 }

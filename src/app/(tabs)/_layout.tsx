@@ -2,48 +2,60 @@ import { Tabs } from 'expo-router';
 import { ClipboardClock, House, User } from 'lucide-react-native';
 import React from 'react';
 
-import { MenuIcon } from '@/components/MenuIcon';
+import { IconSelect } from '@/components/IconSelect';
 import { Colors } from '@/theme/colors';
+import { FilterStatus } from '@/types/FilterStatus';
 
 export default function TabLayout() {
   return (
     <Tabs
+      // Adicionando esta propriedade para garantir que a home seja sempre a primeira tela
+      initialRouteName="home"
       screenOptions={{
         headerShown: false,
-
-        tabBarActiveTintColor: Colors.secondary, 
-        tabBarInactiveTintColor: Colors.primary,  
         tabBarShowLabel: false,
-
         tabBarStyle: {
           backgroundColor: Colors.white,
-          borderTopWidth: 1, 
+          borderTopWidth: 1,
           borderTopColor: Colors.lightGray,
           height: 60,
-          paddingBottom: 5, 
+          paddingBottom: 5,
         },
-      }}>
+      }}
+    >
       <Tabs.Screen
-        name="Home"
+        name="home"
         options={{
-          tabBarIcon: ({ color }) => (
-            <MenuIcon IconComponent={House} color={color} size={28} />
+          tabBarIcon: ({ focused }) => (
+            <IconSelect
+              IconComponent={House}
+              size={28}
+              status={focused ? FilterStatus.SELECTED : FilterStatus.UNSELECTED}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="Servicos"
+        name="servicos"
         options={{
-          tabBarIcon: ({ color }) => (
-            <MenuIcon IconComponent={ClipboardClock} color={color} size={28} />
+          tabBarIcon: ({ focused }) => (
+            <IconSelect
+              IconComponent={ClipboardClock}
+              size={28}
+              status={focused ? FilterStatus.SELECTED : FilterStatus.UNSELECTED}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="Perfil"
+        name="perfil"
         options={{
-          tabBarIcon: ({ color }) => (
-            <MenuIcon IconComponent={User} color={color} size={28} />
+          tabBarIcon: ({ focused }) => (
+            <IconSelect
+              IconComponent={User}
+              size={28}
+              status={focused ? FilterStatus.SELECTED : FilterStatus.UNSELECTED}
+            />
           ),
         }}
       />
