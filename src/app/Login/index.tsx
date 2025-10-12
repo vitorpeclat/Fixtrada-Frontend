@@ -36,7 +36,7 @@ function LoginContent() {
     }
 
     async function handleLogin() {
-        handleNavigatePush('(tabs)/home', 'fadeOutUp')
+        handleNavigatePush('/Home', 'fadeOutUp')
         try {
             const response = await fetch('http://192.168.15.16:3333/login', {
                 method: 'POST',

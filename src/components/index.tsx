@@ -1,5 +1,6 @@
 export * from './AnimationProvider';
 export * from './AppText';
+export * from './BottomMenu';
 export * from './Button';
 export * from './CheckBoxIcon';
 export * from './EyeIcon';
