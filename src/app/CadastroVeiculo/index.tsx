@@ -44,7 +44,7 @@ function CadastroVeiculoContent() {
     Animatable.View & { shake: (duration: number) => void }
   >(null);
   const { handleGoBack, handleHardwareBackPress } = useScreenAnimation();
-
+  const { handleNavigatePush } = useScreenAnimation();
   const optionalRef1 = useRef<AnimatableViewRef>(null);
   const optionalRef2 = useRef<AnimatableViewRef>(null);
   const optionalRef3 = useRef<AnimatableViewRef>(null);
@@ -107,12 +107,14 @@ function CadastroVeiculoContent() {
     }
 
     try {
+      const token = await AsyncStorage.getItem("userToken");
       const placaFormatada = placa.toUpperCase().replace(/[^A-Z0-9]/g, "");
-      const response = await fetch("http://192.168.15.16:3333/vehicles", {
+      const response = await fetch("http://192.168.15.16:3333/vehicle", {
         // Usando /vehicles (plural)
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           carPlaca: placaFormatada,
@@ -121,7 +123,6 @@ function CadastroVeiculoContent() {
           carAno: anoNumerico, // Enviado como number
           carCor: cor,
           carKM: kmNumerica, // Enviado como number
-          usuID: usuarioID, // Associando ao usuário logado
           carTpCombust: tipoCombustivel || undefined,
           carOpTracao: tracao || undefined,
           carOpTrocaOleo: dataFormatter(trocaOleo) || undefined,
@@ -133,14 +134,13 @@ function CadastroVeiculoContent() {
       const data = await response.json();
       if (response.ok) {
         Alert.alert("Sucesso!", "Veículo cadastrado com sucesso!");
-        //handleNavigatePush("/Home", "fadeOutUp")
+        handleNavigatePush("/Home", "fadeOutUp");
       } else {
         formRef.current?.shake(800);
         Alert.alert(
           "Falha no Cadastro",
           data.message || "Erro desconhecido ao cadastrar veículo."
         );
-        console.log(dataFormatter(trocaOleo));
       }
     } catch (error) {
       console.error("Erro na requisição:", error);
