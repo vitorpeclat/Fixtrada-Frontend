@@ -36,7 +36,7 @@ function LoginContent() {
     }
 
     async function handleLogin() {
-        handleNavigatePush('Tabs/Home', 'fadeOutUp')
+        handleNavigatePush('(tabs)/Home', 'fadeOutUp')
         try {
             const response = await fetch('http://192.168.15.16:3333/login', {
                 method: 'POST',
@@ -47,13 +47,13 @@ function LoginContent() {
             if (response.ok) {
                 console.log("login efetuado com sucesso", data.message);
                 Alert.alert("Login bem-sucedido!", data.message);
-                //handleNavigatePush('(Tabs)/Home', 'fadeOutUp');
+                handleNavigatePush('Tabs/Home', 'fadeOutUp');
             } else {
                 formRef.current?.shake(800);
                 Alert.alert("Falha no Login", data.message);
             }
         } catch (error) {
-            console.error("Erro na requisição:", error);
+            console.error("Erro na requisição:", error)
             formRef.current?.shake(800);
             Alert.alert("Erro", "Não foi possível conectar ao servidor.");
         }
