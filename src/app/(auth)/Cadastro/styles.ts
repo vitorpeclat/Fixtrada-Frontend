@@ -48,20 +48,4 @@ export const styles = StyleSheet.create({
         marginTop: 4,
         marginLeft: 2,
     },
-    criteriaContainer: {
-        width: '90%',
-        paddingHorizontal: 5,
-        marginTop: 8,
-        gap: 4,
-    },
-    criterionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    criterionIcon: {
-        marginRight: 8,
-    },
-    criterionText: {
-        fontSize: 13,
-    },
 });

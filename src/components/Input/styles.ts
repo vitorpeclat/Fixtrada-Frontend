@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 8,
     },
     inputField: {
-        flex: 1, 
+        flex: 1,
         fontSize: 16,
         color: Colors.primary,
     },
@@ -31,5 +31,39 @@ export const styles = StyleSheet.create({
         color: Colors.primary,
         fontWeight: 'bold',
         fontSize: 16,
+    },
+
+    // --- ESTILOS PARA O MODAL DO TIPO 'fuel' ---
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Fundo cinza semi-transparente
+    },
+    modalContent: {
+        backgroundColor: Colors.white,
+        borderRadius: 10, // Bordas mais arredondadas
+        width: '80%',
+        maxHeight: '60%',
+        paddingVertical: 10,
+        shadowColor: Colors.black,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalOption: {
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.background, // Divisor sutil
+    },
+    modalOptionText: {
+        fontSize: 16,
+        color: Colors.primary, // Cor consistente com o resto do input
+        textAlign: 'center',
     },
 })

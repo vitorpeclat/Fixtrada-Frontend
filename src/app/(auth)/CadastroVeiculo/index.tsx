@@ -18,6 +18,7 @@ import {
   Input,
   useScreenAnimation,
 } from "@/components";
+import { API_BASE_URL } from "@/config/ip";
 import { Colors } from "@/theme/colors";
 import { styles } from "./styles";
 
@@ -37,7 +38,7 @@ function CadastroVeiculoContent() {
   const [tracao, setTracao] = useState("");
   const [trocaOleo, setTrocaOleo] = useState("");
   const [trocaPneu, setTrocaPneu] = useState("");
-  const [versao, setVersao] = useState("");
+  const [revisao, setRevisao] = useState("");
   const [showOptional, setShowOptional] = useState(false);
   const [usuarioID, setUsuarioID] = useState<string | null>(null);
   const formRef = useRef<
@@ -47,7 +48,6 @@ function CadastroVeiculoContent() {
   const { handleNavigatePush } = useScreenAnimation();
   const optionalRef1 = useRef<AnimatableViewRef>(null);
   const optionalRef2 = useRef<AnimatableViewRef>(null);
-  const optionalRef3 = useRef<AnimatableViewRef>(null);
 
   const handleHideOptional = () => {
     optionalRef1.current?.fadeOutUp(200);
@@ -80,21 +80,19 @@ function CadastroVeiculoContent() {
   }, []);
 
   const dataFormatter = (dado: string) => {
+    if (!dado || dado.split("/").length !== 3) return undefined;
     const [dia, mes, ano] = dado.split("/");
     return `${ano}-${mes}-${dia}`;
   };
 
   const handleCadastro = async () => {
-    // Limpar e validar os campos obrigatórios (apenas os definidos no vehicleSchema)
     const kmLimpo = quilometragem.replace(/\D/g, "");
     const anoNumerico = Number.parseInt(ano, 10);
     const kmNumerica = Number.parseInt(kmLimpo, 10);
-    const anoAtual = new Date().getFullYear();
 
     if (
       !(marca && modelo) ||
       ano.length !== 4 ||
-      anoNumerico > anoAtual + 1 ||
       !kmLimpo ||
       !cor
     ) {
@@ -109,8 +107,7 @@ function CadastroVeiculoContent() {
     try {
       const token = await AsyncStorage.getItem("userToken");
       const placaFormatada = placa.toUpperCase().replace(/[^A-Z0-9]/g, "");
-      const response = await fetch("http://192.168.15.16:3333/vehicle", {
-        // Usando /vehicles (plural)
+      const response = await fetch(`${API_BASE_URL}/vehicle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -120,14 +117,13 @@ function CadastroVeiculoContent() {
           carPlaca: placaFormatada,
           carMarca: marca,
           carModelo: modelo,
-          carAno: anoNumerico, // Enviado como number
+          carAno: anoNumerico,
           carCor: cor,
-          carKM: kmNumerica, // Enviado como number
+          carKM: kmNumerica,
           carTpCombust: tipoCombustivel || undefined,
           carOpTracao: tracao || undefined,
-          carOpTrocaOleo: dataFormatter(trocaOleo) || undefined,
-          carOpTrocaPneu: dataFormatter(trocaPneu) || undefined,
-          // Outros campos opcionais podem ser adicionados aqui se o schema do back-end for atualizado
+          carOpTrocaOleo: dataFormatter(trocaOleo),
+          carOpTrocaPneu: dataFormatter(trocaPneu),
         }),
       });
 
@@ -147,25 +143,6 @@ function CadastroVeiculoContent() {
       formRef.current?.shake(800);
       Alert.alert("Erro", "Não foi possível conectar ao servidor.");
     }
-  };
-
-  // --- NOVA FUNÇÃO DE VALIDAÇÃO PARA O ANO ---
-  const handleAnoChange = (text: string) => {
-    // Garante que apenas números sejam inseridos
-    const numericText = text.replace(/[^0-9]/g, "");
-    const currentYear = new Date().getFullYear();
-
-    // Valida se o ano inserido é maior que o ano atual
-    if (numericText.length === 4) {
-      const inputYear = Number.parseInt(numericText, 10);
-      if (inputYear > currentYear) {
-        // Se for maior, define o ano para o ano atual
-        setAno(String(currentYear));
-        return;
-      }
-    }
-    // Atualiza o estado com o texto numérico
-    setAno(numericText);
   };
 
   useEffect(() => {
@@ -200,7 +177,8 @@ function CadastroVeiculoContent() {
               containerStyle={{ width: "90%" }}
               label="Placa"
               onChangeText={setPlaca}
-              placeholder="Ex: ABC-1234"
+              placeholder="Ex: ABC-1D23"
+              type="placa"
               value={placa}
             />
           </AnimatedView>
@@ -224,16 +202,27 @@ function CadastroVeiculoContent() {
           </AnimatedView>
 
           <AnimatedView style={[styles.row, { width: "90%" }]}>
-            <View style={styles.rowItem}>
+            <View style={{ flex: 0.7 }}>
               <Input
-                keyboardType="number-pad"
+                  label="Combustível"
+                  placeholder="Selecionar"
+                  type="fuel"
+                  value={tipoCombustivel}
+                  onFuelChange={({ fuel }) => setTipoCombustivel(fuel)}
+              />
+            </View>
+            <View style={{ flex: 0.3 }}>
+              <Input
                 label="Ano"
-                maxLength={4}
-                onChangeText={handleAnoChange}
+                onYearChange={({ year }) => setAno(year)}
                 placeholder="AAAA"
+                type="year"
                 value={ano}
               />
             </View>
+          </AnimatedView>
+
+          <AnimatedView style={[styles.row, { width: "90%" }]}>
             <View style={styles.rowItem}>
               <Input
                 keyboardType="number-pad"
@@ -243,25 +232,14 @@ function CadastroVeiculoContent() {
                 value={quilometragem}
               />
             </View>
-          </AnimatedView>
-
-          <AnimatedView>
-            <Input
-              containerStyle={{ width: "90%" }}
-              label="Tipo de Combustível"
-              onChangeText={setTipoCombustivel}
-              placeholder="Ex: Gasolina, Flex"
-              value={tipoCombustivel}
-            />
-          </AnimatedView>
-          <AnimatedView>
-            <Input
-              containerStyle={{ width: "90%" }}
-              label="Cor"
-              onChangeText={setCor}
-              placeholder="Ex: Preto"
-              value={cor}
-            />
+            <View style={styles.rowItem}>
+              <Input
+                label="Cor"
+                onChangeText={setCor}
+                placeholder="Ex: Preto"
+                value={cor}
+              />
+            </View>
           </AnimatedView>
 
           <AnimatedView>
@@ -297,8 +275,16 @@ function CadastroVeiculoContent() {
                     value={tracao}
                   />
                 </View>
+                <View style={styles.rowItem}>
+                  <Input
+                    label="Revisão"
+                    onDateChange={({ date }) => setRevisao(date)}
+                    placeholder="DD/MM/AAAA"
+                    value={revisao}
+                    type="date"
+                  />
+                </View>
               </Animatable.View>
-
               <Animatable.View
                 animation="fadeInDown"
                 duration={400}
@@ -309,23 +295,16 @@ function CadastroVeiculoContent() {
                   <Input
                     label="Troca de pneu"
                     onDateChange={({ date }) => setTrocaPneu(date)}
-                    placeholder="dd/mm/aaaa"
+                    placeholder="DD/MM/AAAA"
                     type="date"
                     value={trocaPneu}
                   />
                 </View>
-              </Animatable.View>
-              <Animatable.View
-                animation="fadeInDown"
-                duration={400}
-                ref={optionalRef3}
-                style={[styles.row, { width: "90%" }]}
-              >
                 <View style={styles.rowItem}>
                   <Input
                     label="Troca de óleo"
                     onDateChange={({ date }) => setTrocaOleo(date)}
-                    placeholder="dd/mm/aaaa"
+                    placeholder="DD/MM/AAAA"
                     type="date"
                     value={trocaOleo}
                   />

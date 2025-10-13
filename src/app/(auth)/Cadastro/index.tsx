@@ -14,6 +14,7 @@ import {
   PasswordValidation,
   useScreenAnimation,
 } from "@/components";
+import { API_BASE_URL } from '@/config/ip';
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus";
 import { styles } from "./styles";
@@ -102,7 +103,7 @@ function CadastroContent() {
     const dataFormatada = `${ano}-${mes}-${dia}`;
 
     try {
-      const response = await fetch("http://192.168.15.16:3333/cadastro", {
+      const response = await fetch(`${API_BASE_URL}/vehicle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -179,7 +180,7 @@ function CadastroContent() {
                 label="Data Nasc"
                 placeholder="DD/MM/AAAA"
                 value={usuDataNasc}
-                type="date"
+                type="age"
                 minAge={10}
                 onDateChange={({ date, error }) => {
                   setUsuDataNasc(date);

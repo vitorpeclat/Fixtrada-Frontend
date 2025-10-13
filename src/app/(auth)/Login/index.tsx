@@ -13,6 +13,7 @@ import {
   SquareIcon,
   useScreenAnimation,
 } from "@/components";
+import { API_BASE_URL } from '@/config/ip';
 import { FilterStatus } from "@/types/FilterStatus";
 import { styles } from "./styles";
 
@@ -42,7 +43,7 @@ function LoginContent() {
 
   async function handleLogin() {
     try {
-      const response = await fetch("http://192.168.15.16:3333/login", {
+      const response = await fetch(`${API_BASE_URL}/vehicle`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ login, senha }),
@@ -53,7 +54,7 @@ function LoginContent() {
         if (token) {
           await AsyncStorage.setItem("userToken", token);
         }
-        const response = await fetch("http://192.168.15.16:3333/vehicle", {
+        const response = await fetch(`${API_BASE_URL}/vehicle`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -61,7 +62,7 @@ function LoginContent() {
           },
         });
         const veiculo = await response.json();
-        if (veiculo.message === "Veículo encontrado") {
+        if (veiculo.found) {
           console.log("Veículo encontrado:", veiculo);
           handleNavigatePush("/Home", "fadeOutUp");
           return;

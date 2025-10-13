@@ -36,7 +36,7 @@ export const styles = StyleSheet.create({
     form: {
         width: "100%",
         alignItems: "center",
-        gap: 16,
+        gap: 12,
     },
     row: {
         flexDirection: 'row',
