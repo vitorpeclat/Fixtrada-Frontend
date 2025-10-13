@@ -127,7 +127,7 @@ function LoginContent() {
             </TouchableOpacity>
             <AppText
               textAlign="right"
-              onPress={() => handleNavigatePush("/RecuperarSenha", "fadeOutUp")}
+              onPress={() => handleNavigatePush("/RecuperarCadastro", "fadeOutUp")}
             >
               Esqueci minha senha.
             </AppText>

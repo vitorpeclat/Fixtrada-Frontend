@@ -11,8 +11,7 @@ export default function RootLayout() {
                 style={{
                     flex: 1,
                     backgroundColor: Colors.background
-                }}
-            >
+                }}>
                 <StatusBar style="dark" />
                 <AnimationProvider>
                     <Stack
