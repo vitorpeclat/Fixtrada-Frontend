@@ -105,7 +105,7 @@ function RecuperarCadastroContent() {
     );
 }
 
-export default function RecuperarCadastro() {
+export default function RecuperarCadastroScreen() {
     return (
         <AnimationProvider>
             <RecuperarCadastroContent />

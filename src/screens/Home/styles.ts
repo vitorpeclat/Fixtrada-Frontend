@@ -1,5 +1,3 @@
-// src/screens/HomeScreen/styles.ts
-
 import { Colors } from '@/theme/colors';
 import { StyleSheet } from 'react-native';
 
@@ -13,11 +11,10 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 30,
     },
-    // NOVO: Estilo para o ícone no cabeçalho
     headerIcon: {
         position: 'absolute',
         left: 20,
-        zIndex: 10, // Garante que o ícone fique sobre outros elementos
+        zIndex: 10,
     },
     card: {
         backgroundColor: Colors.white,

@@ -23,7 +23,7 @@ export default function AppLayout() {
       <Drawer.Screen name="Home/index" />
       <Drawer.Screen name="Perfil/index" />
       <Drawer.Screen name="Configuracoes/index" />
-      <Drawer.Screen name="Ajuda/index" />
+      <Drawer.Screen name="Help/index" />
     </Drawer>
   );
 }

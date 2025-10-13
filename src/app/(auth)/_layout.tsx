@@ -25,7 +25,7 @@ export default function AuthLayout() {
                 }}
             />
             <Stack.Screen
-                name="RecuperarSenha/index"
+                name="RecuperarCadastro/index"
                 options={{
                     presentation: 'modal',
                     animation: 'slide_from_bottom',
