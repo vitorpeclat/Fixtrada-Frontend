@@ -3,6 +3,7 @@ import React from 'react';
 import { View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
+import { strings } from '@/languages'; // <-- IMPLEMENTAÇÃO
 import { Colors } from '@/theme/colors';
 import { styles } from './styles';
 
@@ -26,11 +27,11 @@ const ValidationCriteria = ({ isMet, text }: { isMet: boolean, text: string }) =
 
 export const PasswordValidation = ({ criteria }: { criteria: PasswordCriteria }) => (
     <View style={styles.criteriaContainer}>
-        <ValidationCriteria isMet={criteria.length} text="Pelo menos 6 caracteres" />
-        <ValidationCriteria isMet={criteria.uppercase} text="Uma letra maiúscula" />
-        <ValidationCriteria isMet={criteria.specialChar} text="Um caractere especial (!@#$)" />
+        <ValidationCriteria isMet={criteria.length} text={strings.passwordValidation.length} />
+        <ValidationCriteria isMet={criteria.uppercase} text={strings.passwordValidation.uppercase} />
+        <ValidationCriteria isMet={criteria.specialChar} text={strings.passwordValidation.specialChar} />
         {criteria.match !== undefined && (
-            <ValidationCriteria isMet={criteria.match} text="As senhas coincidem" />
+            <ValidationCriteria isMet={criteria.match} text={strings.passwordValidation.match} />
         )}
     </View>
 );

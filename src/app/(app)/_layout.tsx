@@ -1,29 +1,46 @@
-import { MenuContent } from '@/components/Menu';
-import { Colors } from '@/theme/colors';
-import { DrawerContentComponentProps } from '@react-navigation/drawer';
-import { Drawer } from 'expo-router/drawer';
+import { Colors } from "@/theme/colors";
+import { Tabs } from "expo-router";
+import { Home, User, Wrench } from "lucide-react-native";
 
 export default function AppLayout() {
   return (
-    <Drawer
-      drawerContent={(props: DrawerContentComponentProps) => <MenuContent {...props} />}
+    <Tabs
       screenOptions={{
         headerShown: false,
-        drawerStyle: {
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.darkGray,
+        tabBarStyle: {
           backgroundColor: Colors.background,
-          width: '75%',
         },
-        drawerLabelStyle: {
-          marginLeft: -20,
-        },
-        drawerActiveTintColor: Colors.primary,
-        drawerInactiveTintColor: Colors.darkGray,
       }}
     >
-      <Drawer.Screen name="Home/index" />
-      <Drawer.Screen name="Perfil/index" />
-      <Drawer.Screen name="Configuracoes/index" />
-      <Drawer.Screen name="Help/index" />
-    </Drawer>
+      <Tabs.Screen
+        name="Home/index"
+        options={{
+          title: "Início",
+          tabBarIcon: ({ color }) => <Home color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="Servicos/index"
+        options={{
+          title: "Serviços",
+          tabBarIcon: ({ color }) => <Wrench color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="Perfil/index"
+        options={{
+          title: "Perfil",
+          tabBarIcon: ({ color }) => <User color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="Help/index"
+        options={{
+          href: null,
+        }}
+      />
+    </Tabs>
   );
 }

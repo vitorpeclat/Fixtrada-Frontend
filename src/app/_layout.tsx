@@ -1,6 +1,9 @@
 import { AnimationProvider } from '@/components';
+import { MenuContent } from '@/components/Menu';
 import { Colors } from '@/theme/colors';
+import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { Stack } from 'expo-router';
+import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,12 +17,24 @@ export default function RootLayout() {
                 }}>
                 <StatusBar style="dark" />
                 <AnimationProvider>
-                    <Stack
+                    <Drawer
+                        drawerContent={(props: DrawerContentComponentProps) => <MenuContent {...props} />}
                         screenOptions={{
                             headerShown: false,
-                            contentStyle: { backgroundColor: 'transparent' },
+                            swipeEnabled: true,
+                            drawerStyle: {
+                                backgroundColor: Colors.background,
+                                width: '75%',
+                            },
                         }}
-                    />
+                    >
+                        <Stack
+                            screenOptions={{
+                                headerShown: false,
+                                contentStyle: { backgroundColor: 'transparent' },
+                            }}
+                        />
+                    </Drawer>
                 </AnimationProvider>
             </SafeAreaView>
         </SafeAreaProvider>

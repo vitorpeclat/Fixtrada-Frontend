@@ -1,4 +1,5 @@
 import { EyeIcon } from "@/components/EyeIcon";
+import { strings } from "@/languages"; // <-- MUDANÇA 1: Importar as strings
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -6,7 +7,7 @@ import React, { useState } from "react";
 import { Modal, Platform, Pressable, StyleProp, Text, TextInput, TextInputProps, TouchableOpacity, View, ViewStyle } from "react-native";
 import { styles } from "./styles";
 
-// --- INTERFACES ---
+// --- INTERFACES --- (sem alterações)
 
 interface PasswordCriteria {
     length: boolean;
@@ -24,7 +25,6 @@ interface DateChangeDetails {
 interface YearChangeDetails {
     year: string;
 }
-// --- NOVA INTERFACE PARA O COMBUSTÍVEL ---
 interface FuelChangeDetails {
     fuel: string;
 }
@@ -34,7 +34,7 @@ interface InputProps extends TextInputProps {
     containerStyle?: StyleProp<ViewStyle>;
     status?: FilterStatus;
     onEyeIconPress?: () => void;
-    type?: 'text' | 'password' | 'date' | 'cpf' | 'placa' | 'age' | 'year' | 'fuel';
+    type?: 'text' | 'password' | 'date' | 'cpf' | 'placa' | 'age' | 'year' | 'fuel' | 'km';
     onPasswordChange?: (details: PasswordChangeDetails) => void;
     onDateChange?: (details: DateChangeDetails) => void;
     onYearChange?: (details: YearChangeDetails) => void;
@@ -42,14 +42,7 @@ interface InputProps extends TextInputProps {
     minAge?: number;
 }
 
-const fuelOptions = [
-    "Gasolina Comum",
-    "Gasolina Aditivada",
-    "Gasolina Premium",
-    "Etanol",
-    "Diesel",
-    "GNV (Gás)",
-];
+const fuelOptions = Object.values(strings.inputComponent.fuelOptions);
 
 export function Input({
     label,
@@ -83,13 +76,14 @@ export function Input({
 
                 if (onDateChange) {
                     let error = '';
-                    const effectiveMinAge = type === 'age' ? 10 : minAge;
+                    const effectiveMinAge = type === 'age' ? (minAge || 18) : minAge;
+
                     if (effectiveMinAge) {
                         const hoje = new Date();
-                        const dataMinima = new Date();
-                        dataMinima.setFullYear(hoje.getFullYear() - effectiveMinAge);
+                        const dataMinima = new Date(hoje.getFullYear() - effectiveMinAge, hoje.getMonth(), hoje.getDate());
+                        
                         if (selectedDate > dataMinima) {
-                            error = `A idade mínima é de ${effectiveMinAge} anos.`;
+                            error = strings.inputComponent.minAgeError(effectiveMinAge);
                         }
                     }
                     onDateChange({ date: formattedDate, error: error });
@@ -179,14 +173,16 @@ export function Input({
             } else {
                 formattedText = cleanedText;
             }
+        } else if (type === 'km') {
+            formattedText = text.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
+
 
         if (onChangeText) {
             onChangeText(formattedText);
         }
     };
 
-    // Renderização para tipos baseados em TextInput
     return (
         <View style={[label && styles.wrapperWithLabel, containerStyle]}>
             {label && <Text style={styles.label}>{label}</Text>}
@@ -197,8 +193,8 @@ export function Input({
                     placeholder={placeholder}
                     value={value}
                     onChangeText={handleTextChange}
-                    keyboardType={type === 'year' || type === 'cpf' ? 'number-pad' : 'default'}
-                    maxLength={type === 'placa' ? 8 : (type === 'year' ? 4 : undefined)}
+                    keyboardType={type === 'year' || type === 'cpf' || type === 'km' ? 'number-pad' : 'default'}
+                    maxLength={type === 'placa' ? 8 : (type === 'year' ? 4 : (type === 'cpf' ? 14 : undefined))}
                     autoCapitalize={type === 'placa' ? 'characters' : 'none'}
                     {...rest}
                 />

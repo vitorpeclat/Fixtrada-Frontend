@@ -2,23 +2,24 @@ import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    BackHandler,
-    ScrollView,
-    TouchableOpacity,
-    View,
+  Alert,
+  BackHandler,
+  FlatList,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
-    AnimatedView,
-    AnimationProvider,
-    AppText,
-    Button,
-    Input,
-    useScreenAnimation,
+  AnimatedView,
+  AnimationProvider,
+  AppText,
+  Button,
+  Input,
+  useScreenAnimation,
 } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
+import { strings } from "@/languages"; // <-- IMPLEMENTAÇÃO
 import { Colors } from "@/theme/colors";
 import { styles } from "./styles";
 
@@ -40,12 +41,11 @@ function CadastroVeiculoContent() {
   const [trocaPneu, setTrocaPneu] = useState("");
   const [revisao, setRevisao] = useState("");
   const [showOptional, setShowOptional] = useState(false);
-  const [usuarioID, setUsuarioID] = useState<string | null>(null);
   const formRef = useRef<
     Animatable.View & { shake: (duration: number) => void }
   >(null);
-  const { handleGoBack, handleHardwareBackPress } = useScreenAnimation();
-  const { handleNavigatePush } = useScreenAnimation();
+  const { handleGoBack, handleHardwareBackPress, handleNavigatePush } =
+    useScreenAnimation();
   const optionalRef1 = useRef<AnimatableViewRef>(null);
   const optionalRef2 = useRef<AnimatableViewRef>(null);
 
@@ -58,26 +58,23 @@ function CadastroVeiculoContent() {
     }, 400);
   };
 
-  const fetchUsuarioID = async () => {
-    try {
-      const id = await AsyncStorage.getItem("usuID");
-      if (id !== null) {
-        setUsuarioID(id);
-      } else {
-        Alert.alert(
-          "Erro",
-          "Não foi possível encontrar seu ID de usuário. Tente fazer o login novamente."
-        );
-        handleGoBack("fadeOutDown");
-      }
-    } catch (error) {
-      console.error("Erro ao resgatar o ID do usuário do AsyncStorage", error);
-    }
-  };
-
   useEffect(() => {
+    const fetchUsuarioID = async () => {
+      try {
+        const id = await AsyncStorage.getItem("usuID");
+        if (id === null) {
+          Alert.alert(
+            strings.global.error,
+            strings.cadastroVeiculo.userIdError
+          );
+          handleGoBack("fadeOutDown");
+        }
+      } catch (error) {
+        console.error("Erro ao resgatar o ID do usuário do AsyncStorage", error);
+      }
+    };
     fetchUsuarioID();
-  }, []);
+  }, [handleGoBack]);
 
   const dataFormatter = (dado: string) => {
     if (!dado || dado.split("/").length !== 3) return undefined;
@@ -87,19 +84,11 @@ function CadastroVeiculoContent() {
 
   const handleCadastro = async () => {
     const kmLimpo = quilometragem.replace(/\D/g, "");
-    const anoNumerico = Number.parseInt(ano, 10);
-    const kmNumerica = Number.parseInt(kmLimpo, 10);
-
-    if (
-      !(marca && modelo) ||
-      ano.length !== 4 ||
-      !kmLimpo ||
-      !cor
-    ) {
+    if (!(marca && modelo) || ano.length !== 4 || !kmLimpo || !cor) {
       formRef.current?.shake(800);
       Alert.alert(
-        "Erro de Validação",
-        "Preencha a Marca, Modelo, Ano (AAAA), Quilometragem e Cor com dados válidos."
+        strings.global.validationError,
+        strings.cadastroVeiculo.validationMessage
       );
       return;
     }
@@ -117,31 +106,32 @@ function CadastroVeiculoContent() {
           carPlaca: placaFormatada,
           carMarca: marca,
           carModelo: modelo,
-          carAno: anoNumerico,
+          carAno: Number.parseInt(ano, 10),
           carCor: cor,
-          carKM: kmNumerica,
+          carKM: Number.parseInt(kmLimpo, 10),
           carTpCombust: tipoCombustivel || undefined,
           carOpTracao: tracao || undefined,
           carOpTrocaOleo: dataFormatter(trocaOleo),
           carOpTrocaPneu: dataFormatter(trocaPneu),
+          carOpRevisao: dataFormatter(revisao),
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        Alert.alert("Sucesso!", "Veículo cadastrado com sucesso!");
+        Alert.alert(strings.global.success, strings.cadastroVeiculo.successMessage);
         handleNavigatePush("/Home", "fadeOutUp");
       } else {
         formRef.current?.shake(800);
         Alert.alert(
-          "Falha no Cadastro",
-          data.message || "Erro desconhecido ao cadastrar veículo."
+          strings.global.registrationFailed,
+          data.message || strings.cadastroVeiculo.unknownError
         );
       }
     } catch (error) {
       console.error("Erro na requisição:", error);
       formRef.current?.shake(800);
-      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+      Alert.alert(strings.global.error, strings.global.serverError);
     }
   };
 
@@ -162,164 +152,176 @@ function CadastroVeiculoContent() {
           style={styles.backButton}
         >
           <Feather color={Colors.primary} name="chevron-left" size={24} />
-          <AppText style={styles.backButtonText}>voltar</AppText>
+          <AppText style={styles.backButtonText}>{strings.global.back}</AppText>
         </TouchableOpacity>
       </AnimatedView>
 
       <AnimatedView>
-        <AppText style={styles.title}>Cadastro de Veículo</AppText>
+        <AppText style={styles.title}>{strings.cadastroVeiculo.title}</AppText>
       </AnimatedView>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <Animatable.View ref={formRef} style={styles.form}>
-          <AnimatedView>
-            <Input
-              containerStyle={{ width: "90%" }}
-              label="Placa"
-              onChangeText={setPlaca}
-              placeholder="Ex: ABC-1D23"
-              type="placa"
-              value={placa}
-            />
-          </AnimatedView>
-          <AnimatedView>
-            <Input
-              containerStyle={{ width: "90%" }}
-              label="Marca"
-              onChangeText={setMarca}
-              placeholder="Ex: Volkswagen"
-              value={marca}
-            />
-          </AnimatedView>
-          <AnimatedView>
-            <Input
-              containerStyle={{ width: "90%" }}
-              label="Modelo"
-              onChangeText={setModelo}
-              placeholder="Ex: Gol"
-              value={modelo}
-            />
-          </AnimatedView>
-
-          <AnimatedView style={[styles.row, { width: "90%" }]}>
-            <View style={{ flex: 0.7 }}>
+      <FlatList
+        contentContainerStyle={styles.content}
+        data={[]}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={null}
+        ListHeaderComponent={
+          <Animatable.View ref={formRef} style={styles.form}>
+            <AnimatedView style={[styles.row]}>
               <Input
-                  label="Combustível"
-                  placeholder="Selecionar"
+                containerStyle={{ width: "90%" }}
+                label={strings.cadastroVeiculo.placaLabel}
+                onChangeText={setPlaca}
+                placeholder={strings.cadastroVeiculo.placaPlaceholder}
+                type="placa"
+                value={placa}
+              />
+            </AnimatedView>
+            <AnimatedView style={[styles.row]}>
+              <Input
+                containerStyle={{ width: "90%" }}
+                label={strings.cadastroVeiculo.marcaLabel}
+                onChangeText={setMarca}
+                placeholder={strings.cadastroVeiculo.marcaPlaceholder}
+                value={marca}
+              />
+            </AnimatedView>
+            <AnimatedView style={[styles.row]}>
+              <Input
+                containerStyle={{ width: "90%" }}
+                label={strings.cadastroVeiculo.modeloLabel}
+                onChangeText={setModelo}
+                placeholder={strings.cadastroVeiculo.modeloPlaceholder}
+                value={modelo}
+              />
+            </AnimatedView>
+
+            <AnimatedView style={[styles.row, { width: "90%" }]}>
+              <View style={{ flex: 0.7 }}>
+                <Input
+                  label={strings.cadastroVeiculo.combustivelLabel}
+                  placeholder={strings.global.select}
                   type="fuel"
                   value={tipoCombustivel}
                   onFuelChange={({ fuel }) => setTipoCombustivel(fuel)}
-              />
-            </View>
-            <View style={{ flex: 0.3 }}>
-              <Input
-                label="Ano"
-                onYearChange={({ year }) => setAno(year)}
-                placeholder="AAAA"
-                type="year"
-                value={ano}
-              />
-            </View>
-          </AnimatedView>
+                />
+              </View>
+              <View style={{ flex: 0.3 }}>
+                <Input
+                  label={strings.cadastroVeiculo.anoLabel}
+                  onYearChange={({ year }) => setAno(year)}
+                  placeholder={strings.cadastroVeiculo.anoPlaceholder}
+                  type="year"
+                  value={ano}
+                />
+              </View>
+            </AnimatedView>
 
-          <AnimatedView style={[styles.row, { width: "90%" }]}>
-            <View style={styles.rowItem}>
-              <Input
-                keyboardType="number-pad"
-                label="Quilometragem"
-                onChangeText={setQuilometragem}
-                placeholder="Ex: 50000"
-                value={quilometragem}
-              />
-            </View>
-            <View style={styles.rowItem}>
-              <Input
-                label="Cor"
-                onChangeText={setCor}
-                placeholder="Ex: Preto"
-                value={cor}
-              />
-            </View>
-          </AnimatedView>
+            <AnimatedView style={[styles.row, { width: "90%" }]}>
+              <View style={styles.rowItem}>
+                <Input
+                  keyboardType="number-pad"
+                  label={strings.cadastroVeiculo.kmLabel}
+                  onChangeText={setQuilometragem}
+                  placeholder={strings.cadastroVeiculo.kmPlaceholder}
+                  value={quilometragem}
+                />
+              </View>
+              <View style={styles.rowItem}>
+                <Input
+                  label={strings.cadastroVeiculo.corLabel}
+                  onChangeText={setCor}
+                  placeholder={strings.cadastroVeiculo.corPlaceholder}
+                  value={cor}
+                />
+              </View>
+            </AnimatedView>
 
-          <AnimatedView>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={
-                showOptional ? handleHideOptional : () => setShowOptional(true)
-              }
-              style={styles.optionalToggle}
-            >
-              <Feather
-                color={Colors.secondary}
-                name={showOptional ? "minus" : "plus"}
-                size={20}
-              />
-              <AppText style={styles.optionalText}>Dados opcionais</AppText>
-            </TouchableOpacity>
-          </AnimatedView>
-
-          {showOptional && (
-            <View style={styles.optionalContainer}>
-              <Animatable.View
-                animation="fadeInDown"
-                duration={400}
-                ref={optionalRef1}
-                style={[styles.row, { width: "90%" }]}
+            <AnimatedView>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={
+                  showOptional
+                    ? handleHideOptional
+                    : () => setShowOptional(true)
+                }
+                style={styles.optionalToggle}
               >
-                <View style={styles.rowItem}>
-                  <Input
-                    label="Tração"
-                    onChangeText={setTracao}
-                    placeholder="Ex: 4x4"
-                    value={tracao}
-                  />
-                </View>
-                <View style={styles.rowItem}>
-                  <Input
-                    label="Revisão"
-                    onDateChange={({ date }) => setRevisao(date)}
-                    placeholder="DD/MM/AAAA"
-                    value={revisao}
-                    type="date"
-                  />
-                </View>
-              </Animatable.View>
-              <Animatable.View
-                animation="fadeInDown"
-                duration={400}
-                ref={optionalRef2}
-                style={[styles.row, { width: "90%" }]}
-              >
-                <View style={styles.rowItem}>
-                  <Input
-                    label="Troca de pneu"
-                    onDateChange={({ date }) => setTrocaPneu(date)}
-                    placeholder="DD/MM/AAAA"
-                    type="date"
-                    value={trocaPneu}
-                  />
-                </View>
-                <View style={styles.rowItem}>
-                  <Input
-                    label="Troca de óleo"
-                    onDateChange={({ date }) => setTrocaOleo(date)}
-                    placeholder="DD/MM/AAAA"
-                    type="date"
-                    value={trocaOleo}
-                  />
-                </View>
-              </Animatable.View>
-            </View>
-          )}
-        </Animatable.View>
-      </ScrollView>
+                <Feather
+                  color={Colors.secondary}
+                  name={showOptional ? "minus" : "plus"}
+                  size={20}
+                />
+                <AppText style={styles.optionalText}>
+                  {strings.cadastroVeiculo.optionalData}
+                </AppText>
+              </TouchableOpacity>
+            </AnimatedView>
+
+            {showOptional && (
+              <View style={styles.optionalContainer}>
+                <Animatable.View
+                  animation="fadeInDown"
+                  duration={400}
+                  ref={optionalRef1}
+                  style={[styles.row, { width: "90%" }]}
+                >
+                  <View style={styles.rowItem}>
+                    <Input
+                      label={strings.cadastroVeiculo.tracaoLabel}
+                      onChangeText={setTracao}
+                      placeholder={
+                        strings.cadastroVeiculo.tracaoPlaceholder
+                      }
+                      value={tracao}
+                    />
+                  </View>
+                  <View style={styles.rowItem}>
+                    <Input
+                      label={strings.cadastroVeiculo.revisaoLabel}
+                      onDateChange={({ date }) => setRevisao(date)}
+                      placeholder={strings.global.datePlaceholder}
+                      value={revisao}
+                      type="date"
+                    />
+                  </View>
+                </Animatable.View>
+                <Animatable.View
+                  animation="fadeInDown"
+                  duration={400}
+                  ref={optionalRef2}
+                  style={[styles.row, { width: "90%" }]}
+                >
+                  <View style={styles.rowItem}>
+                    <Input
+                      label={strings.cadastroVeiculo.trocaPneuLabel}
+                      onDateChange={({ date }) => setTrocaPneu(date)}
+                      placeholder={strings.global.datePlaceholder}
+                      type="date"
+                      value={trocaPneu}
+                    />
+                  </View>
+                  <View style={styles.rowItem}>
+                    <Input
+                      label={strings.cadastroVeiculo.trocaOleoLabel}
+                      onDateChange={({ date }) => setTrocaOleo(date)}
+                      placeholder={strings.global.datePlaceholder}
+                      type="date"
+                      value={trocaOleo}
+                    />
+                  </View>
+                </Animatable.View>
+              </View>
+            )}
+          </Animatable.View>
+        }
+      />
 
       <View style={styles.buttonContainer}>
         <Button
           containerStyle={{ width: "60%" }}
           onPress={handleCadastro}
-          title="Cadastrar Veículo"
+          title={strings.cadastroVeiculo.button}
         />
       </View>
     </View>

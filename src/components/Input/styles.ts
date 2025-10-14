@@ -33,7 +33,6 @@ export const styles = StyleSheet.create({
         fontSize: 16,
     },
 
-    // --- ESTILOS PARA O MODAL DO TIPO 'fuel' ---
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',
@@ -42,7 +41,7 @@ export const styles = StyleSheet.create({
     },
     modalContent: {
         backgroundColor: Colors.white,
-        borderRadius: 10, // Bordas mais arredondadas
+        borderRadius: 10,
         width: '80%',
         maxHeight: '60%',
         paddingVertical: 10,
@@ -59,11 +58,11 @@ export const styles = StyleSheet.create({
         paddingVertical: 15,
         paddingHorizontal: 20,
         borderBottomWidth: 1,
-        borderBottomColor: Colors.background, // Divisor sutil
+        borderBottomColor: Colors.background, 
     },
     modalOptionText: {
         fontSize: 16,
-        color: Colors.primary, // Cor consistente com o resto do input
+        color: Colors.primary,
         textAlign: 'center',
     },
 })

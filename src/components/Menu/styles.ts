@@ -2,50 +2,52 @@ import { Colors } from "@/theme/colors";
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+  // --- Drawer container ---
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+
+  // --- Header ---
   header: {
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: Colors.lightGray,
     marginBottom: 10,
+    alignItems: 'center',
+  },
+  headerIcon: {
+    marginBottom: 16,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
     color: Colors.darkGray,
-    marginTop: 15,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: Colors.gray,
+    fontSize: 16,
+    color: Colors.primary,
   },
+
   drawerItemsContainer: {
     paddingTop: 10,
   },
-  drawerItem: {
+  menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: 16,
     paddingHorizontal: 20,
   },
-  drawerItemLabel: {
-    marginLeft: 20,
-    fontSize: 16,
-    fontWeight: '500',
+  menuItemText: {
+    fontSize: 17,
     color: Colors.darkGray,
+    marginBottom: 1,
+    flex: 1,
   },
-  footer: {
-    borderTopWidth: 1,
-    borderTopColor: Colors.lightGray,
-    padding: 20,
+  menuItemSeparator: {
+    height: 1,
+    backgroundColor: Colors.lightGray,
+    width: '100%',
   },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoutButtonText: {
-    marginLeft: 20,
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.darkGray,
-  },
+
 });

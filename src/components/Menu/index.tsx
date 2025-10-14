@@ -1,8 +1,23 @@
+import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DrawerContentComponentProps, DrawerContentScrollView } from "@react-navigation/drawer";
+import {
+  DrawerContentComponentProps,
+  DrawerContentScrollView,
+} from "@react-navigation/drawer";
 import { router } from "expo-router";
-import { HelpCircle, Home, LogOut, LucideIcon, Settings, User } from "lucide-react-native";
+import {
+  Car,
+  ChevronRight,
+  HelpCircle,
+  Home,
+  KeyRound,
+  LogOut,
+  LucideIcon,
+  User,
+  UserRound,
+  Wrench,
+} from "lucide-react-native";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
@@ -11,14 +26,24 @@ interface CustomDrawerItemProps {
   icon: LucideIcon;
   label: string;
   onPress: () => void;
+  isFirst?: boolean;
 }
 
-function CustomDrawerItem({ icon: Icon, label, onPress }: CustomDrawerItemProps) {
+function CustomDrawerItem({
+  icon: Icon,
+  label,
+  onPress,
+  isFirst = false,
+}: CustomDrawerItemProps) {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.drawerItem}>
-      <Icon color={Colors.darkGray} size={22} />
-      <Text style={styles.drawerItemLabel}>{label}</Text>
-    </TouchableOpacity>
+    <>
+      {!isFirst && <View style={styles.menuItemSeparator} />}
+      <TouchableOpacity onPress={onPress} style={styles.menuItem}>
+        <Icon color={Colors.primary} size={20} style={{ marginRight: 16 }} />
+        <Text style={styles.menuItemText}>{label}</Text>
+        <ChevronRight size={24} color={Colors.gray} />
+      </TouchableOpacity>
+    </>
   );
 }
 
@@ -27,23 +52,26 @@ export function MenuContent(props: DrawerContentComponentProps) {
 
   const handleLogout = () => {
     Alert.alert(
-      "Confirmar Saída",
-      "Você tem certeza que deseja sair?",
+      strings.drawerMenu.logoutConfirmTitle,
+      strings.drawerMenu.logoutConfirmMessage,
       [
         {
-          text: "Cancelar",
+          text: strings.drawerMenu.logoutCancel,
           style: "cancel",
         },
         {
-          text: "Sair",
+          text: strings.drawerMenu.logout,
           style: "destructive",
           onPress: async () => {
             try {
-              await AsyncStorage.removeItem('userToken');
-              router.replace('/Login');
+              await AsyncStorage.removeItem("userToken");
+              router.replace("/Login");
             } catch (e) {
               console.error("Erro ao tentar sair:", e);
-              Alert.alert("Erro", "Não foi possível sair. Tente novamente.");
+              Alert.alert(
+                strings.global.error,
+                strings.drawerMenu.logoutError
+              );
             }
           },
         },
@@ -52,27 +80,64 @@ export function MenuContent(props: DrawerContentComponentProps) {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: top }}>
-        <View style={styles.header}>
-          <User size={50} color={Colors.primary} />
-          <Text style={styles.headerTitle}>Nome do Usuário</Text>
-          <Text style={styles.headerSubtitle}>email@exemplo.com</Text>
+    <View style={[styles.container, { paddingTop: top }]}>
+      <View style={styles.header}>
+        <View style={styles.headerIcon}>
+          <UserRound size={80} color={Colors.darkGray} />
         </View>
+        <Text style={styles.headerTitle}>
+          {strings.drawerMenu.userNamePlaceholder}
+        </Text>
+        <Text style={styles.headerSubtitle}>
+          {strings.drawerMenu.userEmailPlaceholder}
+        </Text>
+      </View>
 
+      <DrawerContentScrollView
+        {...props}
+        contentContainerStyle={{ paddingTop: 0 }}
+      >
         <View style={styles.drawerItemsContainer}>
-          <CustomDrawerItem icon={Home} label="Início" onPress={() => router.navigate('/Home')} />
-          <CustomDrawerItem icon={User} label="Perfil" onPress={() => router.navigate('/Perfil')} />
-          <CustomDrawerItem icon={Settings} label="Configurações" onPress={() => router.navigate('/Configuracoes')} />
-          <CustomDrawerItem icon={HelpCircle} label="Ajuda" onPress={() => router.navigate('/Help')} />
+          <CustomDrawerItem
+            icon={Home}
+            label={strings.drawerMenu.home}
+            onPress={() => router.navigate("/Home")}
+            isFirst
+          />
+          <CustomDrawerItem
+            icon={User}
+            label={strings.drawerMenu.profile}
+            onPress={() => router.navigate("/Perfil")}
+          />
+          <CustomDrawerItem
+            icon={Wrench}
+            label={strings.drawerMenu.services}
+            onPress={() => router.navigate("/Servicos")}
+          />
+          <CustomDrawerItem
+            icon={KeyRound}
+            label={strings.profile.security}
+            onPress={() => {}}
+          />
+          <CustomDrawerItem
+            icon={Car}
+            label={strings.profile.registeredVehicles}
+            onPress={() => {}}
+          />
+          <CustomDrawerItem
+            icon={HelpCircle}
+            label={strings.drawerMenu.help}
+            onPress={() => router.navigate("/Help")}
+          />
         </View>
       </DrawerContentScrollView>
-      
-      <View style={[styles.footer, { paddingBottom: bottom + 10 }]}>
-        {/* --- ALTERAÇÃO NO ONPRESS --- */}
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <LogOut size={22} color={Colors.darkGray} />
-          <Text style={styles.logoutButtonText}>Sair</Text>
+
+      <View style={{ paddingBottom: bottom + 10 }}>
+        <View style={styles.menuItemSeparator} />
+        <TouchableOpacity onPress={handleLogout} style={styles.menuItem}>
+          <LogOut size={20} color={Colors.error} style={{ marginRight: 16 }} />
+          <Text style={styles.menuItemText}>{strings.drawerMenu.logout}</Text>
+          <ChevronRight size={24} color={Colors.gray} />
         </TouchableOpacity>
       </View>
     </View>

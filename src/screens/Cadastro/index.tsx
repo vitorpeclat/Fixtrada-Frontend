@@ -5,16 +5,17 @@ import { Alert, BackHandler, TouchableOpacity, View } from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
-    AnimatedView,
-    AnimationProvider,
-    AppText,
-    Button,
-    Input,
-    KeyboardShiftView,
-    PasswordValidation,
-    useScreenAnimation,
+  AnimatedView,
+  AnimationProvider,
+  AppText,
+  Button,
+  Input,
+  KeyboardShiftView,
+  PasswordValidation,
+  useScreenAnimation,
 } from "@/components";
-import { API_BASE_URL } from '@/config/ip';
+import { API_BASE_URL } from "@/config/ip";
+import { strings } from "@/languages"; // <-- IMPLEMENTAÇÃO
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus";
 import { styles } from "./styles";
@@ -72,14 +73,14 @@ function CadastroContent() {
       confirmarSenha,
     ];
     if (campos.some((campo) => campo.trim() === "")) {
-      Alert.alert("Atenção", "Por favor, preencha todos os campos.");
+      Alert.alert(strings.global.attention, strings.global.fillAllFields);
       formRef.current?.shake(800);
       return;
     }
     if (erroData) {
       Alert.alert(
-        "Data Inválida",
-        "Corrija a data de nascimento para continuar."
+        strings.global.invalidDate,
+        strings.cadastroCliente.correctBirthDate
       );
       formRef.current?.shake(800);
       return;
@@ -91,19 +92,18 @@ function CadastroContent() {
       !passwordCriteria.match
     ) {
       Alert.alert(
-        "Senha Inválida",
-        "Cumpra todos os requisitos de senha para continuar."
+        strings.global.invalidPassword,
+        strings.cadastroCliente.passwordRequirements
       );
       formRef.current?.shake(800);
       return;
     }
-    handleNavigatePush("/CadastroVeiculo", "fadeOutUp");
 
     const [dia, mes, ano] = usuDataNasc.split("/");
     const dataFormatada = `${ano}-${mes}-${dia}`;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/vehicle`, {
+      const response = await fetch(`${API_BASE_URL}/users`, { // Sugestão: endpoint /users para cadastro
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,16 +123,16 @@ function CadastroContent() {
           await AsyncStorage.setItem("usuID", String(data.usuarioID));
         }
         Alert.alert(
-          "Cadastro realizado!",
-          " Cadastre seu veículo para continuar."
+          strings.cadastroCliente.successTitle,
+          strings.cadastroCliente.successMessage
         );
-        handleNavigatePush("/Login", "fadeOutUp");
+        handleNavigatePush("/CadastroVeiculo", "fadeOutUp");
       } else {
-        Alert.alert("Falha no Cadastro", data.message);
+        Alert.alert(strings.global.registrationFailed, data.message);
       }
     } catch (error) {
       console.error("Erro na requisição:", error);
-      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+      Alert.alert(strings.global.error, strings.global.serverError);
     }
   }
 
@@ -146,19 +146,19 @@ function CadastroContent() {
             activeOpacity={0.7}
           >
             <Feather name="chevron-left" size={24} color={Colors.primary} />
-            <AppText style={styles.backButtonText}>voltar ao login</AppText>
+            <AppText style={styles.backButtonText}>{strings.global.backToLogin}</AppText>
           </TouchableOpacity>
         </AnimatedView>
 
         <AnimatedView style={{ marginBottom: 20 }}>
-          <AppText style={styles.title}>Cadastro Cliente</AppText>
+          <AppText style={styles.title}>{strings.cadastroCliente.title}</AppText>
         </AnimatedView>
 
         <Animatable.View ref={formRef} style={styles.form}>
           <AnimatedView>
             <Input
-              label="Nome"
-              placeholder="Digite seu nome completo"
+              label={strings.cadastroCliente.nomeLabel}
+              placeholder={strings.cadastroCliente.nomePlaceholder}
               value={usuNome}
               onChangeText={setUsuNome}
               containerStyle={{ width: "90%" }}
@@ -166,8 +166,8 @@ function CadastroContent() {
           </AnimatedView>
           <AnimatedView style={styles.row}>
             <Input
-              label="CPF"
-              placeholder="000.000.000-00"
+              label={strings.global.cpfLabel}
+              placeholder={strings.global.cpfPlaceholder}
               value={usuCpf}
               onChangeText={setUsuCpf}
               type="cpf"
@@ -177,11 +177,11 @@ function CadastroContent() {
             />
             <View style={{ width: "48%" }}>
               <Input
-                label="Data Nasc"
-                placeholder="DD/MM/AAAA"
+                label={strings.cadastroCliente.dataNascLabel}
+                placeholder={strings.global.datePlaceholder}
                 value={usuDataNasc}
-                type="age"
-                minAge={10}
+                type="date"
+                minAge={18}
                 onDateChange={({ date, error }) => {
                   setUsuDataNasc(date);
                   setErroData(error);
@@ -194,8 +194,8 @@ function CadastroContent() {
           </AnimatedView>
           <AnimatedView>
             <Input
-              label="Email"
-              placeholder="exemplo@dominio.com"
+              label={strings.global.emailLabel}
+              placeholder={strings.global.emailPlaceholder}
               value={usuLogin}
               onChangeText={setUsuLogin}
               keyboardType="email-address"
@@ -205,8 +205,8 @@ function CadastroContent() {
           </AnimatedView>
           <AnimatedView>
             <Input
-              label="Senha"
-              placeholder="Crie uma senha forte"
+              label={strings.global.passwordLabel}
+              placeholder={strings.global.createStrongPassword}
               status={passwordVisibility}
               onEyeIconPress={togglePasswordVisibility}
               secureTextEntry={passwordVisibility === FilterStatus.HIDE}
@@ -222,20 +222,19 @@ function CadastroContent() {
           </AnimatedView>
           <AnimatedView>
             <Input
-              label="Confirmar Senha"
-              placeholder="Repita a senha"
+              label={strings.global.confirmPasswordLabel}
+              placeholder={strings.global.repeatPasswordPlaceholder}
               value={confirmarSenha}
               onChangeText={setConfirmarSenha}
               status={passwordVisibility}
               onEyeIconPress={togglePasswordVisibility}
               secureTextEntry={passwordVisibility === FilterStatus.HIDE}
               containerStyle={{ width: "90%" }}
-              type="password"
             />
           </AnimatedView>
           <AnimatedView style={{ marginTop: 15 }}>
             <Button
-              title="Cadastrar"
+              title={strings.cadastroCliente.button}
               containerStyle={{ width: "60%" }}
               onPress={handleCadastro}
             />

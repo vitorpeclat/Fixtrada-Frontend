@@ -24,4 +24,6 @@ export const Colors = {
   // Cores personalizadas
   background: '#F0F2F5',
   text: '#121214',
+
+  
 };

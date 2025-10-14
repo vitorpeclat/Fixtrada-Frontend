@@ -76,7 +76,7 @@ export function AnimationProvider({ children }: AnimationProviderProps) {
 
     const handleHardwareBackPress = () => {
         handleGoBack('fadeOutDown');
-        return true; // Impede o comportamento padrão do Android
+        return true;
     };
 
     const animationIndex = useRef(0);

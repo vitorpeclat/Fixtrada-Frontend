@@ -4,16 +4,17 @@ import { Alert, Image, TouchableOpacity, View } from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
-    AnimatedView,
-    AnimationProvider,
-    AppText,
-    Button,
-    Input,
-    KeyboardShiftView,
-    SquareIcon,
-    useScreenAnimation,
+  AnimatedView,
+  AnimationProvider,
+  AppText,
+  Button,
+  Input,
+  KeyboardShiftView,
+  SquareIcon,
+  useScreenAnimation,
 } from "@/components";
-import { API_BASE_URL } from '@/config/ip';
+import { API_BASE_URL } from "@/config/ip";
+import { strings } from "@/languages"; // <-- IMPLEMENTAÇÃO
 import { FilterStatus } from "@/types/FilterStatus";
 import { styles } from "./styles";
 
@@ -43,41 +44,42 @@ function LoginContent() {
 
   async function handleLogin() {
     try {
-      const response = await fetch(`${API_BASE_URL}/vehicle`, {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ login, senha }),
       });
       const data = await response.json();
+
       if (response.ok) {
         const token = data.token;
         if (token) {
           await AsyncStorage.setItem("userToken", token);
         }
-        const response = await fetch(`${API_BASE_URL}/vehicle`, {
+
+        const vehicleResponse = await fetch(`${API_BASE_URL}/vehicle`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
-        const veiculo = await response.json();
+        const veiculo = await vehicleResponse.json();
+
         if (veiculo.found) {
           console.log("Veículo encontrado:", veiculo);
           handleNavigatePush("/Home", "fadeOutUp");
-          return;
         } else {
           handleNavigatePush("/CadastroVeiculo", "fadeOutUp");
-          return;
         }
       } else {
         formRef.current?.shake(800);
-        Alert.alert("Falha no Login", data.message);
+        Alert.alert(strings.login.loginFailureTitle, data.message);
       }
     } catch (error) {
       console.error("Erro na requisição:", error);
       formRef.current?.shake(800);
-      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+      Alert.alert(strings.global.error, strings.global.serverError);
     }
   }
 
@@ -95,8 +97,8 @@ function LoginContent() {
         <Animatable.View ref={formRef} style={styles.form}>
           <AnimatedView>
             <Input
-              label="Email"
-              placeholder="exemplo@domínio.com"
+              label={strings.global.emailLabel}
+              placeholder={strings.global.emailPlaceholder}
               keyboardType="email-address"
               autoCapitalize="none"
               containerStyle={{ width: "90%" }}
@@ -106,8 +108,8 @@ function LoginContent() {
           </AnimatedView>
           <AnimatedView>
             <Input
-              label="Senha"
-              placeholder="Digite sua senha"
+              label={strings.global.passwordLabel}
+              placeholder={strings.login.passwordPlaceholder}
               status={passwordStatus}
               onEyeIconPress={handleTogglePasswordVisibility}
               secureTextEntry={passwordStatus === FilterStatus.HIDE}
@@ -123,18 +125,18 @@ function LoginContent() {
               activeOpacity={0.7}
             >
               <SquareIcon status={checkboxStatus} style={{ marginTop: 2 }} />
-              <AppText>Lembre de mim</AppText>
+              <AppText>{strings.login.rememberMe}</AppText>
             </TouchableOpacity>
             <AppText
               textAlign="right"
               onPress={() => handleNavigatePush("/RecuperarCadastro", "fadeOutUp")}
             >
-              Esqueci minha senha.
+              {strings.login.forgotPassword}
             </AppText>
           </AnimatedView>
           <AnimatedView style={{ marginBottom: 5 }}>
             <Button
-              title="Logar-se"
+              title={strings.login.loginButton}
               containerStyle={{ width: "50%" }}
               onPress={handleLogin}
             />
@@ -145,9 +147,9 @@ function LoginContent() {
               onPress={() => handleNavigatePush("/Cadastro", "fadeOutUp")}
             >
               <AppText>
-                Não tem conta?{" "}
+                {strings.login.noAccount}{" "}
                 <AppText fontWeight="800" underline>
-                  Cadastrar-se
+                  {strings.login.signUp}
                 </AppText>
               </AppText>
             </TouchableOpacity>
