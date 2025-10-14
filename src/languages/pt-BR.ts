@@ -55,6 +55,7 @@ export const ptBRStrings = {
     unknownError: "Erro desconhecido ao cadastrar veículo.",
     placaLabel: "Placa",
     placaPlaceholder: "Ex: ABC-1D23",
+    invalidPlaca: "Formato de placa inválido",
     marcaLabel: "Marca",
     marcaPlaceholder: "Ex: Volkswagen",
     modeloLabel: "Modelo",

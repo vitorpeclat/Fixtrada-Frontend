@@ -33,6 +33,7 @@ interface InputProps extends TextInputProps {
     label?: string;
     containerStyle?: StyleProp<ViewStyle>;
     status?: FilterStatus;
+    error?: string | null;
     onEyeIconPress?: () => void;
     type?: 'text' | 'password' | 'date' | 'cpf' | 'placa' | 'age' | 'year' | 'fuel' | 'km';
     onPasswordChange?: (details: PasswordChangeDetails) => void;
@@ -48,6 +49,7 @@ export function Input({
     label,
     containerStyle,
     status,
+    error = null,
     onEyeIconPress,
     type = 'text',
     value,
@@ -93,11 +95,12 @@ export function Input({
         return (
             <View style={[label && styles.wrapperWithLabel, containerStyle]}>
                 {label && <Text style={styles.label}>{label}</Text>}
-                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.container}>
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={[styles.container, error ? styles.containerError : null]}>
                     <Text style={[styles.inputField, !value && { color: Colors.primaryLight }]}>
                         {value || placeholder}
                     </Text>
                 </TouchableOpacity>
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
                 {showDatePicker && (
                     <DateTimePicker value={internalDate} mode="date" display="default" onChange={handleDateChange} maximumDate={new Date()} />
                 )}
@@ -116,11 +119,12 @@ export function Input({
         return (
             <View style={[label && styles.wrapperWithLabel, containerStyle]}>
                 {label && <Text style={styles.label}>{label}</Text>}
-                <TouchableOpacity onPress={() => setShowFuelPicker(true)} style={styles.container}>
+                <TouchableOpacity onPress={() => setShowFuelPicker(true)} style={[styles.container, error ? styles.containerError : null]}>
                     <Text style={[styles.inputField, !value && { color: Colors.primaryLight }]}>
                         {value || placeholder}
                     </Text>
                 </TouchableOpacity>
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
                 <Modal
                     transparent={true}
@@ -186,23 +190,26 @@ export function Input({
     return (
         <View style={[label && styles.wrapperWithLabel, containerStyle]}>
             {label && <Text style={styles.label}>{label}</Text>}
-            <View style={styles.container}>
-                <TextInput
-                    style={styles.inputField}
-                    placeholderTextColor={Colors.primaryLight}
-                    placeholder={placeholder}
-                    value={value}
-                    onChangeText={handleTextChange}
-                    keyboardType={type === 'year' || type === 'cpf' || type === 'km' ? 'number-pad' : 'default'}
-                    maxLength={type === 'placa' ? 8 : (type === 'year' ? 4 : (type === 'cpf' ? 14 : undefined))}
-                    autoCapitalize={type === 'placa' ? 'characters' : 'none'}
-                    {...rest}
-                />
-                {status && (
-                    <TouchableOpacity onPress={onEyeIconPress}>
-                        <EyeIcon status={status} />
-                    </TouchableOpacity>
-                )}
+            <View>
+                <View style={[styles.container, error ? styles.containerError : null]}>
+                    <TextInput
+                        style={styles.inputField}
+                        placeholderTextColor={Colors.primaryLight}
+                        placeholder={placeholder}
+                        value={value}
+                        onChangeText={handleTextChange}
+                        keyboardType={type === 'year' || type === 'cpf' || type === 'km' ? 'number-pad' : 'default'}
+                        maxLength={type === 'placa' ? 8 : (type === 'year' ? 4 : (type === 'cpf' ? 14 : undefined))}
+                        autoCapitalize={type === 'placa' ? 'characters' : 'none'}
+                        {...rest}
+                    />
+                    {status && (
+                        <TouchableOpacity onPress={onEyeIconPress}>
+                            <EyeIcon status={status} />
+                        </TouchableOpacity>
+                    )}
+                </View>
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
             </View>
         </View>
     );

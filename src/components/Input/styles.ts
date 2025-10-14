@@ -65,4 +65,13 @@ export const styles = StyleSheet.create({
         color: Colors.primary,
         textAlign: 'center',
     },
+    containerError: {
+        borderColor: Colors.error,
+    },
+    errorText: {
+        color: Colors.error,
+        marginTop: 6,
+        marginLeft: 6,
+        fontSize: 13,
+    },
 })

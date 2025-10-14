@@ -30,6 +30,7 @@ type AnimatableViewRef = Animatable.View &
 
 function CadastroVeiculoContent() {
   const [placa, setPlaca] = useState("");
+  const [placaError, setPlacaError] = useState<string | null>(null);
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
   const [ano, setAno] = useState("");
@@ -58,24 +59,6 @@ function CadastroVeiculoContent() {
     }, 400);
   };
 
-  useEffect(() => {
-    const fetchUsuarioID = async () => {
-      try {
-        const id = await AsyncStorage.getItem("usuID");
-        if (id === null) {
-          Alert.alert(
-            strings.global.error,
-            strings.cadastroVeiculo.userIdError
-          );
-          handleGoBack("fadeOutDown");
-        }
-      } catch (error) {
-        console.error("Erro ao resgatar o ID do usuário do AsyncStorage", error);
-      }
-    };
-    fetchUsuarioID();
-  }, [handleGoBack]);
-
   const dataFormatter = (dado: string) => {
     if (!dado || dado.split("/").length !== 3) return undefined;
     const [dia, mes, ano] = dado.split("/");
@@ -83,6 +66,13 @@ function CadastroVeiculoContent() {
   };
 
   const handleCadastro = async () => {
+    // validate plate before proceeding
+    const isPlacaValid = validatePlaca(placa);
+    if (!isPlacaValid) {
+      formRef.current?.shake(800);
+      setPlacaError(strings.cadastroVeiculo.invalidPlaca || 'Formato de placa inválido');
+      return;
+    }
     const kmLimpo = quilometragem.replace(/\D/g, "");
     if (!(marca && modelo) || ano.length !== 4 || !kmLimpo || !cor) {
       formRef.current?.shake(800);
@@ -135,6 +125,17 @@ function CadastroVeiculoContent() {
     }
   };
 
+  const validatePlaca = (text: string) => {
+    if (!text) return false;
+    const cleaned = text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    // Old format: ABC-1234 or ABC1234 => 3 letters + 4 digits
+    const oldFormat = /^[A-Z]{3}[0-9]{4}$/;
+    // Mercosul: ABC1D23 or ABC-1D23 depending on input => 3 letters + 1 digit + 1 letter + 2 digits
+    const mercosulFormat = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/;
+
+    return oldFormat.test(cleaned) || mercosulFormat.test(cleaned);
+  };
+
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
@@ -171,10 +172,21 @@ function CadastroVeiculoContent() {
               <Input
                 containerStyle={{ width: "90%" }}
                 label={strings.cadastroVeiculo.placaLabel}
-                onChangeText={setPlaca}
+                onChangeText={(text) => {
+                  setPlaca(text);
+                  // live validation: clear or set error
+                  if (text === '') {
+                    setPlacaError(null);
+                  } else if (validatePlaca(text)) {
+                    setPlacaError(null);
+                  } else {
+                    setPlacaError(strings.cadastroVeiculo.invalidPlaca || 'Formato de placa inválido');
+                  }
+                }}
                 placeholder={strings.cadastroVeiculo.placaPlaceholder}
                 type="placa"
                 value={placa}
+                error={placaError}
               />
             </AnimatedView>
             <AnimatedView style={[styles.row]}>
