@@ -1,2 +1,3 @@
-import HelpScreen from '@/screens/Help'
-export default HelpScreen
+import HelpScreen from "@/screens/Help";
+
+export default HelpScreen;

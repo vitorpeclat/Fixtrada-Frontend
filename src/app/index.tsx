@@ -1,6 +1,26 @@
-import { Redirect } from 'expo-router'
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Redirect } from "expo-router";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
 
 export default function AppEntry() {
+  const [token, setToken] = useState<string | null | undefined>(undefined);
 
-  return <Redirect href="/Home" />
+  useEffect(() => {
+    const checkToken = async () => {
+      const storedToken = await AsyncStorage.getItem("userToken");
+      setToken(storedToken);
+    };
+
+    checkToken();
+  }, []);
+
+  if (token === undefined) {
+    return <View />; // Ou um componente de Loading
+  }
+
+  if (token) {
+    return <Redirect href="/Home" />;
+  }
+  return <Redirect href="/Login" />;
 }

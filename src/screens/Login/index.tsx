@@ -44,7 +44,7 @@ function LoginContent() {
 
   async function handleLogin() {
     try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      const response = await fetch(`${API_BASE_URL}/cliente/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ login, senha }),
@@ -52,25 +52,9 @@ function LoginContent() {
       const data = await response.json();
 
       if (response.ok) {
-        const token = data.token;
-        if (token) {
-          await AsyncStorage.setItem("userToken", token);
-        }
-
-        const vehicleResponse = await fetch(`${API_BASE_URL}/vehicle`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const veiculo = await vehicleResponse.json();
-
-        if (veiculo.found) {
-          console.log("Veículo encontrado:", veiculo);
+        if (data.token) {
+          await AsyncStorage.setItem("userToken", data.token);
           handleNavigatePush("/Home", "fadeOutUp");
-        } else {
-          handleNavigatePush("/CadastroVeiculo", "fadeOutUp");
         }
       } else {
         formRef.current?.shake(800);
@@ -129,7 +113,9 @@ function LoginContent() {
             </TouchableOpacity>
             <AppText
               textAlign="right"
-              onPress={() => handleNavigatePush("/RecuperarCadastro", "fadeOutUp")}
+              onPress={() =>
+                handleNavigatePush("/RecuperarCadastro", "fadeOutUp")
+              }
             >
               {strings.login.forgotPassword}
             </AppText>

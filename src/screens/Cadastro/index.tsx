@@ -103,7 +103,7 @@ function CadastroContent() {
     const dataFormatada = `${ano}-${mes}-${dia}`;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users`, { // Sugestão: endpoint /users para cadastro
+      const response = await fetch(`${API_BASE_URL}/cliente/cadastro`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,8 +119,8 @@ function CadastroContent() {
 
       const data = await response.json();
       if (response.ok) {
-        if (data.usuarioID) {
-          await AsyncStorage.setItem("usuID", String(data.usuarioID));
+        if (data.token) {
+          await AsyncStorage.setItem("userToken", data.token);
         }
         Alert.alert(
           strings.cadastroCliente.successTitle,
@@ -146,12 +146,16 @@ function CadastroContent() {
             activeOpacity={0.7}
           >
             <Feather name="chevron-left" size={24} color={Colors.primary} />
-            <AppText style={styles.backButtonText}>{strings.global.backToLogin}</AppText>
+            <AppText style={styles.backButtonText}>
+              {strings.global.backToLogin}
+            </AppText>
           </TouchableOpacity>
         </AnimatedView>
 
         <AnimatedView style={{ marginBottom: 20 }}>
-          <AppText style={styles.title}>{strings.cadastroCliente.title}</AppText>
+          <AppText style={styles.title}>
+            {strings.cadastroCliente.title}
+          </AppText>
         </AnimatedView>
 
         <Animatable.View ref={formRef} style={styles.form}>
