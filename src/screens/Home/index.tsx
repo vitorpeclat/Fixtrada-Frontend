@@ -2,7 +2,7 @@ import { AppText, Button } from "@/components";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { DrawerActions } from "@react-navigation/native";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { Car, Menu } from "lucide-react-native";
 import { TouchableOpacity, View } from "react-native";
 import {
@@ -18,6 +18,7 @@ import { styles } from "./styles";
 function HomeContent() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const router = useRouter();
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
@@ -39,7 +40,22 @@ function HomeContent() {
         >
           <Menu size={45} color={Colors.primary} />
         </TouchableOpacity>
-
+        <Button
+          title="Ajuda"
+          onPress={() => router.push("/Help")}
+          backgroundColor={Colors.background}
+          borderColor={Colors.primary}
+          textColor={Colors.primary}
+          borderWidth={2}
+          containerStyle={{
+            position: "absolute",
+            top: insets.top + 10,
+            right: 20,
+            zIndex: 10,
+            width: "auto",
+            paddingHorizontal: 15,
+          }}
+        />
         <View style={styles.content}>
           <View style={styles.card}>
             <Car size={48} color={Colors.primary} style={styles.cardIcon} />

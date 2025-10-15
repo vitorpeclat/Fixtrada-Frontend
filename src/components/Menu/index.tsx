@@ -10,13 +10,13 @@ import {
   Car,
   ChevronRight,
   HelpCircle,
+  History,
   Home,
-  KeyRound,
   LogOut,
   LucideIcon,
   User,
   UserRound,
-  Wrench,
+  Wrench
 } from "lucide-react-native";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -105,24 +105,24 @@ export function MenuContent(props: DrawerContentComponentProps) {
             isFirst
           />
           <CustomDrawerItem
-            icon={User}
-            label={strings.drawerMenu.profile}
-            onPress={() => router.navigate("/Perfil")}
-          />
-          <CustomDrawerItem
             icon={Wrench}
             label={strings.drawerMenu.services}
             onPress={() => router.navigate("/Servicos")}
           />
           <CustomDrawerItem
-            icon={KeyRound}
-            label={strings.profile.security}
-            onPress={() => {}}
-          />
-          <CustomDrawerItem
             icon={Car}
             label={strings.profile.registeredVehicles}
             onPress={() => {}}
+          />
+          <CustomDrawerItem
+            icon={History}
+            label={strings.drawerMenu.history}
+            onPress={() => router.navigate("/Historico")}
+          />
+          <CustomDrawerItem
+            icon={User}
+            label={strings.drawerMenu.profile}
+            onPress={() => router.navigate("/Perfil")}
           />
           <CustomDrawerItem
             icon={HelpCircle}

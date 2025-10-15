@@ -41,6 +41,12 @@ export default function AppLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="Historico/index"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

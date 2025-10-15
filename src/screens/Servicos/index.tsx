@@ -16,6 +16,7 @@ import {
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
+import { useRouter } from "expo-router";
 
 type ActiveTab = "oferta" | "historico";
 
@@ -23,6 +24,7 @@ function ServicosContent() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<ActiveTab>("oferta");
+  const router = useRouter();
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
@@ -75,6 +77,22 @@ function ServicosContent() {
         >
           <Menu size={45} color={Colors.primary} />
         </TouchableOpacity>
+        <Button
+          title="Ajuda"
+          onPress={() => router.push("/Help")}
+          backgroundColor={Colors.background}
+          borderColor={Colors.primary}
+          textColor={Colors.primary}
+          borderWidth={2}
+          containerStyle={{
+            position: "absolute",
+            top: insets.top + 10,
+            right: 20,
+            zIndex: 10,
+            width: "auto",
+            paddingHorizontal: 15,
+          }}
+        />
 
         <View style={[styles.contentContainer, { paddingTop: insets.top + 60 }]}>
           <View style={styles.tabsContainer}>
