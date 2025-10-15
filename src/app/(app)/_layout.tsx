@@ -7,8 +7,8 @@ export default function AppLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.darkGray,
+        tabBarActiveTintColor: Colors.secondary,
+        tabBarInactiveTintColor: Colors.primary,
         tabBarStyle: {
           backgroundColor: Colors.background,
         },
@@ -43,6 +43,12 @@ export default function AppLayout() {
       />
       <Tabs.Screen
         name="Historico/index"
+        options={{
+          href: null,
+        }}
+      />
+            <Tabs.Screen
+        name="SolicitarServico/index"
         options={{
           href: null,
         }}

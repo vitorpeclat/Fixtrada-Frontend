@@ -19,6 +19,7 @@ export const ptBRStrings = {
     emailLabel: "Email",
     emailPlaceholder: "exemplo@dominio.com",
     passwordLabel: "Senha",
+    newPasswordLabel: "Nova Senha", // <-- ADICIONADO
     confirmPasswordLabel: "Confirmar Senha",
     createStrongPassword: "Crie uma senha forte",
     repeatPasswordPlaceholder: "Repita a senha",
@@ -103,11 +104,29 @@ export const ptBRStrings = {
     requestServiceButton: "Solicitar serviço",
   },
 
+  solicitarServico: {
+    title: "Solicitação",
+    tipoServicoLabel: "Tipo de serviço",
+    tipoServicoPlaceholder: "Selecione o tipo de serviço",
+    veiculoLabel: "Veículo",
+    veiculoPlaceholder: "Selecione o seu veículo",
+    descricaoLabel: "Descrição",
+    descricaoPlaceholder: "Descreva o problema ou o que você precisa...",
+    solicitarButton: "SOLICITAR",
+    validationError: "Selecione o tipo de serviço e o veículo para continuar.",
+    successTitle: "Solicitação Enviada!",
+    successMessage: "Sua solicitação foi enviada com sucesso. Aguarde o contato de uma oficina.",
+  },
+
   profile: {
     title: "Perfil",
     generalSettings: "Configurações Gerais",
     security: "Segurança",
     registeredVehicles: "Veículos cadastrados",
+    passwordPlaceholder: "Deixe em branco para não alterar", // <-- ADICIONADO
+    saveButton: "Salvar Alterações", // <-- ADICIONADO
+    saveSuccessTitle: "Perfil Atualizado!", // <-- ADICIONADO
+    saveSuccessMessage: "Suas informações foram salvas com sucesso.", // <-- ADICIONADO
   },
 
   drawerMenu: {

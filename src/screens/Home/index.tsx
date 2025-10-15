@@ -67,7 +67,7 @@ function HomeContent() {
             </AppText>
             <Button
               title={strings.home.scheduleServiceButton}
-              onPress={() => console.log("Iniciar fluxo de agendamento")}
+              onPress={() => router.push("/SolicitarServico")}
               containerStyle={{ width: "100%" }}
             />
           </View>
