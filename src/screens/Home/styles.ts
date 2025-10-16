@@ -45,4 +45,27 @@ export const styles = StyleSheet.create({
         marginBottom: 24,
         lineHeight: 24,
     },
+    vehicleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+    },
+    vehicleIconContainer: {
+        marginRight: 16,
+    },
+    vehicleInfoContainer: {
+        flex: 1,
+    },
+    vehicleDataRow: {
+        flexDirection: 'row',
+        marginBottom: 4,
+    },
+    vehicleDataLabel: {
+        fontWeight: 'bold',
+        color: Colors.darkGray,
+        marginRight: 8,
+    },
+    vehicleDataValue: {
+        color: Colors.darkGray,
+    },
 });

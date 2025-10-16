@@ -120,7 +120,7 @@ function CadastroContent() {
       const data = await response.json();
       if (response.ok) {
         if (data.token) {
-          await AsyncStorage.setItem("userToken", data.token);
+          await AsyncStorage.setItem("userToken", data.token);// await AsyncStorage.getItem("userToken", data.token);
         }
         Alert.alert(
           strings.cadastroCliente.successTitle,
@@ -173,7 +173,7 @@ function CadastroContent() {
               label={strings.global.cpfLabel}
               placeholder={strings.global.cpfPlaceholder}
               value={usuCpf}
-              onChangeText={setUsuCpf}
+              onChangeText={setUsuCpf} //onChangeText={getUsuCpf}
               type="cpf"
               containerStyle={{ width: "48%" }}
               keyboardType="numeric"

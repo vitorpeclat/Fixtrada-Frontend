@@ -1,74 +1,79 @@
-// app/Servicos/index.tsx
-
 import { AppText, Button } from "@/components";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { Car, Menu } from "lucide-react-native";
 import React, { useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import {
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import {
   Directions,
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
-import { runOnJS } from "react-native-reanimated";
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
-import { useRouter } from "expo-router";
 
-type ActiveTab = "oferta" | "historico";
+type ActiveTab = "oferta" | "mapa";
 
 function ServicosContent() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<ActiveTab>("oferta");
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const translateX = useSharedValue(0);
+
+  const handleTabChange = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    translateX.value = withTiming(tab === "oferta" ? 0 : -width, {
+      duration: 300,
+    });
+  };
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
 
-  const flingGesture = Gesture.Fling()
+  const flingRightGesture = Gesture.Fling()
     .direction(Directions.RIGHT)
     .onEnd(() => {
-      runOnJS(openDrawer)();
+      if (activeTab === "mapa") {
+        runOnJS(handleTabChange)("oferta");
+      } else {
+        runOnJS(openDrawer)();
+      }
     });
 
-  const renderContent = () => {
-    if (activeTab === "oferta") {
-      return (
-        <View style={styles.bodyContainer}>
-          <Car
-            size={150}
-            color={Colors.secondary}
-            strokeWidth={1.5}
-            style={styles.carImage}
-          />
-          <AppText style={styles.messageText}>
-            {strings.services.noServiceRequested}
-          </AppText>
-          <Button
-            title={strings.services.requestServiceButton}
-            onPress={() => console.log("Solicitar Serviço")}
-            containerStyle={styles.button}
-          />
-        </View>
-      );
-    }
-    // Conteúdo para a aba "Histórico" (pode ser implementado depois)
-    return (
-      <View style={styles.bodyContainer}>
-        <AppText style={styles.messageText}>
-          Seu histórico de serviços aparecerá aqui.
-        </AppText>
-      </View>
-    );
-  };
+  const flingLeftGesture = Gesture.Fling()
+    .direction(Directions.LEFT)
+    .onEnd(() => {
+      if (activeTab === "oferta") {
+        runOnJS(handleTabChange)("mapa");
+      }
+    });
+
+  const composedGesture = Gesture.Race(flingRightGesture, flingLeftGesture);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: translateX.value }],
+    };
+  });
 
   return (
-    <GestureDetector gesture={flingGesture}>
+    <GestureDetector gesture={composedGesture}>
       <View style={styles.container}>
         <TouchableOpacity
           style={[styles.headerIcon, { top: insets.top + 10 }]}
@@ -96,10 +101,9 @@ function ServicosContent() {
 
         <View style={[styles.contentContainer, { paddingTop: insets.top + 60 }]}>
           <View style={styles.tabsContainer}>
-            {/* Aba Oferta de Valor */}
             <TouchableOpacity
               style={styles.tab}
-              onPress={() => setActiveTab("oferta")}
+              onPress={() => handleTabChange("oferta")}
             >
               <AppText
                 style={[
@@ -112,24 +116,45 @@ function ServicosContent() {
               {activeTab === "oferta" && <View style={styles.activeTabIndicator} />}
             </TouchableOpacity>
 
-            {/* Aba Histórico */}
             <TouchableOpacity
               style={styles.tab}
-              onPress={() => setActiveTab("historico")}
+              onPress={() => handleTabChange("mapa")}
             >
               <AppText
                 style={[
                   styles.tabText,
-                  activeTab === "historico" && styles.activeTabText,
+                  activeTab === "mapa" && styles.activeTabText,
                 ]}
               >
-                {strings.services.historyTab}
+                {strings.services.mapTab}
               </AppText>
-              {activeTab === "historico" && <View style={styles.activeTabIndicator} />}
+              {activeTab === "mapa" && <View style={styles.activeTabIndicator} />}
             </TouchableOpacity>
           </View>
 
-          {renderContent()}
+          <Animated.View style={[styles.bodyContainer, animatedStyle]}>
+            <View style={[styles.tabContent, { width: width }]}>
+              <Car
+                size={150}
+                color={Colors.secondary}
+                strokeWidth={1.5}
+                style={styles.carImage}
+              />
+              <AppText style={styles.messageText}>
+                {strings.services.noServiceRequested}
+              </AppText>
+              <Button
+                title={strings.services.requestServiceButton}
+                onPress={() => router.push("/SolicitarServico")}
+                containerStyle={styles.button}
+              />
+            </View>
+            <View style={[styles.tabContent, { width: width }]}>
+              <AppText style={styles.messageText}>
+                Mapa
+              </AppText>
+            </View>
+          </Animated.View>
         </View>
       </View>
     </GestureDetector>

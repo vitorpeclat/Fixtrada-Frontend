@@ -47,8 +47,14 @@ export default function AppLayout() {
           href: null,
         }}
       />
-            <Tabs.Screen
+      <Tabs.Screen
         name="SolicitarServico/index"
+        options={{
+          href: null,
+        }}
+      />
+            <Tabs.Screen
+        name="VerificarAvaliacao/index"
         options={{
           href: null,
         }}

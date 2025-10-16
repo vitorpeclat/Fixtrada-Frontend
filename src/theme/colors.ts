@@ -25,5 +25,6 @@ export const Colors = {
   background: '#F0F2F5',
   text: '#121214',
 
-  
+  // Cores de ícones
+  gold: '#e0bf00ff',
 };

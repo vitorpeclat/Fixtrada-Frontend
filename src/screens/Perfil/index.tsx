@@ -5,13 +5,14 @@ import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus"; // <-- IMPORTAÇÃO ADICIONADA
 import { DrawerActions, useNavigation } from "@react-navigation/native";
-import { Menu, Pencil, UserRound, X } from "lucide-react-native"; // <-- ÍCONE X ADICIONADO
+import { useRouter } from "expo-router";
+import { Menu, Pencil, Star, UserRound, X } from "lucide-react-native"; // <-- ÍCONE X ADICIONADO
 import React, { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import * as Animatable from "react-native-animatable"; // <-- IMPORTAÇÃO ADICIONADA
 import {
@@ -20,13 +21,19 @@ import {
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
-import { runOnJS } from "react-native-reanimated";
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
 
 function PerfilContent() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -38,11 +45,13 @@ function PerfilContent() {
   );
   const [erroData, setErroData] = useState("");
 
+  const ratingOpacity = useSharedValue(1);
+
   useEffect(() => {
     const fetchUserData = () => {
-      setNome("Nome Cliente");
-      setEmail("email@cliente.com");
-      setDataNascimento("01/01/2001");
+      setNome("nome");
+      setEmail("email");
+      setDataNascimento("24/01/2003");
     };
     fetchUserData();
   }, []);
@@ -58,7 +67,10 @@ function PerfilContent() {
     });
 
   const handleToggleEdit = () => {
-    setIsEditing((prev) => !prev);
+    setIsEditing((prev) => {
+      ratingOpacity.value = withTiming(prev ? 1 : 0, { duration: 300 });
+      return !prev;
+    });
     if (isEditing) {
       setSenha("");
       setConfirmarSenha("");
@@ -71,6 +83,7 @@ function PerfilContent() {
       strings.profile.saveSuccessMessage
     );
     setIsEditing(false);
+    ratingOpacity.value = withTiming(1, { duration: 300 });
   };
 
   const togglePasswordVisibility = () => {
@@ -78,6 +91,12 @@ function PerfilContent() {
       s === FilterStatus.HIDE ? FilterStatus.SHOW : FilterStatus.HIDE
     );
   };
+
+  const animatedRatingStyle = useAnimatedStyle(() => {
+    return {
+      opacity: ratingOpacity.value,
+    };
+  });
 
   return (
     <GestureDetector gesture={flingGesture}>
@@ -87,13 +106,30 @@ function PerfilContent() {
             <Menu size={45} color={Colors.primary} />
           </TouchableOpacity>
           <AppText style={styles.headerTitle}>{strings.profile.title}</AppText>
-          <View style={styles.headerIconPlaceholder} />
+          <Button
+            title="Ajuda"
+            onPress={() => router.push("/Help")}
+            backgroundColor={Colors.background}
+            borderColor={Colors.primary}
+            textColor={Colors.primary}
+            borderWidth={2}
+            containerStyle={{
+              width: "auto",
+              paddingHorizontal: 15,
+            }}
+          />
         </View>
 
         <ScrollView contentContainerStyle={styles.contentContainer}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
               <UserRound size={80} color={Colors.darkGray} />
+              <TouchableOpacity onPress={() => router.push("/VerificarAvaliacao")}>
+                <Animated.View style={[styles.ratingContainer, animatedRatingStyle]}>
+                  <Star size={16} color={Colors.gold} fill={Colors.gold} />
+                  <AppText style={styles.ratingText}>4.3</AppText>
+                </Animated.View>
+              </TouchableOpacity>
             </View>
             <TouchableOpacity
               style={styles.editButton}

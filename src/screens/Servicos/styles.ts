@@ -48,8 +48,11 @@ export const styles = StyleSheet.create({
   },
   bodyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+  },
+  tabContent: {
+    justifyContent: "center",
+    alignItems: "center",
     padding: 30,
     gap: 24,
   },

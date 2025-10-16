@@ -99,7 +99,7 @@ export const ptBRStrings = {
 
   services: {
     valueOfferTab: "Oferta de Valor",
-    historyTab: "Histórico",
+    mapTab: "Mapa",
     noServiceRequested: "Nenhum serviço solicitado...",
     requestServiceButton: "Solicitar serviço",
   },

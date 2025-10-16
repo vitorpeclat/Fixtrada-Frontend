@@ -72,6 +72,29 @@ function HomeContent() {
             />
           </View>
         </View>
+        <View style={styles.content}>
+          <View style={styles.card}>
+            <View style={styles.vehicleContainer}>
+              <View style={styles.vehicleIconContainer}>
+                <Car size={64} color={Colors.primary} />
+              </View>
+              <View style={styles.vehicleInfoContainer}>
+                <View style={styles.vehicleDataRow}>
+                  <AppText style={styles.vehicleDataLabel}>Placa:</AppText>
+                  <AppText style={styles.vehicleDataValue}>ABC-1234</AppText>
+                </View>
+                <View style={styles.vehicleDataRow}>
+                  <AppText style={styles.vehicleDataLabel}>Marca:</AppText>
+                  <AppText style={styles.vehicleDataValue}>Fiat</AppText>
+                </View>
+                <View style={styles.vehicleDataRow}>
+                  <AppText style={styles.vehicleDataLabel}>Modelo:</AppText>
+                  <AppText style={styles.vehicleDataValue}>Uno</AppText>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
       </View>
     </GestureDetector>
   );
