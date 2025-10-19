@@ -54,6 +54,7 @@ function LoginContent() {
       if (response.ok) {
         if (data.token) {
           await AsyncStorage.setItem("userToken", data.token);
+          await AsyncStorage.setItem("userData", JSON.stringify(data.user));
           handleNavigatePush("/Home", "fadeOutUp");
         }
       } else {

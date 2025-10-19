@@ -70,7 +70,9 @@ function CadastroVeiculoContent() {
     const isPlacaValid = validatePlaca(placa);
     if (!isPlacaValid) {
       formRef.current?.shake(800);
-      setPlacaError(strings.cadastroVeiculo.invalidPlaca || 'Formato de placa inválido');
+      setPlacaError(
+        strings.cadastroVeiculo.invalidPlaca || "Formato de placa inválido"
+      );
       return;
     }
     const kmLimpo = quilometragem.replace(/\D/g, "");
@@ -109,7 +111,10 @@ function CadastroVeiculoContent() {
 
       const data = await response.json();
       if (response.ok) {
-        Alert.alert(strings.global.success, strings.cadastroVeiculo.successMessage);
+        Alert.alert(
+          strings.global.success,
+          strings.cadastroVeiculo.successMessage
+        );
         handleNavigatePush("/Home", "fadeOutUp");
       } else {
         formRef.current?.shake(800);
@@ -127,7 +132,7 @@ function CadastroVeiculoContent() {
 
   const validatePlaca = (text: string) => {
     if (!text) return false;
-    const cleaned = text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const cleaned = text.toUpperCase().replace(/[^A-Z0-9]/g, "");
     // Old format: ABC-1234 or ABC1234 => 3 letters + 4 digits
     const oldFormat = /^[A-Z]{3}[0-9]{4}$/;
     // Mercosul: ABC1D23 or ABC-1D23 depending on input => 3 letters + 1 digit + 1 letter + 2 digits
@@ -175,12 +180,15 @@ function CadastroVeiculoContent() {
                 onChangeText={(text) => {
                   setPlaca(text);
                   // live validation: clear or set error
-                  if (text === '') {
+                  if (text === "") {
                     setPlacaError(null);
                   } else if (validatePlaca(text)) {
                     setPlacaError(null);
                   } else {
-                    setPlacaError(strings.cadastroVeiculo.invalidPlaca || 'Formato de placa inválido');
+                    setPlacaError(
+                      strings.cadastroVeiculo.invalidPlaca ||
+                        "Formato de placa inválido"
+                    );
                   }
                 }}
                 placeholder={strings.cadastroVeiculo.placaPlaceholder}
@@ -282,9 +290,7 @@ function CadastroVeiculoContent() {
                     <Input
                       label={strings.cadastroVeiculo.tracaoLabel}
                       onChangeText={setTracao}
-                      placeholder={
-                        strings.cadastroVeiculo.tracaoPlaceholder
-                      }
+                      placeholder={strings.cadastroVeiculo.tracaoPlaceholder}
                       value={tracao}
                     />
                   </View>

@@ -50,8 +50,10 @@ export const ptBRStrings = {
 
   cadastroVeiculo: {
     title: "Cadastro de Veículo",
-    userIdError: "Não foi possível encontrar seu ID de usuário. Tente fazer o login novamente.",
-    validationMessage: "Preencha a Marca, Modelo, Ano (AAAA), Quilometragem e Cor com dados válidos.",
+    userIdError:
+      "Não foi possível encontrar seu ID de usuário. Tente fazer o login novamente.",
+    validationMessage:
+      "Preencha a Marca, Modelo, Ano (AAAA), Quilometragem e Cor com dados válidos.",
     successMessage: "Veículo cadastrado com sucesso!",
     unknownError: "Erro desconhecido ao cadastrar veículo.",
     placaLabel: "Placa",
@@ -83,7 +85,8 @@ export const ptBRStrings = {
     correctBirthDate: "Corrija a data de nascimento para continuar.",
     accountFoundMessage: "Cadastro encontrado! Agora crie uma nova senha.",
     newPasswordRequirements: "A nova senha deve cumprir todos os requisitos.",
-    passwordChangedSuccess: "Sua senha foi alterada. Faça o login com sua nova senha.",
+    passwordChangedSuccess:
+      "Sua senha foi alterada. Faça o login com sua nova senha.",
     newPasswordLabel: "Nova Senha",
     confirmNewPasswordLabel: "Confirmar Nova Senha",
     repeatNewPasswordPlaceholder: "Repita a nova senha",
@@ -93,7 +96,8 @@ export const ptBRStrings = {
 
   home: {
     cardTitle: "Seu veículo precisa de atenção?",
-    cardSubtitle: "Agende um serviço de forma rápida e encontre os melhores profissionais perto de você.",
+    cardSubtitle:
+      "Agende um serviço de forma rápida e encontre os melhores profissionais perto de você.",
     scheduleServiceButton: "Agendar um Serviço",
   },
 
@@ -115,7 +119,8 @@ export const ptBRStrings = {
     solicitarButton: "SOLICITAR",
     validationError: "Selecione o tipo de serviço e o veículo para continuar.",
     successTitle: "Solicitação Enviada!",
-    successMessage: "Sua solicitação foi enviada com sucesso. Aguarde o contato de uma oficina.",
+    successMessage:
+      "Sua solicitação foi enviada com sucesso. Aguarde o contato de uma oficina.",
   },
 
   profile: {

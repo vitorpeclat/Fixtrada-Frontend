@@ -1,7 +1,9 @@
-import { AppText, Button, Input, KeyboardShiftView } from "@/components";
+import { AppText, Button, Input, KeyboardShiftView } from "@/components"; // <-- IMPORTAÇÕES ADICIONADAS
+import { API_BASE_URL } from "@/config/ip";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
-import { FilterStatus } from "@/types/FilterStatus";
+import { FilterStatus } from "@/types/FilterStatus"; // <-- IMPORTAÇÃO ADICIONADA
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { Menu, Pencil, Star, UserRound, X } from "lucide-react-native";
@@ -44,12 +46,37 @@ function PerfilContent() {
   const [erroData, setErroData] = useState("");
 
   const ratingOpacity = useSharedValue(1);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = () => {
-      setNome("nome");
-      setEmail("email");
-      setDataNascimento("24/01/2003");
+    const fetchUserData = async () => {
+      try {
+        const raw = await AsyncStorage.getItem("userData");
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+
+        // Campos de acordo com o userData: { id, email, nome, role, telefone }
+        const userId = parsed.id;
+        const userName = parsed.nome;
+        const userEmail = parsed.email;
+        const userPhone = parsed.telefone;
+
+        // dataNascimento vem como: YYYY-MM-DD
+        let birth = parsed.dataNascimento;
+        if (birth) {
+          //2003-01-24 or 2003-01-24T00:00:00Z
+          const isoMatch = birth.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (isoMatch) {
+            const [, y, m, d] = isoMatch;
+            birth = `${d}/${m}/${y}`;
+          }
+        }
+        setNome(userName);
+        setEmail(userEmail);
+        setDataNascimento(birth);
+      } catch (e) {
+        console.error("Erro ao recuperar userData do AsyncStorage:", e);
+      }
     };
     fetchUserData();
   }, []);
@@ -75,13 +102,95 @@ function PerfilContent() {
     }
   };
 
-  const handleSaveChanges = () => {
-    Alert.alert(
-      strings.profile.saveSuccessTitle,
-      strings.profile.saveSuccessMessage
-    );
-    setIsEditing(false);
-    ratingOpacity.value = withTiming(1, { duration: 300 });
+  const handleSaveChanges = async () => {
+    console.log("[Perfil] handleSaveChanges called");
+    try {
+      // basic validation: nome present
+      if (!nome || nome.trim().length === 0) {
+        Alert.alert(strings.global.validationError, "Nome é obrigatório");
+        return;
+      }
+
+      // format date DD/MM/YYYY -> YYYY-MM-DD if provided
+      const dataFormatter = (dado: string) => {
+        if (!dado || dado.split("/").length !== 3) return undefined;
+        const [dia, mes, ano] = dado.split("/");
+        return `${ano}-${mes}-${dia}`;
+      };
+      console.log("Data formatada:", dataFormatter(dataNascimento));
+      const payload: Record<string, any> = {};
+      if (typeof nome !== "undefined") payload.nome = nome;
+      const formatted = dataFormatter(dataNascimento);
+      if (formatted) payload.dataNascimento = formatted;
+      if (Object.keys(payload).length === 0) {
+        Alert.alert(
+          strings.profile.saveSuccessTitle,
+          strings.profile.saveSuccessMessage
+        );
+        setIsEditing(false);
+        ratingOpacity.value = withTiming(1, { duration: 300 });
+        return;
+      }
+      setIsSaving(true);
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        setIsSaving(false);
+        Alert.alert(
+          strings.global.error,
+          "Token não encontrado. Faça login novamente."
+        );
+        return;
+      }
+      const res = await fetch(`${API_BASE_URL}/cliente/update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok) {
+        const updatedUser = data?.user ?? data ?? null;
+        // update AsyncStorage userData if available
+        if (updatedUser) {
+          try {
+            // read existing userData, merge and save
+            const raw = await AsyncStorage.getItem("userData");
+            const existing = raw ? JSON.parse(raw) : {};
+            const merged = {
+              ...existing,
+              id: updatedUser.id ?? existing.id,
+              nome: updatedUser.nome ?? existing.nome,
+              email: updatedUser.email ?? existing.email,
+              dataNascimento:
+                updatedUser.dataNascimento ?? existing.dataNascimento,
+            };
+            await AsyncStorage.setItem("userData", JSON.stringify(merged));
+          } catch (e) {
+            // ignore storage errors but log
+            console.warn("Erro ao atualizar userData no AsyncStorage", e);
+          }
+        }
+
+        Alert.alert(
+          strings.profile.saveSuccessTitle,
+          strings.profile.saveSuccessMessage
+        );
+        setIsEditing(false);
+        ratingOpacity.value = withTiming(1, { duration: 300 });
+      } else {
+        const message = data?.message ?? strings.global.serverError;
+        Alert.alert(strings.global.error, message);
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar cliente:", error);
+      Alert.alert(strings.global.error, strings.global.serverError);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -122,8 +231,12 @@ function PerfilContent() {
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
               <UserRound size={80} color={Colors.darkGray} />
-              <TouchableOpacity onPress={() => router.push("/VerificarAvaliacao")}>
-                <Animated.View style={[styles.ratingContainer, animatedRatingStyle]}>
+              <TouchableOpacity
+                onPress={() => router.push("/VerificarAvaliacao")}
+              >
+                <Animated.View
+                  style={[styles.ratingContainer, animatedRatingStyle]}
+                >
                   <Star size={16} color={Colors.gold} fill={Colors.gold} />
                   <AppText style={styles.ratingText}>4.3</AppText>
                 </Animated.View>
@@ -215,9 +328,10 @@ function PerfilContent() {
                 containerStyle={styles.inputContainer}
               />
               <Button
-                title={strings.profile.saveButton}
+                title={isSaving ? "Salvando..." : strings.profile.saveButton}
                 containerStyle={{ width: "60%", marginTop: 20 }}
                 onPress={handleSaveChanges}
+                disabled={isSaving}
               />
             </Animatable.View>
           )}

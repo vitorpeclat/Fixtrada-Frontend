@@ -16,8 +16,9 @@ import {
   LucideIcon,
   User,
   UserRound,
-  Wrench
+  Wrench,
 } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
@@ -50,6 +51,36 @@ function CustomDrawerItem({
 export function MenuContent(props: DrawerContentComponentProps) {
   const { top, bottom } = useSafeAreaInsets();
 
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userDataStr = await AsyncStorage.getItem("userData");
+        if (userDataStr) {
+          const user = JSON.parse(userDataStr);
+          const rawName = user.nome;
+          let displayName: string | null = null;
+          if (rawName) {
+            const tokens = String(rawName)
+              .split(/\s+/)
+              .filter((t) => t && t.length > 0);
+            if (tokens.length === 0) displayName = String(rawName);
+            else if (tokens.length === 1) displayName = tokens[0];
+            else displayName = `${tokens[0]} ${tokens[1]}`; // first and second name
+          }
+          setUserName(displayName);
+          setUserEmail(user.email);
+        }
+      } catch (e) {
+        console.warn("Erro ao carregar dados do usuário:", e);
+      }
+    };
+
+    loadUser();
+  }, []);
+
   const handleLogout = () => {
     Alert.alert(
       strings.drawerMenu.logoutConfirmTitle,
@@ -65,13 +96,11 @@ export function MenuContent(props: DrawerContentComponentProps) {
           onPress: async () => {
             try {
               await AsyncStorage.removeItem("userToken");
+              await AsyncStorage.removeItem("userData");
               router.replace("/Login");
             } catch (e) {
               console.error("Erro ao tentar sair:", e);
-              Alert.alert(
-                strings.global.error,
-                strings.drawerMenu.logoutError
-              );
+              Alert.alert(strings.global.error, strings.drawerMenu.logoutError);
             }
           },
         },
@@ -86,10 +115,10 @@ export function MenuContent(props: DrawerContentComponentProps) {
           <UserRound size={80} color={Colors.darkGray} />
         </View>
         <Text style={styles.headerTitle}>
-          {strings.drawerMenu.userNamePlaceholder}
+          {userName ?? strings.drawerMenu.userNamePlaceholder}
         </Text>
         <Text style={styles.headerSubtitle}>
-          {strings.drawerMenu.userEmailPlaceholder}
+          {userEmail ?? strings.drawerMenu.userEmailPlaceholder}
         </Text>
       </View>
 
