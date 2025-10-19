@@ -59,6 +59,24 @@ export default function AppLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="DadosPessoais/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="VeiculosCliente/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="Seguranca/index"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

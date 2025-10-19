@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function VeiculosClienteScreen() {
+export default function SegurancaScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Veiculos</Text>
+      <Text style={styles.text}>Tela de seguranca</Text>
     </View>
   );
 }

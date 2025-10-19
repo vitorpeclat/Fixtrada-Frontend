@@ -1,12 +1,10 @@
-// app/Perfil/index.tsx
-
-import { AppText, Button, Input, KeyboardShiftView } from "@/components"; // <-- IMPORTAÇÕES ADICIONADAS
+import { AppText, Button, Input, KeyboardShiftView } from "@/components";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
-import { FilterStatus } from "@/types/FilterStatus"; // <-- IMPORTAÇÃO ADICIONADA
+import { FilterStatus } from "@/types/FilterStatus";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { Menu, Pencil, Star, UserRound, X } from "lucide-react-native"; // <-- ÍCONE X ADICIONADO
+import { Menu, Pencil, Star, UserRound, X } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -14,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import * as Animatable from "react-native-animatable"; // <-- IMPORTAÇÃO ADICIONADA
+import * as Animatable from "react-native-animatable";
 import {
   Directions,
   Gesture,
@@ -148,6 +146,22 @@ function PerfilContent() {
             <Animatable.View animation="fadeIn" duration={600}>
               <AppText style={styles.userName}>{nome}</AppText>
               <AppText style={styles.userEmail}>{email}</AppText>
+
+              <Button
+                title="Dados Pessoais"
+                onPress={() => router.navigate("/DadosPessoais")}
+                containerStyle={{ marginTop: 10 }}
+              />
+              <Button
+                title="Veículos"
+                onPress={() => router.push("/VeiculosCliente")}
+                containerStyle={{ marginTop: 10 }}
+              />
+              <Button
+                title="Segurança"
+                onPress={() => router.push("/Seguranca")}
+                containerStyle={{ marginTop: 10 }}
+              />
             </Animatable.View>
           )}
 
