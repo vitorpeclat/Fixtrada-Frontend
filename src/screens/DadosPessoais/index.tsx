@@ -1,87 +1,140 @@
+import { AppText } from "@/components";
+import { strings } from "@/languages"; // <-- ADICIONADO
+import { Colors } from "@/theme/colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 import {
-    AppText
-} from "@/components";
-import React from 'react';
-import { Image, TouchableOpacity, View } from 'react-native';
-import { styles } from './styles';
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Pencil,
+  UserRound,
+} from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import { ScrollView, TouchableOpacity, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { styles } from "./styles";
 
-function DadosPessoaisContent (){
+function DadosPessoaisContent() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const raw = await AsyncStorage.getItem("userData");
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        setNome(parsed.nome || "");
+        setEmail(parsed.email || "");
+        setTelefone(parsed.telefone || "+5511998236319");
+      } catch (e) {
+        console.error("Erro ao recuperar userData do AsyncStorage:", e);
+      }
+    };
+    fetchUserData();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.profileImageContainer}>
-          <Image 
-            source={{ uri: 'https://avatars.githubusercontent.com/u/69623412?v=4' }} 
-            style={styles.profileImage} 
-          />
-          <TouchableOpacity style={styles.editIconContainer}>
-            <Image 
-              source={require('../../assets/android-icon-foreground.png')} 
-              style={styles.editIcon} 
-            />
+      {/* --- CABEÇALHO --- */}
+      <TouchableOpacity
+        style={[styles.headerIcon, { top: insets.top + 10 }]}
+        onPress={() => router.back()}
+        activeOpacity={0.7}
+      >
+        <ChevronLeft size={30} color={Colors.primary} />
+      </TouchableOpacity>
+      <AppText style={[styles.headerTitle, { top: insets.top + 12 }]}>
+        {strings.personalDataScreen.title} {/* <-- ATUALIZADO */}
+      </AppText>
+
+      {/* --- CONTEÚDO --- */}
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContentContainer,
+          { paddingTop: insets.top + 70 }, // Espaço para o cabeçalho
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* --- Avatar --- */}
+        <View style={styles.avatarContainer}>
+          <View style={styles.avatar}>
+            <UserRound size={80} color={Colors.darkGray} />
+          </View>
+          <TouchableOpacity style={styles.editButton} activeOpacity={0.8}>
+            <Pencil size={18} color={Colors.background} />
           </TouchableOpacity>
         </View>
-      </View>
 
-      <TouchableOpacity style={styles.section}>
-        <View style={styles.sectionContent}>
-          <AppText style={styles.sectionTitle}>Nome</AppText>
-          <AppText style={styles.sectionValue}>Vitor Rodrigues Peclat</AppText>
-        </View>
-        <Image source={require('../../assets/android-icon-foreground.png')} style={styles.arrowIcon} />
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.section}>
-        <View style={styles.sectionContent}>
-          <AppText style={styles.sectionTitle}>Gênero</AppText>
-          <AppText style={styles.sectionValue}>Homem</AppText>
-        </View>
-        <Image source={require('../../assets/android-icon-foreground.png')} style={styles.arrowIcon} />
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.section}>
-        <View style={styles.sectionContent}>
-          <AppText style={styles.sectionTitle}>Número de telefone</AppText>
-          <View style={styles.sectionValueContainer}>
-            <AppText style={styles.sectionValue}>+5511976275639</AppText>
-            <Image source={require('../../assets/android-icon-foreground.png')} style={styles.verifiedIcon} />
+        {/* --- Item Nome --- */}
+        <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+          <View style={styles.menuItemContent}>
+            <AppText style={styles.menuItemTitle}>
+              {strings.personalDataScreen.name}
+            </AppText>
+            <AppText style={styles.menuItemValue}>{nome}</AppText>
           </View>
-        </View>
-        <Image source={require('../../assets/android-icon-foreground.png')} style={styles.arrowIcon} />
-      </TouchableOpacity>
+          <ChevronRight size={24} color={Colors.gray} />
+        </TouchableOpacity>
+        <View style={styles.divider} />
 
-      <TouchableOpacity style={styles.section}>
-        <View style={styles.sectionContent}>
-          <AppText style={styles.sectionTitle}>E-mail</AppText>
-          <View style={styles.sectionValueContainer}>
-            <AppText style={styles.sectionValue}>vitorr.peclat@gmail.com</AppText>
-            <Image source={require('../../assets/android-icon-foreground.png')} style={styles.verifiedIcon} />
+        {/* --- Item Número de telefone --- */}
+        <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+          <View style={styles.menuItemContent}>
+            <AppText style={styles.menuItemTitle}>
+              {strings.personalDataScreen.phone}
+            </AppText>
+            <View style={styles.valueVerified}>
+              <AppText style={styles.menuItemValue}>{telefone}</AppText>
+              <CheckCircle2 size={16} color={Colors.primary} style={{ marginLeft: 6 }} />
+            </View>
           </View>
-        </View>
-        <Image source={require('../../assets/android-icon-foreground.png')} style={styles.arrowIcon} />
-      </TouchableOpacity>
+          <ChevronRight size={24} color={Colors.gray} />
+        </TouchableOpacity>
+        <View style={styles.divider} />
 
-      <TouchableOpacity style={styles.section}>
-        <View style={styles.sectionContent}>
-          <AppText style={styles.sectionTitle}>Verificação de identidade</AppText>
-          <AppText style={styles.sectionValue}>Adicione seu documento de identidade</AppText>
-        </View>
-        <Image source={require('../../assets/android-icon-foreground.png')} style={styles.arrowIcon} />
-      </TouchableOpacity>
+        {/* --- Item E-mail --- */}
+        <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+          <View style={styles.menuItemContent}>
+            <AppText style={styles.menuItemTitle}>
+              {strings.global.emailLabel}
+            </AppText>
+            <View style={styles.valueVerified}>
+              <AppText style={styles.menuItemValue}>{email}</AppText>
+              <CheckCircle2 size={16} color={Colors.primary} style={{ marginLeft: 6 }} />
+            </View>
+          </View>
+          <ChevronRight size={24} color={Colors.gray} />
+        </TouchableOpacity>
+        <View style={styles.divider} />
 
-      <TouchableOpacity style={styles.section}>
-        <View style={styles.sectionContent}>
-          <AppText style={styles.sectionTitle}>Idioma</AppText>
-          <AppText style={styles.sectionValue}>Atualizar idioma do dispositivo</AppText>
-        </View>
-        <Image source={require('../../assets/android-icon-foreground.png')} style={styles.arrowIcon} />
-      </TouchableOpacity>
+        {/* --- Item Idioma --- */}
+        <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+          <View style={styles.menuItemContent}>
+            <AppText style={styles.menuItemTitle}>
+              {strings.personalDataScreen.language}
+            </AppText>
+            <AppText style={styles.menuItemValue}>
+              {strings.personalDataScreen.languageSubtitle}
+            </AppText>
+          </View>
+          <ExternalLink size={20} color={Colors.gray} />
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
-};
+}
 
 export default function DadosPessoaisScreen() {
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <DadosPessoaisContent />
+    </GestureHandlerRootView>
   );
 }

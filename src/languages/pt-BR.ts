@@ -1,3 +1,5 @@
+// languages/index.ts (ou onde seu arquivo ptBRStrings está)
+
 export const ptBRStrings = {
   global: {
     attention: "Atenção",
@@ -19,7 +21,7 @@ export const ptBRStrings = {
     emailLabel: "Email",
     emailPlaceholder: "exemplo@dominio.com",
     passwordLabel: "Senha",
-    newPasswordLabel: "Nova Senha", // <-- ADICIONADO
+    newPasswordLabel: "Nova Senha",
     confirmPasswordLabel: "Confirmar Senha",
     createStrongPassword: "Crie uma senha forte",
     repeatPasswordPlaceholder: "Repita a senha",
@@ -127,11 +129,32 @@ export const ptBRStrings = {
     title: "Perfil",
     generalSettings: "Configurações Gerais",
     security: "Segurança",
+    personalData: "Dados\nPessoais",
+    vehicles: "Veículos",
+    help: "Ajuda",
     registeredVehicles: "Veículos cadastrados",
-    passwordPlaceholder: "Deixe em branco para não alterar", // <-- ADICIONADO
-    saveButton: "Salvar Alterações", // <-- ADICIONADO
-    saveSuccessTitle: "Perfil Atualizado!", // <-- ADICIONADO
-    saveSuccessMessage: "Suas informações foram salvas com sucesso.", // <-- ADICIONADO
+    passwordPlaceholder: "Deixe em branco para não alterar",
+    saveButton: "Salvar Alterações",
+    saveSuccessTitle: "Perfil Atualizado!",
+    saveSuccessMessage: "Suas informações foram salvas com sucesso.",
+  },
+
+  // --- ADICIONADO ---
+  securityScreen: {
+    title: "Segurança",
+    password: "Senha",
+    passwordSubtitle: "Última alteração em: 21 de outubro de 2020",
+    recoveryPhone: "Telefone para recuperação",
+    recoveryPhoneSubtitle: "Adicione um número de telefone alternativo",
+  },
+
+  // --- ADICIONADO ---
+  personalDataScreen: {
+    title: "Informações pessoais",
+    name: "Nome",
+    phone: "Número de telefone",
+    language: "Idioma",
+    languageSubtitle: "Atualizar idioma do dispositivo",
   },
 
   drawerMenu: {

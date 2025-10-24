@@ -85,10 +85,6 @@ function ServicosContent() {
         <Button
           title="Ajuda"
           onPress={() => router.push("/Help")}
-          backgroundColor={Colors.background}
-          borderColor={Colors.primary}
-          textColor={Colors.primary}
-          borderWidth={2}
           containerStyle={{
             position: "absolute",
             top: insets.top + 10,

@@ -16,7 +16,7 @@ export default function AppEntry() {
   }, []);
 
   if (token === undefined) {
-    return <View />; // Ou um componente de Loading
+    return <View />;
   }
 
   if (token) {

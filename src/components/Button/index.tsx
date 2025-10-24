@@ -1,39 +1,45 @@
-import { StyleProp, Text, TouchableOpacity, TouchableOpacityProps, ViewStyle } from "react-native"
-
-import { styles } from "./styles"
+import React from "react";
+import {
+    StyleProp,
+    Text,
+    TextStyle,
+    TouchableOpacity,
+    TouchableOpacityProps,
+    ViewStyle,
+} from "react-native";
+import { styles } from "./styles";
 
 type Props = TouchableOpacityProps & {
-    title?: string
-    containerStyle?: StyleProp<ViewStyle>
-    backgroundColor?: string
-    borderColor?: string
-    textColor?: string
-    borderWidth?: number
-}
+  title?: string;
+  containerStyle?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+  icon?: React.ReactNode;
+  iconPosition?: "left" | "top";
+};
 
-export function Button({ title, containerStyle, backgroundColor, borderColor, textColor, borderWidth, ...rest}: Props){
-    const buttonStyles = [styles.container, containerStyle];
-    const textStyles = [styles.title];
+export function Button({
+  title,
+  containerStyle,
+  textStyle,
+  icon,
+  iconPosition = "left",
+  ...rest
+}: Props) {
+  const iconMargin = iconPosition === "left" ? { marginLeft: 8 } : { marginTop: 4 };
+  const flexDirection = iconPosition === "left" ? "row" : "column";
 
-    if (backgroundColor) {
-        buttonStyles.push({ backgroundColor });
-    }
-
-    if (borderColor) {
-        buttonStyles.push({ borderColor, borderWidth: borderWidth || 1 });
-    }
-
-    if (textColor) {
-        textStyles.push({ color: textColor });
-    }
-    
-    return(
-        <TouchableOpacity 
-            style={buttonStyles} 
-            activeOpacity={0.8} 
-            {...rest}
-        >
-            <Text style={textStyles}>{title}</Text>
-        </TouchableOpacity>
-    )
+  return (
+    <TouchableOpacity
+      style={[styles.container, { flexDirection }, containerStyle]}
+      activeOpacity={0.8}
+      {...rest}
+    >
+      {icon}
+      {title ? (
+        <Text style={[styles.title, textStyle, Boolean(icon) ? iconMargin : null]}>
+          {title}
+        </Text>
+      ) : null}
+    </TouchableOpacity>
+  );
 }
