@@ -38,7 +38,12 @@ type Vehicle = {
   carOpRevisao?: string;
   carAtivo?: boolean;
   fk_usuario_usuID?: string;
-};
+}; // aqui ta declarado o veiculo
+// pra pegar ele vai ser o retorno da função, porém como essa
+// função pega todos os veiculos do banco relacionados ao usuáro
+// ai você tem que fazer o type, caso seja só um veiculo
+// você faz assim, return = JSON.parse(data)
+// o return vira um objeto que contém todos os dados do veiculo
 
 function HomeContent() {
   const insets = useSafeAreaInsets();
@@ -61,13 +66,13 @@ function HomeContent() {
         }
 
         const res = await fetch(`${API_BASE_URL}/vehicles`, {
-          method: "GET",
+          method: "GET", // isso aqui é front end, o method é da chamada
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-        });
+        }); // essa rota puxa do banco
 
         if (!res.ok) {
           const text = await res.text();
