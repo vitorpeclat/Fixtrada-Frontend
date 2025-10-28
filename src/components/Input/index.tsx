@@ -1,13 +1,11 @@
-import { EyeIcon } from "@/components/EyeIcon";
-import { strings } from "@/languages"; // <-- MUDANÇA 1: Importar as strings
+ import { EyeIcon } from "@/components/EyeIcon";
+import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import React, { useState } from "react";
 import { Modal, Platform, Pressable, StyleProp, Text, TextInput, TextInputProps, TouchableOpacity, View, ViewStyle } from "react-native";
 import { styles } from "./styles";
-
-// --- INTERFACES --- (sem alterações)
 
 interface PasswordCriteria {
     length: boolean;
@@ -35,7 +33,7 @@ interface InputProps extends TextInputProps {
     status?: FilterStatus;
     error?: string | null;
     onEyeIconPress?: () => void;
-    type?: 'text' | 'password' | 'date' | 'cpf' | 'placa' | 'age' | 'year' | 'fuel' | 'km';
+    type?: 'text' | 'password' | 'date' | 'cpf' | 'placa' | 'age' | 'year' | 'fuel' | 'km' | 'cellphone';
     onPasswordChange?: (details: PasswordChangeDetails) => void;
     onDateChange?: (details: DateChangeDetails) => void;
     onYearChange?: (details: YearChangeDetails) => void;
@@ -58,7 +56,7 @@ export function Input({
     onPasswordChange,
     onDateChange,
     onYearChange,
-    onFuelChange, 
+    onFuelChange,
     minAge,
     ...rest
 }: InputProps) {
@@ -83,7 +81,7 @@ export function Input({
                     if (effectiveMinAge) {
                         const hoje = new Date();
                         const dataMinima = new Date(hoje.getFullYear() - effectiveMinAge, hoje.getMonth(), hoje.getDate());
-                        
+
                         if (selectedDate > dataMinima) {
                             error = strings.inputComponent.minAgeError(effectiveMinAge);
                         }
@@ -152,7 +150,6 @@ export function Input({
             onPasswordChange({ text, criteria });
             return;
         }
-
         if (type === 'year' && onYearChange) {
             const numericText = text.replace(/[^0-9]/g, "");
             const currentYear = new Date().getFullYear();
@@ -168,7 +165,24 @@ export function Input({
         }
 
         let formattedText = text;
-        if (type === 'cpf') {
+        if (type === 'cellphone') {
+            if (!text.startsWith("+55 ")) {
+                formattedText = "+55 ";
+            } else {
+                let userInput = text.substring(4).replace(/\D/g, "");
+                userInput = userInput.slice(0, 11);
+
+                if (userInput.length > 7) {
+                    formattedText = `+55 (${userInput.slice(0, 2)}) ${userInput.slice(2, 7)}-${userInput.slice(7, 11)}`;
+                } else if (userInput.length > 2) {
+                    formattedText = `+55 (${userInput.slice(0, 2)}) ${userInput.slice(2, 7)}`;
+                } else if (userInput.length > 0) {
+                    formattedText = `+55 (${userInput.slice(0, 2)}`;
+                } else {
+                    formattedText = "+55 ";
+                }
+            }
+        } else if (type === 'cpf') {
             formattedText = text.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
         } else if (type === 'placa') {
             const cleanedText = text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
@@ -180,7 +194,6 @@ export function Input({
         } else if (type === 'km') {
             formattedText = text.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
-
 
         if (onChangeText) {
             onChangeText(formattedText);
@@ -198,8 +211,19 @@ export function Input({
                         placeholder={placeholder}
                         value={value}
                         onChangeText={handleTextChange}
-                        keyboardType={type === 'year' || type === 'cpf' || type === 'km' ? 'number-pad' : 'default'}
-                        maxLength={type === 'placa' ? 8 : (type === 'year' ? 4 : (type === 'cpf' ? 14 : undefined))}
+                        keyboardType={
+                            type === 'year' || type === 'cpf' || type === 'km'
+                                ? 'number-pad'
+                                : type === 'cellphone'
+                                    ? 'phone-pad'
+                                    : 'default'
+                        }
+                        maxLength={
+                            type === 'placa' ? 8 :
+                            (type === 'year' ? 4 :
+                            (type === 'cpf' ? 14 :
+                            (type === 'cellphone' ? 19 : undefined)))
+                        }
                         autoCapitalize={type === 'placa' ? 'characters' : 'none'}
                         {...rest}
                     />
@@ -213,4 +237,4 @@ export function Input({
             </View>
         </View>
     );
-}
+} 

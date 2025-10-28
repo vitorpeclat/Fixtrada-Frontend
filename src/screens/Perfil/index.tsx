@@ -110,7 +110,7 @@ function PerfilContent() {
             <View style={styles.buttonsContainer}>
               <Button
                 title={strings.profile.personalData}
-                onPress={() => router.navigate("/DadosPessoais")}
+                onPress={() => router.push("/DadosPessoais")}
                 containerStyle={styles.button}
                 textStyle={styles.buttonText}
                 icon={<User size={30} color={Colors.primary} />}

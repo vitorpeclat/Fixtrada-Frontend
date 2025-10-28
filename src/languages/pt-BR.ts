@@ -1,5 +1,3 @@
-// languages/index.ts (ou onde seu arquivo ptBRStrings está)
-
 export const ptBRStrings = {
   global: {
     attention: "Atenção",
@@ -11,6 +9,7 @@ export const ptBRStrings = {
     serverError: "Não foi possível conectar ao servidor.",
     invalidDate: "Data Inválida",
     invalidPassword: "Senha Inválida",
+    invalidEmail: "E-mail inválido", // <-- ADICIONADO
     backToLogin: "voltar ao login",
     back: "voltar",
     continue: "Continuar",
@@ -20,11 +19,18 @@ export const ptBRStrings = {
     datePlaceholder: "DD/MM/AAAA",
     emailLabel: "Email",
     emailPlaceholder: "exemplo@dominio.com",
+    confirmEmailLabel: "Confirmar E-mail", // <-- ADICIONADO
+    confirmEmailPlaceholder: "Repita seu e-mail", // <-- ADICIONADO
     passwordLabel: "Senha",
     newPasswordLabel: "Nova Senha",
     confirmPasswordLabel: "Confirmar Senha",
     createStrongPassword: "Crie uma senha forte",
     repeatPasswordPlaceholder: "Repita a senha",
+    cancel: "Cancelar",
+    save: "Salvar",
+    cellphoneLabel: "Celular",
+    cellphonePlaceholder: "Digite o seu celular",
+    cellphoneInvalid: "Celular inválido",
   },
 
   login: {
@@ -45,6 +51,7 @@ export const ptBRStrings = {
     dataNascLabel: "Data Nasc",
     correctBirthDate: "Corrija a data de nascimento para continuar.",
     passwordRequirements: "Cumpra todos os requisitos de senha para continuar.",
+    emailsNaoCoincidem: "Os e-mails não coincidem. Verifique seu e-mail.", // <-- ADICIONADO
     successTitle: "Cadastro realizado!",
     successMessage: "Cadastre seu veículo para continuar.",
     button: "Cadastrar",
@@ -139,16 +146,19 @@ export const ptBRStrings = {
     saveSuccessMessage: "Suas informações foram salvas com sucesso.",
   },
 
-  // --- ADICIONADO ---
   securityScreen: {
     title: "Segurança",
     password: "Senha",
     passwordSubtitle: "Última alteração em: 21 de outubro de 2020",
-    recoveryPhone: "Telefone para recuperação",
-    recoveryPhoneSubtitle: "Adicione um número de telefone alternativo",
+    deleteAccount: "Excluir conta",
+    deleteAccountWarning: "Esta ação é irreversível.",
+    deleteAccountModalTitle: "Tem certeza que deseja excluir sua conta?",
+    cpfModalTitle: "Para confirmar, digite seu CPF",
+    yes: "Sim",
+    no: "Não",
+    send: "Enviar",
   },
 
-  // --- ADICIONADO ---
   personalDataScreen: {
     title: "Informações pessoais",
     name: "Nome",

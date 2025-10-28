@@ -1,44 +1,35 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Keyboard, StyleProp, ViewStyle } from 'react-native';
+import React from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  StyleProp,
+  StyleSheet,
+  ViewStyle,
+} from "react-native";
 
 interface Props {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  keyboardVerticalOffset?: number;
 }
-
-export function KeyboardShiftView({ children, style }: Props) {
-  const verticalPosition = useRef(new Animated.Value(0)).current;
-
-  const handleKeyboardShow = (event: any) => {
-    const keyboardHeight = event.endCoordinates.height;
-    Animated.timing(verticalPosition, {
-      toValue: -keyboardHeight / 2,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleKeyboardHide = () => {
-    Animated.timing(verticalPosition, {
-      toValue: 0,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', handleKeyboardShow);
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', handleKeyboardHide);
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
+export function KeyboardShiftView({
+  children,
+  style,
+  keyboardVerticalOffset = 0,
+}: Props) {
   return (
-    <Animated.View style={[style, { transform: [{ translateY: verticalPosition }] }]}>
+    <KeyboardAvoidingView
+      style={[styles.container, style]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={keyboardVerticalOffset}
+    >
       {children}
-    </Animated.View>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

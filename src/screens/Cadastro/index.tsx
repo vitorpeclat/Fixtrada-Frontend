@@ -1,7 +1,13 @@
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useRef, useState } from "react";
-import { Alert, BackHandler, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  BackHandler,
+  ScrollView, // 1. Importado ScrollView
+  TouchableOpacity,
+  View,
+} from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
@@ -15,19 +21,22 @@ import {
   useScreenAnimation,
 } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
-import { strings } from "@/languages"; // <-- IMPLEMENTAÇÃO
+import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus";
-import { styles } from "./styles";
+import { styles } from "./styles"; // Certifique-se que styles.errorText existe aqui
 
 function CadastroContent() {
   const [usuLogin, setUsuLogin] = useState("");
+  const [confirmarEmail, setConfirmarEmail] = useState(""); // Estado para confirmação de email
   const [usuSenha, setUsuSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [usuNome, setUsuNome] = useState("");
   const [usuCpf, setUsuCpf] = useState("");
   const [usuDataNasc, setUsuDataNasc] = useState("");
+  const [usuTelefone, setUsuTelefone] = useState("");
   const [erroData, setErroData] = useState("");
+  const [erroEmail, setErroEmail] = useState(""); // Estado para erro de email
   const [passwordVisibility, setPasswordVisibility] = useState(
     FilterStatus.HIDE
   );
@@ -63,15 +72,29 @@ function CadastroContent() {
     setPasswordCriteria((prev) => ({ ...prev, match: arePasswordsMatching }));
   }, [usuSenha, confirmarSenha]);
 
+  // 2. useEffect para validar os e-mails
+  useEffect(() => {
+    if (confirmarEmail.length > 0 && usuLogin !== confirmarEmail) {
+      setErroEmail(
+        strings.cadastroCliente.emailsNaoCoincidem || "Os e-mails não coincidem."
+      );
+    } else {
+      setErroEmail("");
+    }
+  }, [usuLogin, confirmarEmail]);
+
   async function handleCadastro() {
     const campos = [
       usuNome,
       usuCpf,
       usuDataNasc,
+      usuTelefone,
       usuLogin,
+      confirmarEmail, // 3. Adicionado à verificação de campos
       usuSenha,
       confirmarSenha,
     ];
+
     if (campos.some((campo) => campo.trim() === "")) {
       Alert.alert(strings.global.attention, strings.global.fillAllFields);
       formRef.current?.shake(800);
@@ -85,6 +108,16 @@ function CadastroContent() {
       formRef.current?.shake(800);
       return;
     }
+
+    if (erroEmail) {
+      Alert.alert(
+        strings.global.invalidEmail || "E-mail inválido",
+        strings.cadastroCliente.emailsNaoCoincidem || "Os e-mails não coincidem."
+      );
+      formRef.current?.shake(800);
+      return;
+    }
+
     if (
       !passwordCriteria.length ||
       !passwordCriteria.uppercase ||
@@ -112,6 +145,7 @@ function CadastroContent() {
           usuNome,
           usuCpf: usuCpf.replace(/\D/g, ""),
           usuDataNasc: dataFormatada,
+          usuTelefone: usuTelefone.replace(/\D/g, ""),
           usuLogin,
           usuSenha,
         }),
@@ -120,7 +154,7 @@ function CadastroContent() {
       const data = await response.json();
       if (response.ok) {
         if (data.token) {
-          await AsyncStorage.setItem("userToken", data.token);// await AsyncStorage.getItem("userToken", data.token);
+          await AsyncStorage.setItem("userToken", data.token);
         }
         Alert.alert(
           strings.cadastroCliente.successTitle,
@@ -137,7 +171,13 @@ function CadastroContent() {
   }
 
   return (
-    <View style={styles.container}>
+    // 5. ScrollView substituindo a FlatList
+    <ScrollView
+      style={styles.container}
+      // 6. Aplicado o contentContainerStyle para corrigir o erro
+      contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+      keyboardShouldPersistTaps="handled"
+    >
       <KeyboardShiftView style={styles.content}>
         <AnimatedView style={styles.header}>
           <TouchableOpacity
@@ -173,7 +213,7 @@ function CadastroContent() {
               label={strings.global.cpfLabel}
               placeholder={strings.global.cpfPlaceholder}
               value={usuCpf}
-              onChangeText={setUsuCpf} //onChangeText={getUsuCpf}
+              onChangeText={setUsuCpf}
               type="cpf"
               containerStyle={{ width: "48%" }}
               keyboardType="numeric"
@@ -198,6 +238,17 @@ function CadastroContent() {
           </AnimatedView>
           <AnimatedView>
             <Input
+              label={strings.global.cellphoneLabel}
+              placeholder={strings.global.cellphonePlaceholder}
+              value={usuTelefone}
+              onChangeText={setUsuTelefone}
+              type="cellphone"
+              containerStyle={{ width: "90%" }}
+              keyboardType="numeric"
+            />
+          </AnimatedView>
+          <AnimatedView>
+            <Input
               label={strings.global.emailLabel}
               placeholder={strings.global.emailPlaceholder}
               value={usuLogin}
@@ -207,6 +258,26 @@ function CadastroContent() {
               containerStyle={{ width: "90%" }}
             />
           </AnimatedView>
+
+          {/* 7. Novo Input para Confirmar E-mail */}
+          <AnimatedView>
+            <Input
+              label={strings.global.confirmEmailLabel || "Confirmar E-mail"}
+              placeholder={
+                strings.global.confirmEmailPlaceholder || "Repita seu e-mail"
+              }
+              value={confirmarEmail}
+              onChangeText={setConfirmarEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              containerStyle={{ width: "90%" }}
+            />
+            {/* 8. Exibição da mensagem de erro de e-mail */}
+            {erroEmail ? (
+              <AppText style={styles.errorText}>{erroEmail}</AppText>
+            ) : null}
+          </AnimatedView>
+
           <AnimatedView>
             <Input
               label={strings.global.passwordLabel}
@@ -245,7 +316,7 @@ function CadastroContent() {
           </AnimatedView>
         </Animatable.View>
       </KeyboardShiftView>
-    </View>
+    </ScrollView>
   );
 }
 

@@ -133,9 +133,7 @@ function CadastroVeiculoContent() {
   const validatePlaca = (text: string) => {
     if (!text) return false;
     const cleaned = text.toUpperCase().replace(/[^A-Z0-9]/g, "");
-    // Old format: ABC-1234 or ABC1234 => 3 letters + 4 digits
     const oldFormat = /^[A-Z]{3}[0-9]{4}$/;
-    // Mercosul: ABC1D23 or ABC-1D23 depending on input => 3 letters + 1 digit + 1 letter + 2 digits
     const mercosulFormat = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/;
 
     return oldFormat.test(cleaned) || mercosulFormat.test(cleaned);
