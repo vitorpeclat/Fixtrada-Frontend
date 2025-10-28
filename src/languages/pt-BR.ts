@@ -210,6 +210,7 @@ export const ptBRStrings = {
   passwordValidation: {
     length: "Pelo menos 6 caracteres",
     uppercase: "Uma letra maiúscula",
+    lowercase: "Uma letra minúscula",
     specialChar: "Um caractere especial (!@#$)",
     match: "As senhas coincidem",
   },

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
 import * as Animatable from "react-native-animatable";
 
@@ -11,31 +11,97 @@ import {
   KeyboardShiftView,
   useScreenAnimation,
 } from "@/components";
+import { API_BASE_URL } from "@/config/ip";
 import { strings } from "@/languages";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { styles } from "./styles";
 
 function VerificarEmailContent() {
   const [code, setCode] = useState("");
+  const [userData, setUserData] = useState<any>(null);
+  const [userDataRaw, setUserDataRaw] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef<Animatable.View & { shake: (d: number) => void }>(
     null
   );
   const { handleGoBack, handleNavigatePush } = useScreenAnimation();
 
+  useEffect(() => {
+    AsyncStorage.getItem("userData")
+      .then((value) => {
+        setUserDataRaw(value);
+        if (value) {
+          try {
+            const parsed = JSON.parse(value);
+            setUserData(parsed);
+            if (!parsed || (!parsed.email)) {
+              console.log("userData (parsed) missing email/usuLogin:", parsed);
+            }
+          } catch (e) {
+            console.log("userData (raw, parse error):", value);
+          }
+        } else {
+          console.log("userData not set:", value);
+        }
+      })
+      .catch((err) => {
+        console.log("Erro ao ler userData:", err);
+      });
+  }, []);
+
   function handleVerify() {
+    const finalEmail = (userData?.email)?.trim();
+
+    if (!finalEmail) {
+      console.log(
+        "userData when trying to verify email:",
+        userData ?? userDataRaw
+      );
+      Alert.alert(
+        strings.global.attention,
+        strings.global.emailPlaceholder || "E-mail não encontrado."
+      );
+      formRef.current?.shake(800);
+      return;
+    }
+
     if (!code.trim()) {
       Alert.alert(strings.global.attention, strings.verificarEmail.invalidCode);
       formRef.current?.shake(800);
       return;
     }
 
-    // Front-end only for now: pretend verification succeeded and navigate.
-    Alert.alert(strings.global.success, strings.verificarEmail.successMessage);
-    // After verification, continue to vehicle registration (same flow used after signup)
-    handleNavigatePush("/CadastroVeiculo", "fadeOutUp");
+    // Call backend route to verify email
+    setIsLoading(true);
+    fetch(`${API_BASE_URL}/cliente/verificar-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: finalEmail, codigo: code }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          Alert.alert(
+            strings.global.success,
+            data.message || strings.verificarEmail.successMessage
+          );
+          handleNavigatePush("/CadastroVeiculo", "fadeOutUp");
+        } else if (data && data.message) {
+          Alert.alert(strings.global.attention, data.message);
+          formRef.current?.shake(800);
+        } else {
+          Alert.alert(strings.global.error, strings.global.serverError);
+        }
+      })
+      .catch((err) => {
+        console.error("Erro na verificação de e-mail:", err);
+        Alert.alert(strings.global.error, strings.global.serverError);
+      })
+      .finally(() => setIsLoading(false));
   }
 
   function handleResend() {
-    // Front-end only placeholder
+    // rota deve ser criada para reenvio de código
     Alert.alert(strings.global.success, strings.verificarEmail.resendMessage);
   }
 
@@ -84,9 +150,14 @@ function VerificarEmailContent() {
 
           <AnimatedView style={{ marginTop: 18 }}>
             <Button
-              title={strings.verificarEmail.verifyButton}
+              title={
+                isLoading
+                  ? "Verificando..."
+                  : strings.verificarEmail.verifyButton
+              }
               containerStyle={{ width: "60%" }}
               onPress={handleVerify}
+              disabled={isLoading}
             />
           </AnimatedView>
         </Animatable.View>

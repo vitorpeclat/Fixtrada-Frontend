@@ -10,6 +10,7 @@ import { styles } from "./styles";
 interface PasswordCriteria {
     length: boolean;
     uppercase: boolean;
+    lowercase: boolean;
     specialChar: boolean;
 }
 interface PasswordChangeDetails {
@@ -146,7 +147,7 @@ export function Input({
 
     const handleTextChange = (text: string) => {
         if (type === 'password' && onPasswordChange) {
-            const criteria = { length: text.length >= 6, uppercase: /[A-Z]/.test(text), specialChar: /[!@#$%^&*(),.?":{}|<>_+-=]/.test(text) };
+            const criteria = { length: text.length >= 8, uppercase: /[A-Z]/.test(text), lowercase: /[a-z]/.test(text), specialChar: /[!@#$%^&*(),.?":{}|<>_+-=]/.test(text) };
             onPasswordChange({ text, criteria });
             return;
         }

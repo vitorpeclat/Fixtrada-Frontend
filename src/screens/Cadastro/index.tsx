@@ -43,6 +43,7 @@ function CadastroContent() {
   const [passwordCriteria, setPasswordCriteria] = useState({
     length: false,
     uppercase: false,
+    lowercase: false,
     specialChar: false,
     match: false,
   });
@@ -123,6 +124,7 @@ function CadastroContent() {
     if (
       !passwordCriteria.length ||
       !passwordCriteria.uppercase ||
+      !passwordCriteria.lowercase ||
       !passwordCriteria.specialChar ||
       !passwordCriteria.match
     ) {
@@ -154,15 +156,12 @@ function CadastroContent() {
       });
 
       const data = await response.json();
-      console.log("Cadastro response:", response.status, data);
       if (response.ok) {
         if (data.token) {
           await AsyncStorage.setItem("userToken", data.token); // await AsyncStorage.getItem("userToken", data.token);
+          await AsyncStorage.setItem("userData", JSON.stringify(data.user));
         }
-        Alert.alert(
-          strings.cadastroCliente.successTitle,
-          strings.cadastroCliente.successMessage
-        );
+        Alert.alert(strings.cadastroCliente.successTitle, data.message);
         handleNavigatePush("/VerificarEmail", "fadeOutUp");
       } else {
         Alert.alert(strings.global.registrationFailed, data.message);

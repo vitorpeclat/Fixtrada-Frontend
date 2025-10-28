@@ -10,6 +10,7 @@ import { styles } from './styles';
 interface PasswordCriteria {
     length: boolean;
     uppercase: boolean;
+    lowercase: boolean;
     specialChar: boolean;
     match?: boolean;
 }
@@ -29,6 +30,7 @@ export const PasswordValidation = ({ criteria }: { criteria: PasswordCriteria })
     <View style={styles.criteriaContainer}>
         <ValidationCriteria isMet={criteria.length} text={strings.passwordValidation.length} />
         <ValidationCriteria isMet={criteria.uppercase} text={strings.passwordValidation.uppercase} />
+        <ValidationCriteria isMet={criteria.lowercase} text={strings.passwordValidation.lowercase} />
         <ValidationCriteria isMet={criteria.specialChar} text={strings.passwordValidation.specialChar} />
         {criteria.match !== undefined && (
             <ValidationCriteria isMet={criteria.match} text={strings.passwordValidation.match} />
