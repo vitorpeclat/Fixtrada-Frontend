@@ -76,7 +76,8 @@ function CadastroContent() {
   useEffect(() => {
     if (confirmarEmail.length > 0 && usuLogin !== confirmarEmail) {
       setErroEmail(
-        strings.cadastroCliente.emailsNaoCoincidem || "Os e-mails não coincidem."
+        strings.cadastroCliente.emailsNaoCoincidem ||
+          "Os e-mails não coincidem."
       );
     } else {
       setErroEmail("");
@@ -112,7 +113,8 @@ function CadastroContent() {
     if (erroEmail) {
       Alert.alert(
         strings.global.invalidEmail || "E-mail inválido",
-        strings.cadastroCliente.emailsNaoCoincidem || "Os e-mails não coincidem."
+        strings.cadastroCliente.emailsNaoCoincidem ||
+          "Os e-mails não coincidem."
       );
       formRef.current?.shake(800);
       return;
@@ -152,15 +154,16 @@ function CadastroContent() {
       });
 
       const data = await response.json();
+      console.log("Cadastro response:", response.status, data);
       if (response.ok) {
         if (data.token) {
-          await AsyncStorage.setItem("userToken", data.token);
+          await AsyncStorage.setItem("userToken", data.token); // await AsyncStorage.getItem("userToken", data.token);
         }
         Alert.alert(
           strings.cadastroCliente.successTitle,
           strings.cadastroCliente.successMessage
         );
-        handleNavigatePush("/CadastroVeiculo", "fadeOutUp");
+        handleNavigatePush("/VerificarEmail", "fadeOutUp");
       } else {
         Alert.alert(strings.global.registrationFailed, data.message);
       }

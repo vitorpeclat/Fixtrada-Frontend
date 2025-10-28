@@ -57,6 +57,19 @@ export const ptBRStrings = {
     button: "Cadastrar",
   },
 
+  verificarEmail: {
+    title: "Verificar E-mail",
+    subtitle:
+      "Um código foi enviado para o seu e-mail. Insira-o abaixo para confirmar sua conta.",
+    codeLabel: "Código",
+    codePlaceholder: "Digite o código recebido",
+    verifyButton: "Verificar",
+    resendLink: "Reenviar código",
+    resendMessage: "Um novo código foi enviado para seu e-mail.",
+    successMessage: "E-mail verificado com sucesso!",
+    invalidCode: "Insira o código enviado por e-mail.",
+  },
+
   cadastroVeiculo: {
     title: "Cadastro de Veículo",
     userIdError:
