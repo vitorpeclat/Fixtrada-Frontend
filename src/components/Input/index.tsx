@@ -62,7 +62,16 @@ export function Input({
     ...rest
 }: InputProps) {
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [internalDate, setInternalDate] = useState(new Date());
+    const [internalDate, setInternalDate] = useState(() => {
+        if (value) {
+            const [dia, mes, ano] = value.split('/').map(Number);
+            const date = new Date(ano, mes - 1, dia);
+            if (!isNaN(date.getTime())) {
+                return date;
+            }
+        }
+        return new Date();
+    });
     const [showFuelPicker, setShowFuelPicker] = useState(false);
 
     if (type === 'date' || type === 'age') {
@@ -167,21 +176,17 @@ export function Input({
 
         let formattedText = text;
         if (type === 'cellphone') {
-            if (!text.startsWith("+55 ")) {
-                formattedText = "+55 ";
-            } else {
-                let userInput = text.substring(4).replace(/\D/g, "");
-                userInput = userInput.slice(0, 11);
+            let userInput = text.replace(/\D/g, "");
+            userInput = userInput.slice(0, 11);
 
-                if (userInput.length > 7) {
-                    formattedText = `+55 (${userInput.slice(0, 2)}) ${userInput.slice(2, 7)}-${userInput.slice(7, 11)}`;
-                } else if (userInput.length > 2) {
-                    formattedText = `+55 (${userInput.slice(0, 2)}) ${userInput.slice(2, 7)}`;
-                } else if (userInput.length > 0) {
-                    formattedText = `+55 (${userInput.slice(0, 2)}`;
-                } else {
-                    formattedText = "+55 ";
-                }
+            if (userInput.length > 7) {
+                formattedText = `(${userInput.slice(0, 2)}) ${userInput.slice(2, 7)}-${userInput.slice(7, 11)}`;
+            } else if (userInput.length > 2) {
+                formattedText = `(${userInput.slice(0, 2)}) ${userInput.slice(2, 7)}`;
+            } else if (userInput.length > 0) {
+                formattedText = `(${userInput.slice(0, 2)}`;
+            } else {
+                formattedText = "";
             }
         } else if (type === 'cpf') {
             formattedText = text.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');

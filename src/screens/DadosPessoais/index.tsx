@@ -1,4 +1,5 @@
 import { AppText, Input } from "@/components";
+import { API_BASE_URL } from "@/config/ip";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,6 +14,7 @@ import {
 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   BackHandler,
   Modal,
   Pressable,
@@ -24,17 +26,24 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
 
+import { formatPhoneNumber, unformatPhoneNumber } from "../../utils/formatters";
+
 function DadosPessoaisContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  const [initialData, setInitialData] = useState({ nome: "", email: "", dataNascimento: "", telefone: "" });
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [erroData, setErroData] = useState("");
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalValue, setModalValue] = useState("");
   const [currentField, setCurrentField] = useState<
-    "nome" | "telefone" | "email" | "idioma" | null
+    "nome" | "email" | "dataNascimento" | "idioma" | "telefone" | null
   >(null);
 
   const handleCloseModal = useCallback(() => {
@@ -50,14 +59,20 @@ function DadosPessoaisContent() {
         const raw = await AsyncStorage.getItem("userData");
         if (!raw) return;
         const parsed = JSON.parse(raw);
-        setNome(parsed.nome || "");
-        setEmail(parsed.email || "");
-        const storedPhone = parsed.telefone || "+55 11 99823-6319";
-        setTelefone(
-          storedPhone.startsWith("+55 ")
-            ? storedPhone
-            : `+55 ${storedPhone.replace(/\D/g, "")}`
-        );
+        const [ano, mes, dia] = parsed.dataNascimento.split('-');
+        const dataFormatada = `${dia}/${mes}/${ano}`;
+
+        const initial = {
+          nome: parsed.nome || "",
+          email: parsed.email || "",
+          dataNascimento: dataFormatada || "",
+          telefone: parsed.telefone || "",
+        };
+        setInitialData(initial);
+        setNome(initial.nome);
+        setEmail(initial.email);
+        setDataNascimento(initial.dataNascimento);
+        setTelefone(formatPhoneNumber(initial.telefone));
       } catch (e) {
         console.error("Erro ao recuperar userData do AsyncStorage:", e);
       }
@@ -88,39 +103,77 @@ function DadosPessoaisContent() {
   }, [isModalVisible, router, handleCloseModal]);
 
   const handleOpenModal = (
-    field: "nome" | "telefone" | "email" | "idioma",
+    field: "nome" | "email" | "dataNascimento" | "idioma" | "telefone",
     title: string,
     currentValue: string
   ) => {
     setCurrentField(field);
     setModalTitle(title);
-
-    if (field === "telefone" && !currentValue.startsWith("+55 ")) {
-      setModalValue("+55 ");
-    } else {
-      setModalValue(currentValue);
-    }
-
+    setModalValue(currentValue);
     setIsModalVisible(true);
   };
 
-  const handleSave = () => {
-    console.log(`Salvando campo "${currentField}": ${modalValue}`);
+  const handleUpdateField = () => {
     switch (currentField) {
       case "nome":
         setNome(modalValue);
         break;
+      case "email":
+        // O e-mail não deve ser editável
+        break;
+      case "dataNascimento":
+        setDataNascimento(modalValue);
+        break;
       case "telefone":
         setTelefone(modalValue);
         break;
-      case "email":
-        setEmail(modalValue);
-        break;
-      case "idioma":
-        break;
+    }
+    handleCloseModal();
+  };
+
+  const handleSaveChanges = async () => {
+    const payload: { nome?: string; email?: string; dataNascimento?: string; telefone?: string; } = {};
+
+    if (nome !== initialData.nome) payload.nome = nome;
+    if (dataNascimento !== initialData.dataNascimento) {
+        const [dia, mes, ano] = dataNascimento.split('/');
+        payload.dataNascimento = `${ano}-${mes}-${dia}`;
+    }
+    if (telefone !== initialData.telefone) payload.telefone = unformatPhoneNumber(telefone);
+
+    if (Object.keys(payload).length === 0) {
+      Alert.alert("Nenhuma alteração para salvar.");
+      return;
     }
 
-    handleCloseModal();
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      const response = await fetch(`${API_BASE_URL}/cliente/update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Sucesso", "Seus dados foram atualizados.");
+        const newInitialData = { ...initialData, ...payload };
+        setInitialData(newInitialData);
+        const raw = await AsyncStorage.getItem("userData");
+        const parsed = raw ? JSON.parse(raw) : {};
+        const updatedUserData = { ...parsed, ...payload };
+        await AsyncStorage.setItem("userData", JSON.stringify(updatedUserData));
+      } else {
+        Alert.alert("Erro", responseData.message || "Não foi possível atualizar os dados.");
+      }
+    } catch (error) {
+      console.error("Erro ao salvar os dados:", error);
+      Alert.alert("Erro", "Ocorreu um erro de rede.");
+    }
   };
 
   return (
@@ -147,7 +200,7 @@ function DadosPessoaisContent() {
           <View style={styles.avatar}>
             <UserRound size={80} color={Colors.darkGray} />
           </View>
-          <TouchableOpacity style={styles.editButton} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.editButton} activeOpacity={0.8} onPress={() => Alert.alert("edição realizada")}>
             <Pencil size={18} color={Colors.background} />
           </TouchableOpacity>
         </View>
@@ -155,67 +208,35 @@ function DadosPessoaisContent() {
         <TouchableOpacity
           style={styles.menuItem}
           activeOpacity={0.7}
-          onPress={() =>
-            handleOpenModal("nome", strings.personalDataScreen.name, nome)
-          }
+          onPress={() => handleOpenModal("nome", strings.personalDataScreen.name, nome)}
         >
           <View style={styles.menuItemContent}>
-            <AppText style={styles.menuItemTitle}>
-              {strings.personalDataScreen.name}
-            </AppText>
+            <AppText style={styles.menuItemTitle}>{strings.personalDataScreen.name}</AppText>
             <AppText style={styles.menuItemValue}>{nome}</AppText>
           </View>
           <ChevronRight size={24} color={Colors.gray} />
         </TouchableOpacity>
         <View style={styles.divider} />
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          activeOpacity={0.7}
-          onPress={() =>
-            handleOpenModal(
-              "telefone",
-              strings.personalDataScreen.phone,
-              telefone
-            )
-          }
-        >
+        <View style={styles.menuItem}>
           <View style={[styles.menuItemContent, { alignItems: "center" }]}>
-            <AppText style={styles.menuItemTitle}>
-              {strings.personalDataScreen.phone}
-            </AppText>
-            <View style={styles.valueVerified}>
-              <AppText style={styles.menuItemValue}>{telefone}</AppText>
-              <CheckCircle2
-                size={16}
-                color={Colors.primary}
-                style={{ marginLeft: 6 }}
-              />
-            </View>
-          </View>
-          <ChevronRight size={24} color={Colors.gray} />
-        </TouchableOpacity>
-        <View style={styles.divider} />
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          activeOpacity={0.7}
-          onPress={() =>
-            handleOpenModal("email", strings.global.emailLabel, email)
-          }
-        >
-          <View style={[styles.menuItemContent, { alignItems: "center" }]}>
-            <AppText style={styles.menuItemTitle}>
-              {strings.global.emailLabel}
-            </AppText>
+            <AppText style={styles.menuItemTitle}>{strings.global.emailLabel}</AppText>
             <View style={styles.valueVerified}>
               <AppText style={styles.menuItemValue}>{email}</AppText>
-              <CheckCircle2
-                size={16}
-                color={Colors.primary}
-                style={{ marginLeft: 6 }}
-              />
+              <CheckCircle2 size={16} color={Colors.primary} style={{ marginLeft: 6 }} />
             </View>
+          </View>
+        </View>
+        <View style={styles.divider} />
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          activeOpacity={0.7}
+          onPress={() => handleOpenModal("telefone", strings.global.cellphoneLabel, telefone)}
+        >
+          <View style={styles.menuItemContent}>
+            <AppText style={styles.menuItemTitle}>{strings.global.cellphoneLabel}</AppText>
+            <AppText style={styles.menuItemValue}>{telefone}</AppText>
           </View>
           <ChevronRight size={24} color={Colors.gray} />
         </TouchableOpacity>
@@ -224,24 +245,37 @@ function DadosPessoaisContent() {
         <TouchableOpacity
           style={styles.menuItem}
           activeOpacity={0.7}
-          onPress={() =>
-            handleOpenModal(
-              "idioma",
-              strings.personalDataScreen.language,
-              strings.personalDataScreen.languageSubtitle 
-            )
-          }
+          onPress={() => handleOpenModal("dataNascimento", "Data de Nascimento", dataNascimento)}
         >
           <View style={styles.menuItemContent}>
-            <AppText style={styles.menuItemTitle}>
-              {strings.personalDataScreen.language}
-            </AppText>
-            <AppText style={styles.menuItemValue}>
-              {strings.personalDataScreen.languageSubtitle}
-            </AppText>
+            <AppText style={styles.menuItemTitle}>Data de Nascimento</AppText>
+            <AppText style={styles.menuItemValue}>{dataNascimento}</AppText>
+          </View>
+          <ChevronRight size={24} color={Colors.gray} />
+        </TouchableOpacity>
+        <View style={styles.divider} />
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          activeOpacity={0.7}
+          onPress={() => handleOpenModal("idioma", strings.personalDataScreen.language, strings.personalDataScreen.languageSubtitle)}
+        >
+          <View style={styles.menuItemContent}>
+            <AppText style={styles.menuItemTitle}>{strings.personalDataScreen.language}</AppText>
+            <AppText style={styles.menuItemValue}>{strings.personalDataScreen.languageSubtitle}</AppText>
           </View>
           <ExternalLink size={20} color={Colors.gray} />
         </TouchableOpacity>
+
+        <View style={{ marginTop: 30, paddingHorizontal: 20 }}>
+            <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSave, { width: '100%' }]}
+                onPress={handleSaveChanges}
+            >
+                <AppText style={styles.modalButtonTextSave}>Salvar Alterações</AppText>
+            </TouchableOpacity>
+        </View>
+
       </ScrollView>
       <Modal
         transparent={true}
@@ -261,15 +295,15 @@ function DadosPessoaisContent() {
               value={modalValue}
               onChangeText={setModalValue}
               autoFocus={true}
-              keyboardType={
-                currentField === "email"
-                  ? "email-address"
-                  : currentField === "telefone"
-                  ? "phone-pad"
-                  : "default"
-              }
+              keyboardType={currentField === "telefone" ? "phone-pad" : "default"}
               autoCapitalize={currentField === "nome" ? "words" : "none"}
-              type={currentField === "telefone" ? "cellphone" : "text"}
+              type={currentField === "dataNascimento" ? "date" : currentField === "telefone" ? "cellphone" : "default"}
+              onDateChange={({ date, error }) => {
+                if (currentField === "dataNascimento") {
+                  setModalValue(date);
+                  setErroData(error);
+                }
+              }}
             />
 
             <View style={styles.modalButtonContainer}>
@@ -277,17 +311,13 @@ function DadosPessoaisContent() {
                 style={[styles.modalButton, styles.modalButtonCancel]}
                 onPress={handleCloseModal}
               >
-                <AppText style={styles.modalButtonTextCancel}>
-                  {strings.global.cancel}
-                </AppText>
+                <AppText style={styles.modalButtonTextCancel}>{strings.global.cancel}</AppText>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.modalButtonSave]}
-                onPress={handleSave}
+                onPress={handleUpdateField}
               >
-                <AppText style={styles.modalButtonTextSave}>
-                  {strings.global.save}
-                </AppText>
+                <AppText style={styles.modalButtonTextSave}>{strings.global.save}</AppText>
               </TouchableOpacity>
             </View>
           </Pressable>
