@@ -9,7 +9,7 @@ export const ptBRStrings = {
     serverError: "Não foi possível conectar ao servidor.",
     invalidDate: "Data Inválida",
     invalidPassword: "Senha Inválida",
-    invalidEmail: "E-mail inválido", // <-- ADICIONADO
+    invalidEmail: "E-mail inválido",
     backToLogin: "voltar ao login",
     back: "voltar",
     continue: "Continuar",
@@ -19,8 +19,8 @@ export const ptBRStrings = {
     datePlaceholder: "DD/MM/AAAA",
     emailLabel: "Email",
     emailPlaceholder: "exemplo@dominio.com",
-    confirmEmailLabel: "Confirmar E-mail", // <-- ADICIONADO
-    confirmEmailPlaceholder: "Repita seu e-mail", // <-- ADICIONADO
+    confirmEmailLabel: "Confirmar E-mail",
+    confirmEmailPlaceholder: "Repita seu e-mail", 
     passwordLabel: "Senha",
     newPasswordLabel: "Nova Senha",
     confirmPasswordLabel: "Confirmar Senha",
@@ -51,7 +51,7 @@ export const ptBRStrings = {
     dataNascLabel: "Data Nasc",
     correctBirthDate: "Corrija a data de nascimento para continuar.",
     passwordRequirements: "Cumpra todos os requisitos de senha para continuar.",
-    emailsNaoCoincidem: "Os e-mails não coincidem. Verifique seu e-mail.", // <-- ADICIONADO
+    emailsNaoCoincidem: "Os e-mails não coincidem. Verifique seu e-mail.", 
     successTitle: "Cadastro realizado!",
     successMessage: "Cadastre seu veículo para continuar.",
     button: "Cadastrar",
@@ -59,8 +59,7 @@ export const ptBRStrings = {
 
   verificarEmail: {
     title: "Verificar E-mail",
-    subtitle:
-      "Um código foi enviado para o seu e-mail. Insira-o abaixo para confirmar sua conta.",
+    subtitle:"Um código foi enviado para o seu e-mail. Insira-o abaixo para confirmar sua conta.",
     codeLabel: "Código",
     codePlaceholder: "Digite o código recebido",
     verifyButton: "Verificar",
@@ -72,10 +71,8 @@ export const ptBRStrings = {
 
   cadastroVeiculo: {
     title: "Cadastro de Veículo",
-    userIdError:
-      "Não foi possível encontrar seu ID de usuário. Tente fazer o login novamente.",
-    validationMessage:
-      "Preencha a Marca, Modelo, Ano (AAAA), Quilometragem e Cor com dados válidos.",
+    userIdError:"Não foi possível encontrar seu ID de usuário. Tente fazer o login novamente.",
+    validationMessage:"Preencha a Marca, Modelo, Ano (AAAA), Quilometragem e Cor com dados válidos.",
     successMessage: "Veículo cadastrado com sucesso!",
     unknownError: "Erro desconhecido ao cadastrar veículo.",
     placaLabel: "Placa",
@@ -107,8 +104,7 @@ export const ptBRStrings = {
     correctBirthDate: "Corrija a data de nascimento para continuar.",
     accountFoundMessage: "Cadastro encontrado! Agora crie uma nova senha.",
     newPasswordRequirements: "A nova senha deve cumprir todos os requisitos.",
-    passwordChangedSuccess:
-      "Sua senha foi alterada. Faça o login com sua nova senha.",
+    passwordChangedSuccess:"Sua senha foi alterada. Faça o login com sua nova senha.",
     newPasswordLabel: "Nova Senha",
     confirmNewPasswordLabel: "Confirmar Nova Senha",
     repeatNewPasswordPlaceholder: "Repita a nova senha",
@@ -118,8 +114,7 @@ export const ptBRStrings = {
 
   home: {
     cardTitle: "Seu veículo precisa de atenção?",
-    cardSubtitle:
-      "Agende um serviço de forma rápida e encontre os melhores profissionais perto de você.",
+    cardSubtitle:"Agende um serviço de forma rápida e encontre os melhores profissionais perto de você.",
     scheduleServiceButton: "Agendar um Serviço",
   },
 
@@ -141,8 +136,7 @@ export const ptBRStrings = {
     solicitarButton: "SOLICITAR",
     validationError: "Selecione o tipo de serviço e o veículo para continuar.",
     successTitle: "Solicitação Enviada!",
-    successMessage:
-      "Sua solicitação foi enviada com sucesso. Aguarde o contato de uma oficina.",
+    successMessage:"Sua solicitação foi enviada com sucesso. Aguarde o contato de uma oficina.",
   },
 
   profile: {
@@ -159,7 +153,7 @@ export const ptBRStrings = {
     saveSuccessMessage: "Suas informações foram salvas com sucesso.",
   },
 
-  securityScreen: {
+securityScreen: {
     title: "Segurança",
     password: "Senha",
     passwordSubtitle: "Última alteração em: 21 de outubro de 2020",
@@ -170,6 +164,11 @@ export const ptBRStrings = {
     yes: "Sim",
     no: "Não",
     send: "Enviar",
+    changePasswordTitle: "Alterar Senha",
+  	currentPassword: "Senha Atual",
+    newPassword: "Nova Senha", // --- ADICIONADO ---
+  	confirmNewPassword: "Confirmar Nova Senha", // --- ADICIONADO ---
+  	passwordsDontMatch: "A nova senha e a confirmação não coincidem.",
   },
 
   personalDataScreen: {
@@ -178,6 +177,15 @@ export const ptBRStrings = {
     phone: "Número de telefone",
     language: "Idioma",
     languageSubtitle: "Atualizar idioma do dispositivo",
+    birthDate: "Data de Nascimento",
+    noChanges: "Nenhuma alteração para salvar.",
+    success: "Sucesso",
+    updateSuccess: "Seus dados foram atualizados.",
+    error: "Erro",
+    updateError: "Não foi possível atualizar os dados.",
+    networkError: "Ocorreu um erro de rede.",
+    editAlert: "edição realizada",
+    saveChanges: "Salvar Alterações",
   },
 
   drawerMenu: {
@@ -208,7 +216,7 @@ export const ptBRStrings = {
   },
 
   passwordValidation: {
-    length: "Pelo menos 6 caracteres",
+    length: "Pelo menos 8 caracteres",
     uppercase: "Uma letra maiúscula",
     lowercase: "Uma letra minúscula",
     specialChar: "Um caractere especial (!@#$)",

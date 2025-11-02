@@ -160,6 +160,15 @@ export const enUSStrings = {
     phone: "Phone Number",
     language: "Language",
     languageSubtitle: "Update device language",
+    birthDate: "Birth Date",
+    noChanges: "No changes to save.",
+    success: "Success",
+    updateSuccess: "Your data has been updated.",
+    error: "Error",
+    updateError: "Could not update data.",
+    networkError: "A network error has occurred.",
+    editAlert: "edit successful",
+    saveChanges: "Save Changes",
   },
 
   drawerMenu: {

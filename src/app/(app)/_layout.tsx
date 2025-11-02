@@ -77,6 +77,12 @@ export default function AppLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="DetalhesServico/index"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

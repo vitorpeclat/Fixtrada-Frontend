@@ -6,16 +6,15 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  // --- Cabeçalho ---
   headerIcon: {
     position: "absolute",
     left: 20,
     zIndex: 10,
-    padding: 5, // Área de toque maior
+    padding: 5,
   },
   headerTitle: {
     position: "absolute",
-    top: 0, // 'top' será definido inline
+    top: 0,
     left: -35,
     right: 0,
     textAlign: "center",
@@ -91,25 +90,31 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: "center",
-    flex: 1, // Para ocupar espaço igual
+    flex: 1,
   },
   modalButtonCancel: {
-    backgroundColor: Colors.lightGray, // Cor de fundo para o botão de cancelar
-    marginRight: 10, // Espaço entre os botões
+    backgroundColor: Colors.gray,
+    marginLeft: 10,
   },
-  modalButtonSave: {
-    backgroundColor: Colors.primary, // Cor de fundo para o botão de salvar/confirmar
+  modalButtonConfirm: {
+    backgroundColor: Colors.primary,
+  },
+  modalButtonDelete: {
+    backgroundColor: "red",
+    marginLeft: 10,
   },
   modalButtonTextCancel: {
-    color: Colors.darkGray, // Cor do texto para o botão de cancelar
+    color: Colors.darkGray,
     fontWeight: "bold",
   },
-  modalButtonTextSave: {
-    color: Colors.white, // Cor do texto para o botão de salvar/confirmar
+  modalButtonTextConfirm: {
+    color: Colors.white,
     fontWeight: "bold",
   },
-
-  // --- ESTILOS DO BOTTOM SHEET ---
+  modalButtonTextDelete: {
+    color: Colors.white,
+    fontWeight: "bold",
+  },
   bottomSheetContainer: {
     flex: 1,
     paddingHorizontal: 24,
@@ -127,22 +132,19 @@ export const styles = StyleSheet.create({
     marginBottom: 15,
   },
   bottomSheetHandle: {
-    backgroundColor: Colors.gray, // Cor do "puxador"
+    backgroundColor: Colors.gray,
   },
   bottomSheetBackground: {
-    backgroundColor: Colors.background, // Fundo do modal
+    backgroundColor: Colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    // --- SOMBRA ADICIONADA AQUI ---
-    // iOS Shadow
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: -4, // Sombra para cima
+      height: -4, 
     },
-    shadowOpacity: 0.1, // Opacidade suave
-    shadowRadius: 5,  // Esfumaçado
-    // Android Shadow
+    shadowOpacity: 0.1, 
+    shadowRadius: 5, 
     elevation: 8,
   },
 });

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   BackHandler,
-  ScrollView, // 1. Importado ScrollView
+  ScrollView,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -24,11 +24,11 @@ import { API_BASE_URL } from "@/config/ip";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus";
-import { styles } from "./styles"; // Certifique-se que styles.errorText existe aqui
+import { styles } from "./styles";
 
 function CadastroContent() {
   const [usuLogin, setUsuLogin] = useState("");
-  const [confirmarEmail, setConfirmarEmail] = useState(""); // Estado para confirmação de email
+  const [confirmarEmail, setConfirmarEmail] = useState(""); 
   const [usuSenha, setUsuSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [usuNome, setUsuNome] = useState("");
@@ -36,7 +36,7 @@ function CadastroContent() {
   const [usuDataNasc, setUsuDataNasc] = useState("");
   const [usuTelefone, setUsuTelefone] = useState("");
   const [erroData, setErroData] = useState("");
-  const [erroEmail, setErroEmail] = useState(""); // Estado para erro de email
+  const [erroEmail, setErroEmail] = useState(""); 
   const [passwordVisibility, setPasswordVisibility] = useState(
     FilterStatus.HIDE
   );
@@ -73,7 +73,6 @@ function CadastroContent() {
     setPasswordCriteria((prev) => ({ ...prev, match: arePasswordsMatching }));
   }, [usuSenha, confirmarSenha]);
 
-  // 2. useEffect para validar os e-mails
   useEffect(() => {
     if (confirmarEmail.length > 0 && usuLogin !== confirmarEmail) {
       setErroEmail(
@@ -92,7 +91,7 @@ function CadastroContent() {
       usuDataNasc,
       usuTelefone,
       usuLogin,
-      confirmarEmail, // 3. Adicionado à verificação de campos
+      confirmarEmail,
       usuSenha,
       confirmarSenha,
     ];
@@ -113,9 +112,8 @@ function CadastroContent() {
 
     if (erroEmail) {
       Alert.alert(
-        strings.global.invalidEmail || "E-mail inválido",
-        strings.cadastroCliente.emailsNaoCoincidem ||
-          "Os e-mails não coincidem."
+        strings.global.invalidEmail,
+        strings.cadastroCliente.emailsNaoCoincidem 
       );
       formRef.current?.shake(800);
       return;
@@ -173,10 +171,8 @@ function CadastroContent() {
   }
 
   return (
-    // 5. ScrollView substituindo a FlatList
     <ScrollView
       style={styles.container}
-      // 6. Aplicado o contentContainerStyle para corrigir o erro
       contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
       keyboardShouldPersistTaps="handled"
     >
@@ -261,12 +257,10 @@ function CadastroContent() {
             />
           </AnimatedView>
 
-          {/* 7. Novo Input para Confirmar E-mail */}
           <AnimatedView>
             <Input
-              label={strings.global.confirmEmailLabel || "Confirmar E-mail"}
-              placeholder={
-                strings.global.confirmEmailPlaceholder || "Repita seu e-mail"
+              label={strings.global.confirmEmailLabel}
+              placeholder={ strings.global.confirmEmailPlaceholder 
               }
               value={confirmarEmail}
               onChangeText={setConfirmarEmail}
@@ -274,7 +268,6 @@ function CadastroContent() {
               autoCapitalize="none"
               containerStyle={{ width: "90%" }}
             />
-            {/* 8. Exibição da mensagem de erro de e-mail */}
             {erroEmail ? (
               <AppText style={styles.errorText}>{erroEmail}</AppText>
             ) : null}

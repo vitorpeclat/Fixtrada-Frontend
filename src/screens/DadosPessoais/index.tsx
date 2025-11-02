@@ -43,7 +43,7 @@ function DadosPessoaisContent() {
   const [modalTitle, setModalTitle] = useState("");
   const [modalValue, setModalValue] = useState("");
   const [currentField, setCurrentField] = useState<
-    "nome" | "email" | "dataNascimento" | "idioma" | "telefone" | null
+    "nome" | "email" | "idioma" | "telefone" | null
   >(null);
 
   const handleCloseModal = useCallback(() => {
@@ -103,7 +103,7 @@ function DadosPessoaisContent() {
   }, [isModalVisible, router, handleCloseModal]);
 
   const handleOpenModal = (
-    field: "nome" | "email" | "dataNascimento" | "idioma" | "telefone",
+    field: "nome" | "email" | "idioma" | "telefone",
     title: string,
     currentValue: string
   ) => {
@@ -119,10 +119,7 @@ function DadosPessoaisContent() {
         setNome(modalValue);
         break;
       case "email":
-        // O e-mail não deve ser editável
-        break;
-      case "dataNascimento":
-        setDataNascimento(modalValue);
+        setEmail(modalValue);
         break;
       case "telefone":
         setTelefone(modalValue);
@@ -132,17 +129,14 @@ function DadosPessoaisContent() {
   };
 
   const handleSaveChanges = async () => {
-    const payload: { nome?: string; email?: string; dataNascimento?: string; telefone?: string; } = {};
+    const payload: { nome?: string; email?: string; telefone?: string; } = {};
 
     if (nome !== initialData.nome) payload.nome = nome;
-    if (dataNascimento !== initialData.dataNascimento) {
-        const [dia, mes, ano] = dataNascimento.split('/');
-        payload.dataNascimento = `${ano}-${mes}-${dia}`;
-    }
+    if (email !== initialData.email) payload.email = email;
     if (telefone !== initialData.telefone) payload.telefone = unformatPhoneNumber(telefone);
 
     if (Object.keys(payload).length === 0) {
-      Alert.alert("Nenhuma alteração para salvar.");
+      Alert.alert(strings.personalDataScreen.noChanges);
       return;
     }
 
@@ -160,7 +154,7 @@ function DadosPessoaisContent() {
       const responseData = await response.json();
 
       if (response.ok) {
-        Alert.alert("Sucesso", "Seus dados foram atualizados.");
+        Alert.alert(strings.personalDataScreen.success, strings.personalDataScreen.updateSuccess);
         const newInitialData = { ...initialData, ...payload };
         setInitialData(newInitialData);
         const raw = await AsyncStorage.getItem("userData");
@@ -168,11 +162,11 @@ function DadosPessoaisContent() {
         const updatedUserData = { ...parsed, ...payload };
         await AsyncStorage.setItem("userData", JSON.stringify(updatedUserData));
       } else {
-        Alert.alert("Erro", responseData.message || "Não foi possível atualizar os dados.");
+        Alert.alert(strings.personalDataScreen.error, responseData.message || strings.personalDataScreen.updateError);
       }
     } catch (error) {
       console.error("Erro ao salvar os dados:", error);
-      Alert.alert("Erro", "Ocorreu um erro de rede.");
+      Alert.alert(strings.personalDataScreen.error, strings.personalDataScreen.networkError);
     }
   };
 
@@ -200,7 +194,7 @@ function DadosPessoaisContent() {
           <View style={styles.avatar}>
             <UserRound size={80} color={Colors.darkGray} />
           </View>
-          <TouchableOpacity style={styles.editButton} activeOpacity={0.8} onPress={() => Alert.alert("edição realizada")}>
+          <TouchableOpacity style={styles.editButton} activeOpacity={0.8} onPress={() => Alert.alert(strings.personalDataScreen.editAlert)}>
             <Pencil size={18} color={Colors.background} />
           </TouchableOpacity>
         </View>
@@ -218,15 +212,20 @@ function DadosPessoaisContent() {
         </TouchableOpacity>
         <View style={styles.divider} />
 
-        <View style={styles.menuItem}>
-          <View style={[styles.menuItemContent, { alignItems: "center" }]}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          activeOpacity={0.7}
+          onPress={() => handleOpenModal("email", strings.global.emailLabel, email)}
+        >
+          <View style={styles.menuItemContent}>
             <AppText style={styles.menuItemTitle}>{strings.global.emailLabel}</AppText>
             <View style={styles.valueVerified}>
               <AppText style={styles.menuItemValue}>{email}</AppText>
               <CheckCircle2 size={16} color={Colors.primary} style={{ marginLeft: 6 }} />
             </View>
           </View>
-        </View>
+          <ChevronRight size={24} color={Colors.gray} />
+        </TouchableOpacity>
         <View style={styles.divider} />
 
         <TouchableOpacity
@@ -242,17 +241,12 @@ function DadosPessoaisContent() {
         </TouchableOpacity>
         <View style={styles.divider} />
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          activeOpacity={0.7}
-          onPress={() => handleOpenModal("dataNascimento", "Data de Nascimento", dataNascimento)}
-        >
+                <View style={styles.menuItem}>
           <View style={styles.menuItemContent}>
-            <AppText style={styles.menuItemTitle}>Data de Nascimento</AppText>
+            <AppText style={styles.menuItemTitle}>{strings.personalDataScreen.birthDate}</AppText>
             <AppText style={styles.menuItemValue}>{dataNascimento}</AppText>
           </View>
-          <ChevronRight size={24} color={Colors.gray} />
-        </TouchableOpacity>
+        </View>
         <View style={styles.divider} />
 
         <TouchableOpacity
@@ -272,7 +266,7 @@ function DadosPessoaisContent() {
                 style={[styles.modalButton, styles.modalButtonSave, { width: '100%' }]}
                 onPress={handleSaveChanges}
             >
-                <AppText style={styles.modalButtonTextSave}>Salvar Alterações</AppText>
+                <AppText style={styles.modalButtonTextSave}>{strings.personalDataScreen.saveChanges}</AppText>
             </TouchableOpacity>
         </View>
 
@@ -289,21 +283,14 @@ function DadosPessoaisContent() {
             onPress={(e) => e.stopPropagation()}
           >
             <AppText style={styles.modalTitle}>{modalTitle}</AppText>
-
             <Input
               containerStyle={styles.modalInput}
               value={modalValue}
               onChangeText={setModalValue}
               autoFocus={true}
-              keyboardType={currentField === "telefone" ? "phone-pad" : "default"}
+              keyboardType={currentField === "telefone" ? "phone-pad" : currentField === "email" ? "email-address" : "default"}
               autoCapitalize={currentField === "nome" ? "words" : "none"}
-              type={currentField === "dataNascimento" ? "date" : currentField === "telefone" ? "cellphone" : "default"}
-              onDateChange={({ date, error }) => {
-                if (currentField === "dataNascimento") {
-                  setModalValue(date);
-                  setErroData(error);
-                }
-              }}
+              type={currentField === "telefone" ? "cellphone" : "text"}
             />
 
             <View style={styles.modalButtonContainer}>

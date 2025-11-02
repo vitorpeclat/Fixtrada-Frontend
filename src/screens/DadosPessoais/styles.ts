@@ -54,7 +54,6 @@ export const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: Colors.background,
   },
-  // --- Itens da Lista ---
   menuItem: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -69,26 +68,23 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.primary,
     marginBottom: 4,
-    // REMOVIDO: textAlign: 'left'
   },
   menuItemValue: {
     fontSize: 16,
     fontWeight: "500",
     color: Colors.darkGray,
-    // REMOVIDO: textAlign: 'left'
+    textAlign: "center",
   },
   valueVerified: {
     flexDirection: "row",
     alignItems: "center",
-    // REMOVIDO: justifyContent: 'flex-start'
+    justifyContent: "center",
   },
   divider: {
     height: 1,
     backgroundColor: Colors.gray,
     width: "100%",
   },
-
-  // --- Estilos do Modal ---
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -114,12 +110,6 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
-  // ===================================================================
-  // MUDANÇA 1: Estilo do Input no Modal
-  // As propriedades de estilo (height, border, padding, font, etc.)
-  // são agora gerenciadas pelo componente <Input> e seus próprios estilos.
-  // Mantemos apenas as propriedades de layout, como a margem.
-  // ===================================================================
   modalInput: {
     marginBottom: 24,
   },
@@ -128,7 +118,7 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   modalButton: {
-    flex: 1, // Faz os botões dividirem o espaço
+    flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: "center",
@@ -136,7 +126,7 @@ export const styles = StyleSheet.create({
   },
   modalButtonCancel: {
     backgroundColor: Colors.gray,
-    marginRight: 8, // Espaço entre os botões
+    marginRight: 8,
   },
   modalButtonTextCancel: {
     color: Colors.darkGray,
@@ -145,7 +135,7 @@ export const styles = StyleSheet.create({
   },
   modalButtonSave: {
     backgroundColor: Colors.primary,
-    marginLeft: 8, // Espaço entre os botões
+    marginLeft: 8, 
   },
   modalButtonTextSave: {
     color: Colors.background,

@@ -141,7 +141,7 @@ export function MenuContent(props: DrawerContentComponentProps) {
           <CustomDrawerItem
             icon={Car}
             label={strings.profile.registeredVehicles}
-            onPress={() => {}}
+            onPress={() => router.navigate("/VeiculosCliente")}
           />
           <CustomDrawerItem
             icon={History}

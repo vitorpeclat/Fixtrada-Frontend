@@ -4,6 +4,7 @@ export const styles = StyleSheet.create({
     criteriaContainer: {
         width: '90%',
         marginTop: 8,
+        marginBottom: 8,
         alignSelf: 'center',
     },
     criterionRow: {

@@ -1,10 +1,9 @@
-import { Feather } from '@expo/vector-icons';
-import React from 'react';
-import { View } from 'react-native';
-
 import { AppText } from '@/components/AppText';
 import { strings } from '@/languages'; // <-- IMPLEMENTAÇÃO
 import { Colors } from '@/theme/colors';
+import { Feather } from '@expo/vector-icons';
+import React from 'react';
+import { View } from 'react-native';
 import { styles } from './styles';
 
 interface PasswordCriteria {
