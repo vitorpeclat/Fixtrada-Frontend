@@ -83,6 +83,12 @@ export default function AppLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="Chat/index"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

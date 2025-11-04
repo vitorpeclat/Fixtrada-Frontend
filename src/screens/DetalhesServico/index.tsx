@@ -66,7 +66,7 @@ function DetalhesServicoContent() {
 
   const handleOpenChat = () => {
     Alert.alert("Abrir Chat", "Navegar para a tela de chat com a oficina.");
-    // router.push("/ChatScreen"); // Exemplo de navegação para um chat
+    //router.push("/Chat");
   };
 
   return (
