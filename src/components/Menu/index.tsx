@@ -14,6 +14,7 @@ import {
   Home,
   LogOut,
   LucideIcon,
+  MessageCircle,
   User,
   UserRound,
   Wrench,
@@ -157,6 +158,11 @@ export function MenuContent(props: DrawerContentComponentProps) {
             icon={HelpCircle}
             label={strings.drawerMenu.help}
             onPress={() => router.navigate("/Help")}
+          />
+          <CustomDrawerItem
+            icon={MessageCircle}
+            label={"Chats"} // TODO: Adicionar a 'strings.drawerMenu.chats'
+            onPress={() => router.navigate("/ChatList")}
           />
         </View>
       </DrawerContentScrollView>

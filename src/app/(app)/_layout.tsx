@@ -84,6 +84,12 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="ChatList/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="Chat/index"
         options={{
           href: null,
