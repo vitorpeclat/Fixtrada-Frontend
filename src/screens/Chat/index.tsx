@@ -1,9 +1,10 @@
 import { AppText } from "@/components";
+import { API_BASE_URL } from "@/config/ip";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Send } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -13,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { io, Socket } from "socket.io-client";
 import { styles } from "./styles"; // Estilos no próximo arquivo
 
 // Tipo para uma mensagem
@@ -22,29 +24,22 @@ type Message = {
   senderId: "user" | "shop"; // 'user' é o cliente (azul), 'shop' é a oficina (cinza)
 };
 
-// Dados de exemplo baseados na sua imagem
-const mockMessages: Message[] = [
-  {
-    id: "4",
-    text: "Ok.",
-    senderId: "shop",
-  },
-  {
-    id: "3",
-    text: "A luz da bateria e do motor acenderam.",
-    senderId: "user",
-  },
-  {
-    id: "2",
-    text: "Boa tarde, o carro está fazendo um barulho estranho quando liga e não sai do lugar.",
-    senderId: "user",
-  },
-  {
-    id: "1",
-    text: "Boa tarde, poderia especificar o problema?",
-    senderId: "shop",
-  },
-];
+interface SocketMessage {
+  menID: string; // ID da mensagem (UUID)
+  serviceId: string; // ID do serviço/chat
+  senderId: string; // ID do usuário que enviou (UUID)
+  senderName: string; // Nome de quem enviou
+  content: string; // O texto da mensagem
+  menData: string; // Data da mensagem (formato ISO string)
+}
+
+// Este é o payload que o servidor espera para 'send_message'
+interface SendMessagePayload {
+  serviceId: string;
+  senderId: string; // ID do usuário logado
+  senderName: string; // Nome do usuário logado
+  content: string; // O texto do input
+}
 
 // Componente para a bolha de mensagem
 const MessageBubble = ({ message }: { message: Message }) => {
@@ -77,9 +72,59 @@ const MessageBubble = ({ message }: { message: Message }) => {
 function ChatContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const socketRef = useRef<Socket | null>(null);
+  const { serviceId } = useLocalSearchParams();
+  // TODO: Substituir pelo usuário do contexto de autenticação
+  const currentUser = { id: "mock-user-id", name: "Mock User" };
 
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState(mockMessages); // Estado para as mensagens
+  const [messages, setMessages] = useState<Message[]>([]); // Estado para as mensagens
+
+  const mapSocketMessageToFrontend = (
+    msg: SocketMessage,
+    currentUserId: string
+  ): Message => {
+    return {
+      id: msg.menID,
+      text: msg.content,
+      senderId: msg.senderId === currentUserId ? "user" : "shop",
+    };
+  };
+
+  useEffect(() => {
+    // Conecta ao servidor
+    const socket = io(API_BASE_URL);
+    socketRef.current = socket;
+
+    socket.emit("join_service_chat", serviceId);
+    console.log(`Entrando no chat do serviço: ${serviceId}`);
+
+    socket.on(
+      "chat_history",
+      (data: { serviceId: string; history: SocketMessage[] }) => {
+        console.log("Histórico recebido:", data.history);
+        const mappedHistory = data.history.map((msg) =>
+          mapSocketMessageToFrontend(msg, currentUser.id)
+        );
+        setMessages(mappedHistory.reverse());
+      }
+    );
+
+    socket.on("receive_message", (newMessage: SocketMessage) => {
+      console.log("Nova mensagem recebida:", newMessage);
+      const mappedMessage = mapSocketMessageToFrontend(
+        newMessage,
+        currentUser.id
+      );
+      setMessages((prevMessages) => [mappedMessage, ...prevMessages]);
+    });
+
+    // Função de limpeza para desconectar quando a tela for fechada
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [serviceId, currentUser]); // Depende do serviceId e do usuário
 
   const handleBack = () => {
     router.back();
@@ -87,15 +132,20 @@ function ChatContent() {
 
   const handleSend = () => {
     if (message.trim().length === 0) return;
+    if (!socketRef.current) return; // Garante que o socket está conectado
 
-    const newMessage: Message = {
-      id: (messages.length + 1).toString(),
-      text: message,
-      senderId: "user",
+    const payload: SendMessagePayload = {
+      serviceId: serviceId as string, // Pegue o serviceId (ver Passo 2)
+      senderId: currentUser.id, // Pegue o usuário logado (ver Passo 2)
+      senderName: currentUser.name, // Pegue o usuário logado (ver Passo 2)
+      content: message.trim(),
     };
 
-    setMessages([newMessage, ...messages]); 
-    setMessage(""); 
+    // 1. Emitir a mensagem para o servidor
+    socketRef.current.emit("send_message", payload);
+
+    // 2. Limpar o input
+    setMessage("");
   };
 
   return (
