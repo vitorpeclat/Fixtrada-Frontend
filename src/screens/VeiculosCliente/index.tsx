@@ -1,5 +1,6 @@
 import { AppText, Button } from "@/components"; // Reutilizando seus componentes
 import { API_BASE_URL } from "@/config/ip";
+import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -38,25 +39,46 @@ type Vehicle = {
 function VeiculosClienteContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(true);
   const [vehiclesError, setVehiclesError] = useState<string | null>(null);
+  const [userToken, setUserToken] = useState<string | null>(null);
+
+  // First, get the user token and reset when authentication changes
+  useEffect(() => {
+    const loadToken = async () => {
+      if (!isAuthenticated) {
+        setUserToken(null);
+        setVehicles([]);
+        setVehiclesError(null);
+        setLoadingVehicles(false);
+        return;
+      }
+      const token = await AsyncStorage.getItem("userToken");
+      setUserToken(token);
+    };
+    loadToken();
+  }, [isAuthenticated]);
 
   // Lógica de busca de veículos (reutilizada da HomeContent)
   useEffect(() => {
+    if (!userToken) {
+      setVehicles([]);
+      setVehiclesError(null);
+      setLoadingVehicles(false);
+      return;
+    }
+
     const fetchVehicles = async () => {
       try {
         setLoadingVehicles(true);
-        const token = await AsyncStorage.getItem("userToken");
-        if (!token) {
-          throw new Error("Token não encontrado");
-        }
 
         const res = await fetch(`${API_BASE_URL}/vehicles`, {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${userToken}`,
             Accept: "application/json",
             "Content-Type": "application/json",
           },
@@ -80,7 +102,7 @@ function VeiculosClienteContent() {
     };
 
     fetchVehicles();
-  }, []);
+  }, [userToken]);
 
   const handleBack = () => {
     router.back();

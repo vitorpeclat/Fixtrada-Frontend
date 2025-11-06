@@ -1,5 +1,6 @@
 import { AppText, Input } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
+import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -31,6 +32,7 @@ import { formatPhoneNumber, unformatPhoneNumber } from "../../utils/formatters";
 function DadosPessoaisContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   const [initialData, setInitialData] = useState({ nome: "", email: "", dataNascimento: "", telefone: "" });
   const [nome, setNome] = useState("");
@@ -38,6 +40,7 @@ function DadosPessoaisContent() {
   const [dataNascimento, setDataNascimento] = useState("");
   const [telefone, setTelefone] = useState("");
   const [erroData, setErroData] = useState("");
+  const [userToken, setUserToken] = useState<string | null>(null);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
@@ -53,11 +56,45 @@ function DadosPessoaisContent() {
     setModalValue("");
   }, []);
 
+  // First, get the user token and reset when authentication changes
   useEffect(() => {
+    const loadToken = async () => {
+      if (!isAuthenticated) {
+        setUserToken(null);
+        setNome("");
+        setEmail("");
+        setDataNascimento("");
+        setTelefone("");
+        setInitialData({ nome: "", email: "", dataNascimento: "", telefone: "" });
+        return;
+      }
+      const token = await AsyncStorage.getItem("userToken");
+      setUserToken(token);
+    };
+    loadToken();
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!userToken) {
+      setNome("");
+      setEmail("");
+      setDataNascimento("");
+      setTelefone("");
+      setInitialData({ nome: "", email: "", dataNascimento: "", telefone: "" });
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
         const raw = await AsyncStorage.getItem("userData");
-        if (!raw) return;
+        if (!raw) {
+          setNome("");
+          setEmail("");
+          setDataNascimento("");
+          setTelefone("");
+          setInitialData({ nome: "", email: "", dataNascimento: "", telefone: "" });
+          return;
+        }
         const parsed = JSON.parse(raw);
         const [ano, mes, dia] = parsed.dataNascimento.split('-');
         const dataFormatada = `${dia}/${mes}/${ano}`;
@@ -78,7 +115,7 @@ function DadosPessoaisContent() {
       }
     };
     fetchUserData();
-  }, []);
+  }, [userToken]);
 
   useEffect(() => {
     const handleHardwareBackPress = () => {

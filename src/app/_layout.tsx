@@ -7,6 +7,8 @@ import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuthProvider } from '@/contexts/AuthContext';
+
 export default function RootLayout() {
     return (
         <SafeAreaProvider>
@@ -17,24 +19,26 @@ export default function RootLayout() {
                 }}>
                 <StatusBar style="dark" />
                 <AnimationProvider>
-                    <Drawer
-                        drawerContent={(props: DrawerContentComponentProps) => <MenuContent {...props} />}
-                        screenOptions={{
-                            headerShown: false,
-                            swipeEnabled: true,
-                            drawerStyle: {
-                                backgroundColor: Colors.background,
-                                width: '75%',
-                            },
-                        }}
-                    >
-                        <Stack
+                    <AuthProvider>
+                        <Drawer
+                            drawerContent={(props: DrawerContentComponentProps) => <MenuContent {...props} />}
                             screenOptions={{
                                 headerShown: false,
-                                contentStyle: { backgroundColor: 'transparent' },
+                                swipeEnabled: true,
+                                drawerStyle: {
+                                    backgroundColor: Colors.background,
+                                    width: '75%',
+                                },
                             }}
-                        />
-                    </Drawer>
+                        >
+                            <Stack
+                                screenOptions={{
+                                    headerShown: false,
+                                    contentStyle: { backgroundColor: 'transparent' },
+                                }}
+                            />
+                        </Drawer>
+                    </AuthProvider>
                 </AnimationProvider>
             </SafeAreaView>
         </SafeAreaProvider>

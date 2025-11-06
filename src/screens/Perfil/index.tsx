@@ -1,30 +1,31 @@
 // app/(tabs)/Perfil/index.tsx
 
 import { AppText, Button } from "@/components";
+import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import {
-  Car, // <-- ADICIONADO
-  Lock,
-  Menu,
-  User,
-  UserRound,
+    Car, // <-- ADICIONADO
+    Lock,
+    Menu,
+    User,
+    UserRound,
 } from "lucide-react-native"; // <-- 'Menu' ADICIONADO
 import React, { useEffect, useState } from "react";
 import {
-  ScrollView,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 import {
-  Directions,
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
+    Directions,
+    Gesture,
+    GestureDetector,
+    GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -34,25 +35,55 @@ function PerfilContent() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [userToken, setUserToken] = useState<string | null>(null);
 
+  // First, get the user token and reset when authentication changes
   useEffect(() => {
+    const loadToken = async () => {
+      if (!isAuthenticated) {
+        setUserToken(null);
+        setNome("");
+        setEmail("");
+        return;
+      }
+      const token = await AsyncStorage.getItem("userToken");
+      setUserToken(token);
+    };
+    loadToken();
+  }, [isAuthenticated]);
+
+  // Then, fetch user data whenever the token changes
+  useEffect(() => {
+    if (!userToken) {
+      setNome("");
+      setEmail("");
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
         const raw = await AsyncStorage.getItem("userData");
-        if (!raw) return;
+        if (!raw) {
+          setNome("");
+          setEmail("");
+          return;
+        }
         const parsed = JSON.parse(raw);
-        const userName = parsed.nome;
-        const userEmail = parsed.email;
+        const userName = parsed.nome || "";
+        const userEmail = parsed.email || "";
         setNome(userName);
         setEmail(userEmail);
       } catch (e) {
         console.error("Erro ao recuperar userData do AsyncStorage:", e);
+        setNome("");
+        setEmail("");
       }
     };
     fetchUserData();
-  }, []);
+  }, [userToken]);
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());

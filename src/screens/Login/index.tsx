@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useRef, useState } from "react";
 import { Alert, Image, TouchableOpacity, View } from "react-native";
 import * as Animatable from "react-native-animatable";
@@ -14,11 +13,13 @@ import {
   useScreenAnimation,
 } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
+import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages"; // <-- IMPLEMENTAÇÃO
 import { FilterStatus } from "@/types/FilterStatus";
 import { styles } from "./styles";
 
 function LoginContent() {
+  const { signIn } = useAuth();
   const [passwordStatus, setPasswordStatus] = useState(FilterStatus.HIDE);
   const [checkboxStatus, setCheckboxStatus] = useState(FilterStatus.UNCHECKED);
   const [login, setLogin] = useState("");
@@ -53,8 +54,8 @@ function LoginContent() {
 
       if (response.ok) {
         if (data.token) {
-          await AsyncStorage.setItem("userToken", data.token);
-          await AsyncStorage.setItem("userData", JSON.stringify(data.user));
+          // Use AuthContext signIn to properly set user data
+          await signIn({ ...data.user, token: data.token });
           handleNavigatePush("/Home", "fadeOutUp");
         }
       } else {

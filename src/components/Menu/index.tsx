@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -5,7 +6,7 @@ import {
   DrawerContentComponentProps,
   DrawerContentScrollView,
 } from "@react-navigation/drawer";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import {
   Car,
   ChevronRight,
@@ -19,7 +20,7 @@ import {
   UserRound,
   Wrench,
 } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
@@ -51,17 +52,25 @@ function CustomDrawerItem({
 
 export function MenuContent(props: DrawerContentComponentProps) {
   const { top, bottom } = useSafeAreaInsets();
+  const { signOut, isAuthenticated, user } = useAuth();
 
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
+  // Load user data when authentication state changes or user data changes
   useEffect(() => {
     const loadUser = async () => {
       try {
+        if (!isAuthenticated) {
+          setUserName(null);
+          setUserEmail(null);
+          return;
+        }
+
         const userDataStr = await AsyncStorage.getItem("userData");
         if (userDataStr) {
-          const user = JSON.parse(userDataStr);
-          const rawName = user.nome;
+          const userData = JSON.parse(userDataStr);
+          const rawName = userData.nome;
           let displayName: string | null = null;
           if (rawName) {
             const tokens = String(rawName)
@@ -72,15 +81,54 @@ export function MenuContent(props: DrawerContentComponentProps) {
             else displayName = `${tokens[0]} ${tokens[1]}`; // first and second name
           }
           setUserName(displayName);
-          setUserEmail(user.email);
+          setUserEmail(userData.email);
+        } else {
+          setUserName(null);
+          setUserEmail(null);
         }
       } catch (e) {
         console.warn("Erro ao carregar dados do usuário:", e);
+        setUserName(null);
+        setUserEmail(null);
       }
     };
 
     loadUser();
-  }, []);
+  }, [isAuthenticated, user]);
+
+  // Also refresh when drawer is focused
+  useFocusEffect(
+    useCallback(() => {
+      const loadUser = async () => {
+        try {
+          if (!isAuthenticated) {
+            return;
+          }
+
+          const userDataStr = await AsyncStorage.getItem("userData");
+          if (userDataStr) {
+            const userData = JSON.parse(userDataStr);
+            const rawName = userData.nome;
+            let displayName: string | null = null;
+            if (rawName) {
+              const tokens = String(rawName)
+                .split(/\s+/)
+                .filter((t) => t && t.length > 0);
+              if (tokens.length === 0) displayName = String(rawName);
+              else if (tokens.length === 1) displayName = tokens[0];
+              else displayName = `${tokens[0]} ${tokens[1]}`; // first and second name
+            }
+            setUserName(displayName);
+            setUserEmail(userData.email);
+          }
+        } catch (e) {
+          console.warn("Erro ao carregar dados do usuário:", e);
+        }
+      };
+
+      loadUser();
+    }, [isAuthenticated])
+  );
 
   const handleLogout = () => {
     Alert.alert(
@@ -96,8 +144,12 @@ export function MenuContent(props: DrawerContentComponentProps) {
           style: "destructive",
           onPress: async () => {
             try {
-              await AsyncStorage.removeItem("userToken");
-              await AsyncStorage.removeItem("userData");
+              // Use the AuthContext signOut method to properly clear everything
+              await signOut();
+              // Clear local state
+              setUserName(null);
+              setUserEmail(null);
+              // Navigate to login screen
               router.replace("/Login");
             } catch (e) {
               console.error("Erro ao tentar sair:", e);

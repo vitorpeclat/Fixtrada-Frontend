@@ -1,5 +1,6 @@
 import { AppText, Button } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
+import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -8,16 +9,16 @@ import { useNavigation, useRouter } from "expo-router";
 import { Car, Menu } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  ScrollView,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    ScrollView,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {
-  Directions,
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
+    Directions,
+    Gesture,
+    GestureDetector,
+    GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -44,26 +45,44 @@ function HomeContent() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(false);
   const [vehiclesError, setVehiclesError] = useState<string | null>(null);
+  const [userToken, setUserToken] = useState<string | null>(null);
 
+  // First, get the user token and reset state when authentication changes
   useEffect(() => {
+    const loadToken = async () => {
+      if (!isAuthenticated) {
+        setUserToken(null);
+        setVehicles([]);
+        setVehiclesError(null);
+        return;
+      }
+      const token = await AsyncStorage.getItem("userToken");
+      setUserToken(token);
+    };
+    loadToken();
+  }, [isAuthenticated]);
+
+  // Then, fetch vehicles whenever the token changes
+  useEffect(() => {
+    if (!userToken) {
+      setVehicles([]);
+      setVehiclesError(null);
+      return;
+    }
+
     const fetchVehicles = async () => {
       try {
         setLoadingVehicles(true);
-        const token = await AsyncStorage.getItem("userToken");
-        if (!token) {
-          setVehiclesError("Token não encontrado");
-          setVehicles([]);
-          return;
-        }
 
         const res = await fetch(`${API_BASE_URL}/vehicles`, {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${userToken}`,
             Accept: "application/json",
             "Content-Type": "application/json",
           },
@@ -87,7 +106,7 @@ function HomeContent() {
     };
 
     fetchVehicles();
-  }, []);
+  }, [userToken]);
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
