@@ -1,45 +1,91 @@
 import { AppText, Button } from "@/components";
+import { API_BASE_URL } from "@/config/ip";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
-import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Car, ChevronLeft, Star } from "lucide-react-native";
-import React, { useState } from "react";
-import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { styles } from "./styles"; // Estilos no próximo arquivo
+import { styles } from "./styles";
 
-// Tipo para o status do serviço
-type ServiceStatus = "Incompleto" | "Finalizado" | "Em Andamento";
+// Importar o tipo ServiceItem da tela de histórico
+import type { ServiceItem } from "../Historico/index";
 
-// Dados de exemplo para o serviço (você receberia isso via props ou API)
-const mockServiceDetails = {
-  shopName: "AUTOREPAIR",
-  shopSlogan: "your slogan here",
-  shopCnpj: "12.345.678/0001-90",
-  shopAddress: "Avenida placeholder n°289",
-  shopRating: 5.0,
-  orderNumber: "0019202893",
-  vehicleName: "FUSCA 1980 AMARELO",
-  serviceType: "Elétrico",
-  status: "Incompleto" as ServiceStatus, // Estado inicial "Incompleto"
-  description:
-    "Toda a parte elétrica do carro esta comprometida, quando eu ligo o farol o pisca alerta é acionado junto.",
-};
+// Funções de formatação
+function formatDate(dateStr?: string) {
+  if (!dateStr) return "-";
+  const [year, month, day] = dateStr.split("-");
+  if (!year || !month || !day) return dateStr;
+  return `${day}/${month}/${year}`;
+}
+
+function formatCNPJ(cnpj?: string) {
+  if (!cnpj) return "-";
+  return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+}
+
+function translateStatus(status: string) {
+  switch (status?.toLowerCase()) {
+    case "pendente": return "Pendente";
+    case "incompleto": return "Incompleto";
+    case "finalizado": return "Finalizado";
+    case "em andamento": return "Em Andamento";
+    default: return status;
+  }
+}
 
 function DetalhesServicoContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { serviceId } = useLocalSearchParams();
 
-  // Estado mutável do status do serviço para demonstrar a funcionalidade
-  const [serviceStatus, setServiceStatus] = useState<ServiceStatus>(
-    mockServiceDetails.status
-  );
+  const [service, setService] = useState<ServiceItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchServiceDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const token = await AsyncStorage.getItem("userToken");
+        if (!token) {
+          setError("Usuário não autenticado.");
+          setLoading(false);
+          return;
+        }
+        const response = await fetch(`${API_BASE_URL}/services/${serviceId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok) {
+          throw new Error("Erro ao buscar detalhes do serviço");
+        }
+        const data = await response.json();
+        setService(data);
+      } catch (err: any) {
+        setError(err.message || "Erro desconhecido");
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (serviceId) {
+      fetchServiceDetails();
+    }
+  }, [serviceId]);
 
   const handleBack = () => {
     router.back();
   };
 
   const handleFinalizeService = () => {
+    if (!service) return;
     Alert.alert(
       strings.global.attention,
       "Tem certeza que deseja finalizar este serviço?",
@@ -50,14 +96,29 @@ function DetalhesServicoContent() {
         },
         {
           text: strings.global.continue,
-          onPress: () => {
-            // Lógica para chamar a API e finalizar o serviço
-            // Após sucesso:
-            Alert.alert(
-              strings.global.success,
-              "Serviço finalizado com sucesso!"
-            );
-            setServiceStatus("Finalizado"); // Atualiza o estado para "Finalizado"
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem("userToken");
+              const response = await fetch(`${API_BASE_URL}/services/${service.id}/finalize`, {
+                method: "PATCH",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  Accept: "application/json",
+                },
+              });
+              if (response.ok) {
+                Alert.alert(
+                  strings.global.success,
+                  "Serviço finalizado com sucesso!"
+                );
+                // Atualizar o serviço localmente
+                setService({ ...service, status: "finalizado" });
+              } else {
+                Alert.alert(strings.global.error, "Erro ao finalizar serviço");
+              }
+            } catch (error) {
+              Alert.alert(strings.global.error, "Erro ao finalizar serviço");
+            }
           },
         },
       ]
@@ -65,9 +126,35 @@ function DetalhesServicoContent() {
   };
 
   const handleOpenChat = () => {
-    Alert.alert("Abrir Chat", "Navegar para a tela de chat com a oficina.");
-    //router.push("/Chat");
+    if (!service) return;
+    router.push({
+      pathname: "/Chat",
+      params: { serviceId: service.id },
+    });
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <AppText style={{ marginTop: 16 }}>Carregando detalhes...</AppText>
+      </View>
+    );
+  }
+
+  if (error || !service) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <AppText style={{ color: Colors.secondary, textAlign: "center" }}>
+          {error || "Serviço não encontrado"}
+        </AppText>
+        <Button title="Voltar" onPress={handleBack} containerStyle={{ marginTop: 16 }} />
+      </View>
+    );
+  }
+
+  const status = translateStatus(service.status);
+  const isPending = status === "Pendente" || status === "Incompleto";
 
   return (
     <View style={styles.container}>
@@ -80,8 +167,8 @@ function DetalhesServicoContent() {
           </AppText>
         </TouchableOpacity>
 
-        {/* Botão "Finalizar Serviço" visível apenas se o status for "Incompleto" */}
-        {serviceStatus === "Incompleto" && (
+        {/* Botão "Finalizar Serviço" visível apenas se o status for "Incompleto" ou "Pendente" */}
+        {isPending && (
           <Button
             title="Finalizar Serviço"
             onPress={handleFinalizeService}
@@ -96,41 +183,38 @@ function DetalhesServicoContent() {
         style={styles.scrollContainer}
         contentContainerStyle={[
           styles.scrollContentContainer,
-          { paddingTop: insets.top + 80 }, // Espaço para o header flutuante
+          { paddingTop: insets.top + 80 },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Bloco da Oficina */}
+        {/* Bloco da Oficina/Prestador */}
         <View style={styles.shopBlock}>
-          {/* Logo Placeholder - Substitua por <Image /> */}
           <View style={styles.logoPlaceholder}>
             <Car size={50} color={Colors.darkGray} />
           </View>
           <View style={styles.shopInfo}>
-            <AppText style={styles.shopName}>{mockServiceDetails.shopName}</AppText>
-            <AppText style={styles.shopSlogan}>
-              {mockServiceDetails.shopSlogan}
+            <AppText style={styles.shopName}>
+              {service.prestador?.mecLogin || "Prestador não informado"}
             </AppText>
             <AppText style={styles.shopDetail}>
-              CNPJ: {mockServiceDetails.shopCnpj}
+              CNPJ: {formatCNPJ(service.prestador?.mecCNPJ)}
             </AppText>
-            <AppText style={styles.shopDetail}>
-              {mockServiceDetails.shopAddress}
-            </AppText>
-            <View style={styles.shopRatingContainer}>
-              <AppText style={styles.shopRatingText}>
-                Nota: {mockServiceDetails.shopRating.toFixed(1)}
-              </AppText>
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={18}
-                  color={Colors.gold} // Cor da estrela
-                  fill={i < mockServiceDetails.shopRating ? Colors.gold : "none"} // Preenche estrelas cheias
-                  style={styles.starIcon}
-                />
-              ))}
-            </View>
+            {service.prestador?.mecNota && (
+              <View style={styles.shopRatingContainer}>
+                <AppText style={styles.shopRatingText}>
+                  Nota: {service.prestador.mecNota.toFixed(1)}
+                </AppText>
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={18}
+                    color={Colors.gold}
+                    fill={i < Math.floor(service.prestador?.mecNota || 0) ? Colors.gold : "none"}
+                    style={styles.starIcon}
+                  />
+                ))}
+              </View>
+            )}
           </View>
         </View>
 
@@ -140,7 +224,7 @@ function DetalhesServicoContent() {
         {/* Bloco da Ordem de Serviço */}
         <View style={styles.orderBlock}>
           <AppText style={styles.orderNumber}>
-            Ordem de serviço nº {mockServiceDetails.orderNumber}
+            Ordem de serviço N° {service.codigo || "Não informado"}
           </AppText>
         </View>
 
@@ -149,13 +233,19 @@ function DetalhesServicoContent() {
           <View style={styles.vehicleHeader}>
             <Car size={30} color={Colors.secondary} />
             <AppText style={styles.vehicleName}>
-              {mockServiceDetails.vehicleName}
+              {service.carro?.carMarca} {service.carro?.carModelo} {service.carro?.carAno ? `(${service.carro.carAno})` : ""} - {service.carro?.carPlaca}
             </AppText>
           </View>
           <AppText style={styles.serviceItem}>
             Tipo de serviço:{" "}
             <AppText style={styles.serviceItemValue}>
-              {mockServiceDetails.serviceType}
+              {service.tipoServico?.tseTipoProblema || "-"}
+            </AppText>
+          </AppText>
+          <AppText style={styles.serviceItem}>
+            Data:{" "}
+            <AppText style={styles.serviceItemValue}>
+              {formatDate(service.data)}
             </AppText>
           </AppText>
           <AppText style={styles.serviceItem}>
@@ -163,21 +253,22 @@ function DetalhesServicoContent() {
             <AppText
               style={[
                 styles.serviceItemValue,
-                serviceStatus === "Incompleto" && { color: Colors.secondary }, // Cor laranja para Incompleto
-                serviceStatus === "Finalizado" && { color: Colors.primary }, // Cor azul para Finalizado
+                { color: isPending ? Colors.secondary : Colors.primary },
               ]}
             >
-              {serviceStatus}
+              {status}
             </AppText>
           </AppText>
 
           {/* Descrição do Problema */}
-          <View style={styles.descriptionContainer}>
-            <AppText style={styles.descriptionLabel}>Descrição</AppText>
-            <AppText style={styles.descriptionText}>
-              {mockServiceDetails.description}
-            </AppText>
-          </View>
+          {service.descricao && (
+            <View style={styles.descriptionContainer}>
+              <AppText style={styles.descriptionLabel}>Descrição</AppText>
+              <AppText style={styles.descriptionText}>
+                {service.descricao}
+              </AppText>
+            </View>
+          )}
         </View>
 
         {/* Botão Abrir Chat */}
