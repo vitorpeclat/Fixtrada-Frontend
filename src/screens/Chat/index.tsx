@@ -168,12 +168,18 @@ function ChatContent() {
 
   const handleSend = () => {
     if (message.trim().length === 0) return;
-    if (!socketRef.current || !user) return; // Garante que o socket está conectado
+    if (!socketRef.current) return; // Garante que o socket está conectado
+
+    // VERIFICAÇÃO ADICIONADA: Não envie se o usuário não estiver carregado
+    if (!user) {
+      console.error("Usuário não carregado, não é possível enviar a mensagem.");
+      return;
+    }
 
     const payload: SendMessagePayload = {
       serviceId: serviceId as string,
-      senderId: user.usuID,
-      senderName: user.nome,
+      senderId: user.usuID, // <<< MUDANÇA AQUI
+      senderName: user.usuNome, // <<< MUDANÇA AQUI
       content: message.trim(),
     };
 
