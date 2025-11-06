@@ -105,7 +105,13 @@ function ChatContent() {
   };
 
   useEffect(() => {
-    if (!token || !user) return;
+    // 1. Não fazer nada se o usuário ou token não estiverem prontos
+    if (!user || !token) {
+      return;
+    }
+
+    // 2. Definir o ID do usuário com base no 'user' agora válido
+    const currentUserId = user.usuID || "";
 
     // Conecta ao servidor
     const socket = io(API_BASE_URL, {
@@ -123,7 +129,8 @@ function ChatContent() {
       (data: { serviceId: string; history: SocketMessage[] }) => {
         console.log("Histórico recebido:", data.history);
         const mappedHistory = data.history.map((msg) =>
-          mapSocketMessageToFrontend(msg, user.id)
+          // 3. Usar o 'currentUserId' correto
+          mapSocketMessageToFrontend(msg, currentUserId)
         );
         setMessages(mappedHistory.reverse());
       }
@@ -131,16 +138,29 @@ function ChatContent() {
 
     socket.on("receive_message", (newMessage: SocketMessage) => {
       console.log("Nova mensagem recebida:", newMessage);
-      const mappedMessage = mapSocketMessageToFrontend(newMessage, user.id);
+      const mappedMessage = mapSocketMessageToFrontend(
+        newMessage,
+        // 3. Usar o 'currentUserId' correto
+        currentUserId
+      );
       setMessages((prevMessages) => [mappedMessage, ...prevMessages]);
     });
 
-    // Função de limpeza para desconectar quando a tela for fechada
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err.message);
+    });
+
+    socket.on("auth_error", (msg) => {
+      console.error("Socket authentication error:", msg);
+      // Opcional: Deslogar o usuário ou mostrar um alerta
+    });
+
+    // Função de limpeza
     return () => {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [serviceId, token, user]); // Depende do serviceId e do usuário
+  }, [serviceId, token, user]); // 4. Adicionar 'user' ao array de dependências
 
   const handleBack = () => {
     router.back();
@@ -152,7 +172,7 @@ function ChatContent() {
 
     const payload: SendMessagePayload = {
       serviceId: serviceId as string,
-      senderId: user.id,
+      senderId: user.usuID,
       senderName: user.nome,
       content: message.trim(),
     };
