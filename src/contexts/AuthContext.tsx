@@ -7,6 +7,7 @@ interface AuthContextData {
   isAuthenticated: boolean;
   signIn(user: any): Promise<void>;
   signOut(): Promise<void>;
+  reloadUser(): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -66,8 +67,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  async function reloadUser() {
+    try {
+      const storagedUser = await AsyncStorage.getItem('userData');
+      const storagedToken = await AsyncStorage.getItem('userToken');
+      if (storagedUser && storagedToken) {
+        setUser({ ...JSON.parse(storagedUser), token: storagedToken });
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error('Error reloading user:', error);
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, isAuthenticated, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isAuthenticated, signIn, signOut, reloadUser }}>
       {children}
     </AuthContext.Provider>
   );

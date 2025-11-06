@@ -1,15 +1,16 @@
 import { AppText, Button } from "@/components"; // Reutilizando seus componentes
-import { API_BASE_URL } from "@/config/ip";
 import { useAuth } from "@/contexts/AuthContext";
+import type { Vehicle } from "@/contexts/VehiclesContext";
+import { useVehicles } from "@/contexts/VehiclesContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Plus } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  RefreshControl,
   ScrollView,
   TouchableOpacity,
   View,
@@ -18,91 +19,14 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles"; // Estilos para esta tela (abaixo)
 
-// Definindo o tipo Vehicle (baseado no HomeContent que você enviou)
-type Vehicle = {
-  carID?: string;
-  carPlaca?: string;
-  carMarca?: string;
-  carModelo?: string;
-  carAno?: number;
-  carCor?: string;
-  carKM?: number;
-  carTpCombust?: string;
-  carOpTracao?: string;
-  carOpTrocaOleo?: string;
-  carOpTrocaPneu?: string;
-  carOpRevisao?: string;
-  carAtivo?: boolean;
-  fk_usuario_usuID?: string;
-};
+// Vehicle type centralizado em VehiclesContext
 
 function VeiculosClienteContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loadingVehicles, setLoadingVehicles] = useState(true);
-  const [vehiclesError, setVehiclesError] = useState<string | null>(null);
-  const [userToken, setUserToken] = useState<string | null>(null);
-
-  // First, get the user token and reset when authentication changes
-  useEffect(() => {
-    const loadToken = async () => {
-      if (!isAuthenticated) {
-        setUserToken(null);
-        setVehicles([]);
-        setVehiclesError(null);
-        setLoadingVehicles(false);
-        return;
-      }
-      const token = await AsyncStorage.getItem("userToken");
-      setUserToken(token);
-    };
-    loadToken();
-  }, [isAuthenticated]);
-
-  // Lógica de busca de veículos (reutilizada da HomeContent)
-  useEffect(() => {
-    if (!userToken) {
-      setVehicles([]);
-      setVehiclesError(null);
-      setLoadingVehicles(false);
-      return;
-    }
-
-    const fetchVehicles = async () => {
-      try {
-        setLoadingVehicles(true);
-
-        const res = await fetch(`${API_BASE_URL}/vehicles`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Erro ${res.status}: ${text}`);
-        }
-
-        const data = await res.json();
-        setVehicles(Array.isArray(data) ? data : []);
-        setVehiclesError(null);
-      } catch (err: any) {
-        console.warn("Erro ao buscar veículos:", err);
-        setVehiclesError(err?.message ?? String(err));
-        setVehicles([]);
-      } finally {
-        setLoadingVehicles(false);
-      }
-    };
-
-    fetchVehicles();
-  }, [userToken]);
+  const { vehicles, loading: loadingVehicles, error: vehiclesError, reload } = useVehicles();
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleBack = () => {
     router.back();
@@ -150,7 +74,7 @@ function VeiculosClienteContent() {
       );
     }
 
-    return vehicles.map((v) => (
+    return vehicles.map((v: Vehicle) => (
       <View key={v.carID} style={styles.card}>
         <View style={styles.cardInfo}>
           <View style={styles.infoRow}>
@@ -209,6 +133,22 @@ function VeiculosClienteContent() {
           { paddingTop: insets.top + 80 }, // Espaço para o header flutuante
         ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={async () => {
+              if (refreshing || loadingVehicles) return;
+              setRefreshing(true);
+              try {
+                await reload();
+              } finally {
+                setRefreshing(false);
+              }
+            }}
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
+          />
+        }
       >
         <AppText style={styles.title}>
           {strings.profile.registeredVehicles}
