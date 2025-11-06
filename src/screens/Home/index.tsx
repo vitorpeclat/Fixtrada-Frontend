@@ -1,112 +1,43 @@
 import { AppText, Button } from "@/components";
-import { API_BASE_URL } from "@/config/ip";
 import { useAuth } from "@/contexts/AuthContext";
+import { useVehicles } from "@/contexts/VehiclesContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DrawerActions } from "@react-navigation/native";
 import { useNavigation, useRouter } from "expo-router";
 import { Car, Menu } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
-    Directions,
-    Gesture,
-    GestureDetector,
-    GestureHandlerRootView,
+  Directions,
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
 
-type Vehicle = {
-  carID?: string;
-  carPlaca?: string;
-  carMarca?: string;
-  carModelo?: string;
-  carAno?: number;
-  carCor?: string;
-  carKM?: number;
-  carTpCombust?: string;
-  carOpTracao?: string;
-  carOpTrocaOleo?: string;
-  carOpTrocaPneu?: string;
-  carOpRevisao?: string;
-  carAtivo?: boolean;
-  fk_usuario_usuID?: string;
-};
+// Vehicle type centralizado no VehiclesContext
 
 function HomeContent() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const { vehicles, loading: loadingVehicles, error: vehiclesError, reload } = useVehicles();
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loadingVehicles, setLoadingVehicles] = useState(false);
-  const [vehiclesError, setVehiclesError] = useState<string | null>(null);
-  const [userToken, setUserToken] = useState<string | null>(null);
-
-  // First, get the user token and reset state when authentication changes
+  // Recarrega quando a auth muda (opcional)
   useEffect(() => {
-    const loadToken = async () => {
-      if (!isAuthenticated) {
-        setUserToken(null);
-        setVehicles([]);
-        setVehiclesError(null);
-        return;
-      }
-      const token = await AsyncStorage.getItem("userToken");
-      setUserToken(token);
-    };
-    loadToken();
+    if (isAuthenticated) reload();
   }, [isAuthenticated]);
-
-  // Then, fetch vehicles whenever the token changes
-  useEffect(() => {
-    if (!userToken) {
-      setVehicles([]);
-      setVehiclesError(null);
-      return;
-    }
-
-    const fetchVehicles = async () => {
-      try {
-        setLoadingVehicles(true);
-
-        const res = await fetch(`${API_BASE_URL}/vehicles`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Erro ${res.status}: ${text}`);
-        }
-
-        const data = await res.json();
-        setVehicles(Array.isArray(data) ? data : []);
-        setVehiclesError(null);
-      } catch (err: any) {
-        console.warn("Erro ao buscar veículos:", err);
-        setVehiclesError(err?.message ?? String(err));
-        setVehicles([]);
-      } finally {
-        setLoadingVehicles(false);
-      }
-    };
-
-    fetchVehicles();
-  }, [userToken]);
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
@@ -117,6 +48,16 @@ function HomeContent() {
     .onEnd(() => {
       runOnJS(openDrawer)();
     });
+
+  const onRefresh = useCallback(async () => {
+    if (refreshing || loadingVehicles) return;
+    setRefreshing(true);
+    try {
+      await reload();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, loadingVehicles, reload]);
 
   return (
     <GestureDetector gesture={flingGesture}>
@@ -147,6 +88,14 @@ function HomeContent() {
             paddingTop: insets.top + 70,
           }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[Colors.primary]} // Android
+              tintColor={Colors.primary} // iOS
+            />
+          }
         >
           <View style={styles.contentSection}>
             <View style={styles.card}>

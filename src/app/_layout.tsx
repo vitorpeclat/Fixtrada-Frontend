@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '@/contexts/AuthContext';
+import { VehiclesProvider } from '@/contexts/VehiclesContext';
 
 export default function RootLayout() {
     return (
@@ -20,24 +21,26 @@ export default function RootLayout() {
                 <StatusBar style="dark" />
                 <AnimationProvider>
                     <AuthProvider>
-                        <Drawer
-                            drawerContent={(props: DrawerContentComponentProps) => <MenuContent {...props} />}
-                            screenOptions={{
-                                headerShown: false,
-                                swipeEnabled: true,
-                                drawerStyle: {
-                                    backgroundColor: Colors.background,
-                                    width: '75%',
-                                },
-                            }}
-                        >
-                            <Stack
+                        <VehiclesProvider>
+                            <Drawer
+                                drawerContent={(props: DrawerContentComponentProps) => <MenuContent {...props} />}
                                 screenOptions={{
                                     headerShown: false,
-                                    contentStyle: { backgroundColor: 'transparent' },
+                                    swipeEnabled: true,
+                                    drawerStyle: {
+                                        backgroundColor: Colors.background,
+                                        width: '75%',
+                                    },
                                 }}
-                            />
-                        </Drawer>
+                            >
+                                <Stack
+                                    screenOptions={{
+                                        headerShown: false,
+                                        contentStyle: { backgroundColor: 'transparent' },
+                                    }}
+                                />
+                            </Drawer>
+                        </VehiclesProvider>
                     </AuthProvider>
                 </AnimationProvider>
             </SafeAreaView>

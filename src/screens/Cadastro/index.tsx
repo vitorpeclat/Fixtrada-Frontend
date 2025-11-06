@@ -1,5 +1,4 @@
 import { Feather } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -21,6 +20,7 @@ import {
   useScreenAnimation,
 } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
+import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus";
@@ -83,6 +83,8 @@ function CadastroContent() {
       setErroEmail("");
     }
   }, [usuLogin, confirmarEmail]);
+
+  const { signIn } = useAuth();
 
   async function handleCadastro() {
     const campos = [
@@ -155,9 +157,10 @@ function CadastroContent() {
 
       const data = await response.json();
       if (response.ok) {
-        if (data.token) {
-          await AsyncStorage.setItem("userToken", data.token); // await AsyncStorage.getItem("userToken", data.token);
-          await AsyncStorage.setItem("userData", JSON.stringify(data.user));
+        // Garante que o contexto de autenticação seja atualizado imediatamente após o cadastro
+        if (data.token && data.user) {
+          // O signIn exige que o objeto user tenha a propriedade token
+          await signIn({ ...data.user, token: data.token });
         }
         Alert.alert(strings.cadastroCliente.successTitle, data.message);
         handleNavigatePush("/VerificarEmail", "fadeOutUp");
