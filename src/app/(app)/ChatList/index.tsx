@@ -1,30 +1,16 @@
 import { AppText } from "@/components";
-import { strings } from "@/languages";
+import { API_BASE_URL } from "@/config/ip";
 import { Colors } from "@/theme/colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useNavigation } from "expo-router";
 import { ChevronLeft, MessageCircle } from "lucide-react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { DrawerActions } from "@react-navigation/native";
-
-// Mock data for chat list
-const mockChats = [
-  {
-    id: "1",
-    shopName: "Oficina do Zé",
-    lastMessage: "Boa tarde, poderia especificar o problema?",
-  },
-  {
-    id: "2",
-    shopName: "Auto Elétrica do Bairro",
-    lastMessage: "Ok.",
-  },
-];
 
 type ChatListItem = {
   id: string;
@@ -42,7 +28,9 @@ const ChatListItemComponent = ({ item }: { item: ChatListItem }) => {
         flexDirection: "row",
         alignItems: "center",
       }}
-      onPress={() => router.navigate({ pathname: "/Chat", params: { serviceId: item.id } })}
+      onPress={() =>
+        router.navigate({ pathname: "/Chat", params: { serviceId: item.id } })
+      }
     >
       <MessageCircle size={24} color={Colors.primary} />
       <View style={{ marginLeft: 12, flex: 1 }}>
@@ -57,12 +45,33 @@ const ChatListItemComponent = ({ item }: { item: ChatListItem }) => {
 
 function ChatListContent() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const [chats, setChats] = useState<ChatListItem[]>([]);
 
-  const openDrawer = () => {
-    navigation.dispatch(DrawerActions.openDrawer());
-  };
-  
+  useEffect(() => {
+    const fetchChats = async () => {
+      const token = await AsyncStorage.getItem("userToken");
+      if (token) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/cliente/meus-chats`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const data = await response.json();
+          if (response.ok) {
+            setChats(data);
+          } else {
+            console.error("Failed to fetch chats:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching chats:", error);
+        }
+      }
+    };
+
+    fetchChats();
+  }, []);
+
   const handleBack = () => {
     if (router.canGoBack()) {
       router.back();
@@ -72,7 +81,9 @@ function ChatListContent() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.white, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: Colors.white, paddingTop: insets.top }}
+    >
       <View
         style={{
           flexDirection: "row",
@@ -90,7 +101,7 @@ function ChatListContent() {
         </AppText>
       </View>
       <FlatList
-        data={mockChats}
+        data={chats}
         renderItem={({ item }) => <ChatListItemComponent item={item} />}
         keyExtractor={(item) => item.id}
       />

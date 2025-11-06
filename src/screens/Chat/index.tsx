@@ -2,9 +2,10 @@ import { AppText } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Send } from "lucide-react-native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -74,11 +75,23 @@ function ChatContent() {
   const router = useRouter();
   const socketRef = useRef<Socket | null>(null);
   const { serviceId } = useLocalSearchParams();
-  // TODO: Substituir pelo usuário do contexto de autenticação
-  const currentUser = { id: "mock-user-id", name: "Mock User" };
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]); // Estado para as mensagens
+  const [user, setUser] = useState<any>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      const token = await AsyncStorage.getItem("userToken");
+      const userData = await AsyncStorage.getItem("userData");
+      setToken(token);
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    };
+    loadUserData();
+  }, []);
 
   const mapSocketMessageToFrontend = (
     msg: SocketMessage,
@@ -92,8 +105,14 @@ function ChatContent() {
   };
 
   useEffect(() => {
+    if (!token || !user) return;
+
     // Conecta ao servidor
-    const socket = io(API_BASE_URL);
+    const socket = io(API_BASE_URL, {
+      auth: {
+        token: token,
+      },
+    });
     socketRef.current = socket;
 
     socket.emit("join_service_chat", serviceId);
@@ -104,7 +123,7 @@ function ChatContent() {
       (data: { serviceId: string; history: SocketMessage[] }) => {
         console.log("Histórico recebido:", data.history);
         const mappedHistory = data.history.map((msg) =>
-          mapSocketMessageToFrontend(msg, currentUser.id)
+          mapSocketMessageToFrontend(msg, user.id)
         );
         setMessages(mappedHistory.reverse());
       }
@@ -112,10 +131,7 @@ function ChatContent() {
 
     socket.on("receive_message", (newMessage: SocketMessage) => {
       console.log("Nova mensagem recebida:", newMessage);
-      const mappedMessage = mapSocketMessageToFrontend(
-        newMessage,
-        currentUser.id
-      );
+      const mappedMessage = mapSocketMessageToFrontend(newMessage, user.id);
       setMessages((prevMessages) => [mappedMessage, ...prevMessages]);
     });
 
@@ -124,7 +140,7 @@ function ChatContent() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [serviceId, currentUser]); // Depende do serviceId e do usuário
+  }, [serviceId, token, user]); // Depende do serviceId e do usuário
 
   const handleBack = () => {
     router.back();
@@ -132,12 +148,12 @@ function ChatContent() {
 
   const handleSend = () => {
     if (message.trim().length === 0) return;
-    if (!socketRef.current) return; // Garante que o socket está conectado
+    if (!socketRef.current || !user) return; // Garante que o socket está conectado
 
     const payload: SendMessagePayload = {
-      serviceId: serviceId as string, // Pegue o serviceId (ver Passo 2)
-      senderId: currentUser.id, // Pegue o usuário logado (ver Passo 2)
-      senderName: currentUser.name, // Pegue o usuário logado (ver Passo 2)
+      serviceId: serviceId as string,
+      senderId: user.id,
+      senderName: user.nome,
       content: message.trim(),
     };
 
