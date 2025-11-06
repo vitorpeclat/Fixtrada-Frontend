@@ -178,8 +178,8 @@ function ChatContent() {
 
     const payload: SendMessagePayload = {
       serviceId: serviceId as string,
-      senderId: user.usuID, // <<< MUDANÇA AQUI
-      senderName: user.usuNome, // <<< MUDANÇA AQUI
+      senderId: user.id, // Correção
+      senderName: user.usuNome,
       content: message.trim(),
     };
 
