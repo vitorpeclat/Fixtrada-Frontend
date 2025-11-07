@@ -24,7 +24,6 @@ import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
 
-// Vehicle type centralizado no VehiclesContext
 
 function HomeContent() {
   const insets = useSafeAreaInsets();
@@ -34,7 +33,6 @@ function HomeContent() {
   const { vehicles, loading: loadingVehicles, error: vehiclesError, reload } = useVehicles();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Recarrega quando a auth muda (opcional)
   useEffect(() => {
     if (isAuthenticated) reload();
   }, [isAuthenticated]);
@@ -69,18 +67,6 @@ function HomeContent() {
         >
           <Menu size={45} color={Colors.primary} />
         </TouchableOpacity>
-        <Button
-          title="Ajuda"
-          onPress={() => router.push("/Help")}
-          containerStyle={{
-            position: "absolute",
-            top: insets.top + 10,
-            right: 20,
-            zIndex: 50,
-            width: "auto",
-            paddingHorizontal: 15,
-          }}
-        />
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={{

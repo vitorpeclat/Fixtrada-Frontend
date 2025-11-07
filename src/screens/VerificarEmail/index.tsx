@@ -1,3 +1,4 @@
+import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
 import * as Animatable from "react-native-animatable";
@@ -13,6 +14,7 @@ import {
 } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
 import { strings } from "@/languages";
+import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { styles } from "./styles";
 
@@ -71,7 +73,6 @@ function VerificarEmailContent() {
       return;
     }
 
-    // Call backend route to verify email
     setIsLoading(true);
     fetch(`${API_BASE_URL}/cliente/verificar-email`, {
       method: "POST",
@@ -101,7 +102,6 @@ function VerificarEmailContent() {
   }
 
   function handleResend() {
-    // rota deve ser criada para reenvio de código
     Alert.alert(strings.global.success, strings.verificarEmail.resendMessage);
   }
 
@@ -114,6 +114,7 @@ function VerificarEmailContent() {
             onPress={() => handleGoBack("fadeOutDown")}
             activeOpacity={0.7}
           >
+            <Feather name="chevron-left" size={24} color={Colors.primary} />
             <AppText style={styles.backButtonText}>
               {strings.global.backToLogin}
             </AppText>

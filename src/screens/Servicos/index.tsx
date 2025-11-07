@@ -82,19 +82,6 @@ function ServicosContent() {
         >
           <Menu size={45} color={Colors.primary} />
         </TouchableOpacity>
-        <Button
-          title="Ajuda"
-          onPress={() => router.push("/Help")}
-          containerStyle={{
-            position: "absolute",
-            top: insets.top + 10,
-            right: 20,
-            zIndex: 10,
-            width: "auto",
-            paddingHorizontal: 15,
-          }}
-        />
-
         <View style={[styles.contentContainer, { paddingTop: insets.top + 60 }]}>
           <View style={styles.tabsContainer}>
             <TouchableOpacity

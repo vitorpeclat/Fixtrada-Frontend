@@ -9,29 +9,25 @@ export const styles = StyleSheet.create({
   // --- Cabeçalho ---
   headerContainer: {
     position: "absolute",
-    top: 0,
     left: 0,
     right: 0,
     flexDirection: "row",
-    justifyContent: "center", // Centraliza o título
+    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 10,
     zIndex: 10,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.background, // Fundo do cabeçalho
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray, // Linha divisória
   },
   headerIcon: {
-    position: "absolute",
-    left: 20,
-    padding: 5,
-    // Ajusta o 'top' para alinhar com o insets
-    top: "50%",
-    transform: [{ translateY: -10 }], // Ajuste fino vertical
+    padding: 0,
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: Colors.primary,
+    color: Colors.primary, // Cor do texto
   },
   // --- Conteúdo ---
   scrollContainer: {

@@ -10,7 +10,6 @@ import { router, useFocusEffect } from "expo-router";
 import {
   Car,
   ChevronRight,
-  HelpCircle,
   History,
   Home,
   LogOut,
@@ -18,7 +17,7 @@ import {
   MessageCircle,
   User,
   UserRound,
-  Wrench,
+  Wrench
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
@@ -207,13 +206,8 @@ export function MenuContent(props: DrawerContentComponentProps) {
             onPress={() => router.navigate("/Perfil")}
           />
           <CustomDrawerItem
-            icon={HelpCircle}
-            label={strings.drawerMenu.help}
-            onPress={() => router.navigate("/Help")}
-          />
-          <CustomDrawerItem
             icon={MessageCircle}
-            label={"Chats"} // TODO: Adicionar a 'strings.drawerMenu.chats'
+            label={strings.drawerMenu.chat}
             onPress={() => router.navigate("/ChatList")}
           />
         </View>

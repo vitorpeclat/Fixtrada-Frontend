@@ -184,20 +184,20 @@ function HistoricoContent() {
     <GestureDetector gesture={flingGesture}>
       <View style={styles.container}>
         {/* Cabeçalho */}
-        <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
+        <View style={[styles.headerContainer, { top: insets.top }]}>
           <TouchableOpacity
             style={styles.headerIcon}
             onPress={openDrawer}
             activeOpacity={0.7}
           >
-            <Menu size={30} color={Colors.primary} />
+            <Menu size={45} color={Colors.primary} />
           </TouchableOpacity>
           <AppText style={styles.headerTitle}>
             {strings.drawerMenu.history}
           </AppText>
+          <View style={{ width: 40 }} />
         </View>
 
-        {/* Conteúdo da Página */}
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={[

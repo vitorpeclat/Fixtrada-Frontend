@@ -58,7 +58,7 @@ export const ptBRStrings = {
   },
 
   verificarEmail: {
-    title: "Verificar E-mail",
+    title: "Validação de Código",
     subtitle:"Um código foi enviado para o seu e-mail. Insira-o abaixo para confirmar sua conta.",
     codeLabel: "Código",
     codePlaceholder: "Digite o código recebido",
@@ -197,6 +197,7 @@ securityScreen: {
     profile: "Perfil",
     help: "Ajuda",
     logout: "Sair",
+    chat: "Chats",
     logoutConfirmTitle: "Confirmar Saída",
     logoutConfirmMessage: "Você tem certeza que deseja sair?",
     logoutCancel: "Cancelar",
@@ -221,5 +222,9 @@ securityScreen: {
     lowercase: "Uma letra minúscula",
     specialChar: "Um caractere especial (!@#$)",
     match: "As senhas coincidem",
+  },
+
+  chatsScreen: {
+    noActiveChats: "Nenhum chat ativo",
   },
 };

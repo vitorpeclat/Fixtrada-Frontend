@@ -74,18 +74,6 @@ function PerfilContent() {
         >
           <Menu size={45} color={Colors.primary} />
         </TouchableOpacity>
-        <Button
-          title={strings.profile.help}
-          onPress={() => router.push("/Help")}
-          containerStyle={{
-            position: "absolute",
-            top: insets.top + 10,
-            right: 20,
-            zIndex: 50,
-            width: "auto",
-            paddingHorizontal: 15,
-          }}
-        />
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={[
