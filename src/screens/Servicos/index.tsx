@@ -16,6 +16,7 @@ import {
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -133,9 +134,27 @@ function ServicosContent() {
               />
             </View>
             <View style={[styles.tabContent, { width: width }]}>
-              <AppText style={styles.messageText}>
-                Mapa
-              </AppText>
+              <MapView
+                provider={PROVIDER_GOOGLE}
+                style={{ flex: 1, width: '100%' }}
+                initialRegion={{
+                  latitude: -23.5505,
+                  longitude: -46.6333,
+                  latitudeDelta: 0.0922,
+                  longitudeDelta: 0.0421,
+                }}
+                showsUserLocation={true}
+                showsMyLocationButton={true}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: -23.5505,
+                    longitude: -46.6333,
+                  }}
+                  title="São Paulo"
+                  description="Localização padrão"
+                />
+              </MapView>
             </View>
           </Animated.View>
         </View>
