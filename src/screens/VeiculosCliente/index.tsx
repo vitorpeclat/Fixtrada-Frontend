@@ -9,7 +9,6 @@ import { ChevronLeft, Plus } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   RefreshControl,
   ScrollView,
   TouchableOpacity,
@@ -39,9 +38,7 @@ function VeiculosClienteContent() {
 
   const handleDetails = (vehicleId?: string) => {
     if (!vehicleId) return;
-    // Navega para a tela de detalhes (exemplo)
-    Alert.alert("Ver Detalhes", `Implementar navegação para o veículo ID: ${vehicleId}`);
-    // router.push(`/(tabs)/profile/veiculo/${vehicleId}`);
+    router.push({ pathname: "/DetalhesVeiculo", params: { id: vehicleId } });
   };
 
   // Renderiza o conteúdo da lista

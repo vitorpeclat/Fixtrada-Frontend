@@ -78,6 +78,18 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="DetalhesVeiculo/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="UpdateVeiculo/index"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="ChatList/index"
         options={{
           href: null,

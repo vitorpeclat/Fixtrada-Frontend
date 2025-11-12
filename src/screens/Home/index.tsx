@@ -5,6 +5,7 @@ import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { DrawerActions } from "@react-navigation/native";
 import { useNavigation, useRouter } from "expo-router";
+// @ts-ignore - adicionar tipo para nova rota dinâmica
 import { Car, Menu, Plus } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -59,10 +60,7 @@ function HomeContent() {
 
   const handleDetails = (vehicleId?: string) => {
     if (!vehicleId) return;
-    // Mantemos o mesmo comportamento da tela VeiculosCliente (alert placeholder)
-    alert(`Implementar navegação para o veículo ID: ${vehicleId}`);
-    // Exemplo de futura navegação:
-    // router.push(`/(tabs)/profile/veiculo/${vehicleId}`);
+    router.push({ pathname: "/DetalhesVeiculo", params: { id: vehicleId } });
   };
 
   return (
