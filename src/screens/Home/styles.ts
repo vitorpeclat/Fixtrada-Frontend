@@ -94,4 +94,57 @@ export const styles = StyleSheet.create({
   vehicleDataValue: {
     color: Colors.darkGray,
   },
+  // --- Lista de veículos no padrão da tela VeiculosCliente ---
+  vehicleItemCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    marginBottom: 16,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 4,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    width: "100%",
+  },
+  vehicleItemInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
+  vehicleInfoRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginBottom: 6,
+  },
+  vehicleLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: Colors.primary,
+    textAlign: "left",
+    lineHeight: 20,
+  },
+  vehicleValue: {
+    fontSize: 14,
+    color: Colors.darkGray,
+    fontWeight: "500",
+    textAlign: "left",
+    marginLeft: 6,
+    flexShrink: 1,
+    lineHeight: 20,
+  },
+  detailsButton: {
+    flexShrink: 0,
+    width: "auto",
+    paddingHorizontal: 16,
+    height: 44,
+  },
+  detailsButtonText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: Colors.white,
+  },
 });

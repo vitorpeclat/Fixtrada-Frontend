@@ -5,7 +5,7 @@ import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { DrawerActions } from "@react-navigation/native";
 import { useNavigation, useRouter } from "expo-router";
-import { Car, Menu } from "lucide-react-native";
+import { Car, Menu, Plus } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -56,6 +56,14 @@ function HomeContent() {
       setRefreshing(false);
     }
   }, [refreshing, loadingVehicles, reload]);
+
+  const handleDetails = (vehicleId?: string) => {
+    if (!vehicleId) return;
+    // Mantemos o mesmo comportamento da tela VeiculosCliente (alert placeholder)
+    alert(`Implementar navegação para o veículo ID: ${vehicleId}`);
+    // Exemplo de futura navegação:
+    // router.push(`/(tabs)/profile/veiculo/${vehicleId}`);
+  };
 
   return (
     <GestureDetector gesture={flingGesture}>
@@ -114,42 +122,42 @@ function HomeContent() {
                 <AppText>Nenhum veículo cadastrado</AppText>
               ) : (
                 vehicles.map((v: any, idx: number) => {
-                  const placa = v.carPlaca ?? "-";
-                  const marca = v.carMarca ?? "-";
-                  const modelo = v.carModelo ?? "-";
                   const key = v.carID ?? idx.toString();
-
                   return (
-                    <View key={key} style={styles.vehicleCard}>
-                      <View style={styles.vehicleIconContainer}>
-                        <Car size={36} color={Colors.primary} />
-                      </View>
-                      <View style={styles.vehicleInfoContainer}>
-                        <View style={styles.vehicleDataRow}>
-                          <AppText style={styles.vehicleDataLabel}>
-                            Placa:
+                    <View key={key} style={styles.vehicleItemCard}>
+                      <View style={styles.vehicleItemInfo}>
+                        <View style={styles.vehicleInfoRow}>
+                          <AppText style={styles.vehicleLabel}>
+                            {strings.cadastroVeiculo.marcaLabel}:
                           </AppText>
-                          <AppText style={styles.vehicleDataValue}>
-                            {placa}
+                          <AppText style={styles.vehicleValue}>
+                            {v.carMarca || "-"}
                           </AppText>
                         </View>
-                        <View style={styles.vehicleDataRow}>
-                          <AppText style={styles.vehicleDataLabel}>
-                            Marca:
+                        <View style={styles.vehicleInfoRow}>
+                          <AppText style={styles.vehicleLabel}>
+                            {strings.cadastroVeiculo.modeloLabel}:
                           </AppText>
-                          <AppText style={styles.vehicleDataValue}>
-                            {marca}
+                          <AppText style={styles.vehicleValue}>
+                            {v.carModelo || "-"}
                           </AppText>
                         </View>
-                        <View style={styles.vehicleDataRow}>
-                          <AppText style={styles.vehicleDataLabel}>
-                            Modelo:
+                        <View style={styles.vehicleInfoRow}>
+                          <AppText style={styles.vehicleLabel}>
+                            {strings.cadastroVeiculo.anoLabel}:
                           </AppText>
-                          <AppText style={styles.vehicleDataValue}>
-                            {modelo}
+                          <AppText style={styles.vehicleValue}>
+                            {v.carAno || "-"}
                           </AppText>
                         </View>
                       </View>
+                      <Button
+                        title="Mais detalhes"
+                        icon={<Plus size={18} color={Colors.white} />}
+                        onPress={() => handleDetails(v.carID)}
+                        containerStyle={styles.detailsButton}
+                        textStyle={styles.detailsButtonText}
+                      />
                     </View>
                   );
                 })
