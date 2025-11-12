@@ -55,6 +55,14 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     padding: 30,
     gap: 24,
+    flex: 1,
+  },
+  mapContainer: {
+    flex: 1,
+    width: '100%',
+    minHeight: 300,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   carImage: {
     marginBottom: 16,

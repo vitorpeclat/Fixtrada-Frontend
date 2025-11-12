@@ -116,47 +116,51 @@ function ServicosContent() {
             </TouchableOpacity>
           </View>
 
-          <Animated.View style={[styles.bodyContainer, animatedStyle]}>
-            <View style={[styles.tabContent, { width: width }]}>
-              <Car
-                size={150}
-                color={Colors.secondary}
-                strokeWidth={1.5}
-                style={styles.carImage}
-              />
-              <AppText style={styles.messageText}>
-                {strings.services.noServiceRequested}
-              </AppText>
-              <Button
-                title={strings.services.requestServiceButton}
-                onPress={() => router.push("/SolicitarServico")}
-                containerStyle={styles.button}
-              />
-            </View>
-            <View style={[styles.tabContent, { width: width }]}>
-              <MapView
-                provider={PROVIDER_GOOGLE}
-                style={{ flex: 1, width: '100%' }}
-                initialRegion={{
-                  latitude: -23.5505,
-                  longitude: -46.6333,
-                  latitudeDelta: 0.0922,
-                  longitudeDelta: 0.0421,
-                }}
-                showsUserLocation={true}
-                showsMyLocationButton={true}
-              >
-                <Marker
-                  coordinate={{
-                    latitude: -23.5505,
-                    longitude: -46.6333,
-                  }}
-                  title="São Paulo"
-                  description="Localização padrão"
+          <View style={{ width: width, overflow: 'hidden', flex: 1 }}>
+            <Animated.View style={[styles.bodyContainer, { width: width * 2 }, animatedStyle]}>
+              <View style={[styles.tabContent, { width: width }]}> 
+                <Car
+                  size={150}
+                  color={Colors.secondary}
+                  strokeWidth={1.5}
+                  style={styles.carImage}
                 />
-              </MapView>
-            </View>
-          </Animated.View>
+                <AppText style={styles.messageText}>
+                  {strings.services.noServiceRequested}
+                </AppText>
+                <Button
+                  title={strings.services.requestServiceButton}
+                  onPress={() => router.push("/SolicitarServico")}
+                  containerStyle={styles.button}
+                />
+              </View>
+              <View style={[styles.tabContent, { width: width }]}> 
+                <View style={styles.mapContainer}>
+                  <MapView
+                    provider={PROVIDER_GOOGLE}
+                    style={{ flex: 1, width: '100%' }}
+                    initialRegion={{
+                      latitude: -23.5505,
+                      longitude: -46.6333,
+                      latitudeDelta: 0.0922,
+                      longitudeDelta: 0.0421,
+                    }}
+                    showsUserLocation={true}
+                    showsMyLocationButton={true}
+                  >
+                    <Marker
+                      coordinate={{
+                        latitude: -23.5505,
+                        longitude: -46.6333,
+                      }}
+                      title="São Paulo"
+                      description="Localização padrão"
+                    />
+                  </MapView>
+                </View>
+              </View>
+            </Animated.View>
+          </View>
         </View>
       </View>
     </GestureDetector>

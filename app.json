@@ -15,7 +15,7 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Este aplicativo precisa acessar sua localização para encontrar o endereço do serviço."
       },
       "config": {
-        "googleMapsApiKey": "AIzaSyDKxz1UV_iCF7pw-shcuerXPp2aPyG0sMA"
+        "googleMapsApiKey": ""
       }
     },
     "android": {
