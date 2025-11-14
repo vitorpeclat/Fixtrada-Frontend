@@ -20,6 +20,9 @@ import {
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
+import { useAuth } from "@/contexts/AuthContext"; // Substitua pelo caminho real se for diferente
+import { api } from "@/screens/ChatList/api"; // Substitua pelo caminho real se for diferente
+
 
 type ChatSummary = {
   id: string;
@@ -39,12 +42,30 @@ function ChatListContent() {
   const [loading, setLoading] = useState(true);
   const [chats, setChats] = useState<ChatSummary[] | null>(null);
 
+  const { user } = useAuth();
+
   useEffect(() => {
-    setTimeout(() => {
-      setChats([]);
-      setLoading(false);
-    }, 1500);
-  }, []);
+    const fetchChats = async () => {
+      // Garante que o usuário está logado antes de buscar
+      if (!user) {
+        setChats([]);
+        setLoading(false);
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        const response = await api.get('/cliente/meus-chats');
+        setChats(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar chats:", error);
+        setChats([]); // Define como vazio em caso de erro para mostrar a mensagem correta
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchChats();
+  }, [user]);
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
@@ -56,6 +77,8 @@ function ChatListContent() {
     });
 
   const handleChatPress = (item: ChatSummary) => {
+    // Navega para a tela de chat, passando o ID do chat
+    router.push(`/Chat?chatId=${item.id}`);
   };
 
   const renderChatItem = ({ item }: { item: ChatSummary }) => (
