@@ -11,7 +11,7 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     // Pega o token do usuário que foi salvo no AsyncStorage durante o login
-    const token = await AsyncStorage.getItem('@Fixtrada:token');
+    const token = await AsyncStorage.getItem('userToken');
 
     // Se o token existir, adiciona ao cabeçalho 'Authorization'
     if (token) {
