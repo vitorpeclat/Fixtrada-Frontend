@@ -17,6 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { io, Socket } from "socket.io-client";
 import { styles } from "./styles"; // Seus estilos corretos
+import { api } from "../ChatList/api"; // Reutilizando a instância da api
 
 // Define os tipos de mensagem
 type Message = {
@@ -72,20 +73,14 @@ export default function ChatScreen() {
     // --- Busca mensagens antigas ---
     const fetchChatDetails = async () => {
       try {
-        // (Você precisa criar essa rota no backend)
-        // Ex: GET /chats/:chatId/messages
-        const response = await fetch(`${API_BASE_URL}/chats/${chatId}/messages`, {
-          headers: {
-            Authorization: `Bearer ${user.token}`, // Use o token do useAuth
-          },
-        });
-        const data = await response.json();
+        // Usando a instância 'api' que já injeta o token de autorização
+        const response = await api.get(`/chats/${chatId}/messages`);
 
-        if (response.ok) {
-          setMessages(data.messages.reverse()); // Inverte para ordem cronológica
-          setShopName(data.shopName); // Pega o nome da oficina
+        if (response.status === 200) {
+          setMessages(response.data.messages.reverse()); // Inverte para ordem cronológica
+          setShopName(response.data.shopName); // Pega o nome da oficina
         } else {
-          console.error("Falha ao buscar mensagens:", data.message);
+          console.error("Falha ao buscar mensagens:", response.data.message);
         }
       } catch (error) {
         console.error("Erro ao buscar chat:", error);
