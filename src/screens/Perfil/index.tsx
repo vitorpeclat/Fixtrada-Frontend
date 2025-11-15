@@ -41,7 +41,7 @@ function PerfilContent() {
   // Atualiza dados no contexto quando autenticado (evita usar AsyncStorage direto)
   useEffect(() => {
     if (isAuthenticated) reloadUser();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, reloadUser]);
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());

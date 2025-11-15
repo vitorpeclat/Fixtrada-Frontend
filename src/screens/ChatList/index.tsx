@@ -20,19 +20,16 @@ import {
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
-import { useAuth } from "@/contexts/AuthContext"; // Substitua pelo caminho real se for diferente
-import { api } from "@/screens/ChatList/api"; // Substitua pelo caminho real se for diferente
+import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
 
 
 type ChatSummary = {
   id: string;
   shopName: string;
   lastMessage: string;
-  timestamp: string;
-  unreadCount: number;
-  logo?: any;
+  serviceId?: string;
 };
-
 
 function ChatListContent() {
   const insets = useSafeAreaInsets();
@@ -46,7 +43,6 @@ function ChatListContent() {
 
   useEffect(() => {
     const fetchChats = async () => {
-      // Garante que o usuário está logado antes de buscar
       if (!user) {
         setChats([]);
         setLoading(false);
@@ -59,13 +55,14 @@ function ChatListContent() {
         setChats(response.data);
       } catch (error) {
         console.error("Erro ao buscar chats:", error);
-        setChats([]); // Define como vazio em caso de erro para mostrar a mensagem correta
+        setChats([]);
       } finally {
         setLoading(false);
       }
     };
     fetchChats();
   }, [user]);
+
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
@@ -77,8 +74,7 @@ function ChatListContent() {
     });
 
   const handleChatPress = (item: ChatSummary) => {
-    // Navega para a tela de chat, passando o ID do chat
-    router.push(`/Chat?chatId=${item.id}`);
+    router.push({ pathname: "/Chat", params: { chatId: item.id, serviceId: item.serviceId } });
   };
 
   const renderChatItem = ({ item }: { item: ChatSummary }) => (
@@ -95,16 +91,6 @@ function ChatListContent() {
         <AppText style={styles.lastMessage} numberOfLines={1}>
           {item.lastMessage}
         </AppText>
-      </View>
-
-
-      <View style={styles.chatMeta}>
-        <AppText style={styles.timestamp}>{item.timestamp}</AppText>
-        {item.unreadCount > 0 && (
-          <View style={styles.unreadBadge}>
-            <AppText style={styles.unreadText}>{item.unreadCount}</AppText>
-          </View>
-        )}
       </View>
     </TouchableOpacity>
   );

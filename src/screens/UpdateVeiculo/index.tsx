@@ -1,5 +1,4 @@
 import { Feather } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -18,12 +17,12 @@ import {
   Input,
   useScreenAnimation,
 } from "@/components";
-import { API_BASE_URL } from "@/config/ip";
 import { useVehicles } from "@/contexts/VehiclesContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { useLocalSearchParams } from "expo-router";
 import { styles } from "./styles";
+import api from "@/lib/api";
 
 type AnimatableViewRef = Animatable.View &
   View & {
@@ -53,7 +52,6 @@ function UpdateVeiculoContent() {
   const optionalRef1 = useRef<AnimatableViewRef>(null);
   const optionalRef2 = useRef<AnimatableViewRef>(null);
 
-  // Helper para converter ISO (YYYY-MM-DD) para BR (DD/MM/YYYY) sem fuso
   const isoToBr = (valor?: string | null) => {
     if (!valor) return "";
     const onlyDate = valor.split("T")[0];
@@ -61,10 +59,9 @@ function UpdateVeiculoContent() {
       const [y, m, d] = onlyDate.split("-");
       return `${d}/${m}/${y}`;
     }
-    return valor; // já em outro formato
+    return valor;
   };
 
-  // Preencher campos com dados do veículo (convertendo datas para dd/mm/aaaa)
   useEffect(() => {
     if (vehicle) {
       setPlaca(vehicle.carPlaca || "");
@@ -118,43 +115,35 @@ function UpdateVeiculoContent() {
     }
 
     try {
-      const token = await AsyncStorage.getItem("userToken");
       const placaFormatada = placa.toUpperCase().replace(/[^A-Z0-9]/g, "");
       
-      const response = await fetch(`${API_BASE_URL}/vehicles/${vehicle.carID}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          carPlaca: placaFormatada,
-          carMarca: marca,
-          carModelo: modelo,
-          carAno: Number.parseInt(ano, 10),
-          carCor: cor,
-          carKM: Number.parseInt(kmLimpo, 10),
-          carTpCombust: tipoCombustivel || undefined,
-          carOpTracao: tracao || undefined,
-          carOpTrocaOleo: dataFormatter(trocaOleo),
-          carOpTrocaPneu: dataFormatter(trocaPneu),
-          carOpRevisao: dataFormatter(revisao),
-        }),
+      const response = await api.put(`/vehicles/${vehicle.carID}`, {
+        carPlaca: placaFormatada,
+        carMarca: marca,
+        carModelo: modelo,
+        carAno: Number.parseInt(ano, 10),
+        carCor: cor,
+        carKM: Number.parseInt(kmLimpo, 10),
+        carTpCombust: tipoCombustivel || undefined,
+        carOpTracao: tracao || undefined,
+        carOpTrocaOleo: dataFormatter(trocaOleo),
+        carOpTrocaPneu: dataFormatter(trocaPneu),
+        carOpRevisao: dataFormatter(revisao),
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        await reload(); // Atualizar contexto
+      const data = response.data;
+      if (response.status === 200) {
+        await reload();
         Alert.alert(strings.global.success, "Veículo atualizado com sucesso!");
         handleNavigatePush("/Home", "fadeOutUp");
       } else {
         formRef.current?.shake(800);
         Alert.alert(strings.global.error, data.message || "Erro ao atualizar veículo.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro na requisição:", error);
       formRef.current?.shake(800);
-      Alert.alert(strings.global.error, strings.global.serverError);
+      Alert.alert(strings.global.error, error.response?.data?.message || strings.global.serverError);
     }
   };
 

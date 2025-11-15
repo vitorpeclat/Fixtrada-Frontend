@@ -1,7 +1,6 @@
 // app/SolicitarServico/index.tsx
 
 import { Feather } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -22,8 +21,7 @@ import {
   Button,
   KeyboardShiftView
 } from "@/components";
-import { API_BASE_URL } from "@/config/ip";
-import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
 import { useVehicles } from "@/contexts/VehiclesContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
@@ -197,13 +195,11 @@ function PickerInput({
 
 // --- Conteúdo da Tela ---
 function SolicitarServicoContent() {
-  const { user } = useAuth();
   const { vehicles, loading: loadingVehicles } = useVehicles();
   
   const [tipoServico, setTipoServico] = useState("");
   const [veiculo, setVeiculo] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [enderecoCEP, setEnderecoCEP] = useState("");
   const [veiculosDoUsuario, setVeiculosDoUsuario] = useState<string[]>([]);
   const [veiculoMap, setVeiculoMap] = useState<Map<string, { carID: string; carPlaca: string }>>(new Map());
   const [tiposServicoDisponiveis, setTiposServicoDisponiveis] = useState<string[]>([]);
@@ -241,19 +237,10 @@ function SolicitarServicoContent() {
     const fetchTiposServico = async () => {
       try {
         setLoadingTiposServico(true);
-        const token = await AsyncStorage.getItem("userToken");
-        
-        const response = await fetch(`${API_BASE_URL}/tipos-servico`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await api.get("/tipos-servico");
 
-        if (response.ok) {
-          const data = await response.json();
+        if (response.status === 200) {
+          const data = response.data;
           const tipoServicoOptions: string[] = [];
           const tipoServicoMapping = new Map<string, string>();
 
@@ -332,7 +319,6 @@ function SolicitarServicoContent() {
         };
 
         setEnderecoCompleto(enderecoData);
-        setEnderecoCEP(formatCEP(enderecoData.endCEP));
         setUsandoLocalizacao(true);
 
         Alert.alert(
@@ -359,29 +345,24 @@ function SolicitarServicoContent() {
   // Função para criar endereço no banco de dados
   const criarEndereco = async (enderecoData: EnderecoData): Promise<string | null> => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
-      
-      const response = await fetch(`${API_BASE_URL}/enderecos`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(enderecoData),
-      });
+      const response = await api.post("/enderecos", enderecoData);
 
-      const data = await response.json();
-      
-      if (response.ok) {
+      if (response.status === 201 || response.status === 200) {
         return enderecoData.endCEP;
-      } else {
-        // Se o endereço já existe, retornar o CEP mesmo assim
-        if (response.status === 409 || data.message?.includes("já existe")) {
-          return enderecoData.endCEP;
-        }
-        throw new Error(data.message || "Erro ao criar endereço");
       }
-    } catch (error) {
+      // Se o endereço já existe (409 Conflict)
+      else if (response.status === 409) {
+        return enderecoData.endCEP;
+      }
+      else {
+        throw new Error(response.data.message || "Erro ao criar endereço");
+      }
+    } catch (error: any) {
+        // Se a API retornar um erro de conflito, significa que o endereço já existe.
+        if (error.response && error.response.status === 409) {
+            console.log("Endereço já existe, usando CEP existente.");
+            return enderecoData.endCEP;
+        }
       console.error("Erro ao criar endereço:", error);
       throw error;
     }
@@ -455,23 +436,16 @@ function SolicitarServicoContent() {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/services`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${await AsyncStorage.getItem("userToken")}`,
-        },
-        body: JSON.stringify({
-          regDescricao: descricao.trim(),
-          fk_carro_carID: veiculoData.carID,
-          fk_tipo_servico_tseID: tipoServicoID,
-          fk_endereco_endCEP: cepFinal,
-        }),
+      const response = await api.post("/services", {
+        regDescricao: descricao.trim(),
+        fk_carro_carID: veiculoData.carID,
+        fk_tipo_servico_tseID: tipoServicoID,
+        fk_endereco_endCEP: cepFinal,
       });
 
-      const data = await response.json();
+      const data = response.data;
       
-      if (response.ok) {
+      if (response.status === 201) {
         Alert.alert(
           strings.solicitarServico.successTitle,
           strings.solicitarServico.successMessage
@@ -483,9 +457,9 @@ function SolicitarServicoContent() {
           data.message || "Erro ao solicitar serviço."
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro na requisição:", error);
-      Alert.alert(strings.global.error, strings.global.serverError);
+      Alert.alert(strings.global.error, error.response?.data?.message || strings.global.serverError);
     } finally {
       setLoading(false);
     }

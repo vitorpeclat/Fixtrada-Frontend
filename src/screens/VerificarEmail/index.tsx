@@ -12,7 +12,7 @@ import {
   KeyboardShiftView,
   useScreenAnimation,
 } from "@/components";
-import { API_BASE_URL } from "@/config/ip";
+import api from "@/lib/api";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -39,7 +39,7 @@ function VerificarEmailContent() {
             if (!parsed || (!parsed.email)) {
               console.log("userData (parsed) missing email/usuLogin:", parsed);
             }
-          } catch (e) {
+          } catch {
             console.log("userData (raw, parse error):", value);
           }
         } else {
@@ -74,29 +74,23 @@ function VerificarEmailContent() {
     }
 
     setIsLoading(true);
-    fetch(`${API_BASE_URL}/cliente/verificar-email`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: finalEmail, codigo: code }),
-    })
-      .then(async (res) => {
-        const data = await res.json().catch(() => ({}));
-        if (res.ok) {
+    api.post("/cliente/verificar-email", { email: finalEmail, codigo: code })
+      .then((res) => {
+        const data = res.data;
+        if (res.status === 200) {
           Alert.alert(
             strings.global.success,
             data.message || strings.verificarEmail.successMessage
           );
           handleNavigatePush("/CadastroVeiculo", "fadeOutUp");
-        } else if (data && data.message) {
-          Alert.alert(strings.global.attention, data.message);
-          formRef.current?.shake(800);
         } else {
-          Alert.alert(strings.global.error, strings.global.serverError);
+          Alert.alert(strings.global.attention, data.message || strings.global.serverError);
+          formRef.current?.shake(800);
         }
       })
       .catch((err) => {
         console.error("Erro na verificação de e-mail:", err);
-        Alert.alert(strings.global.error, strings.global.serverError);
+        Alert.alert(strings.global.error, err.response?.data?.message || strings.global.serverError);
       })
       .finally(() => setIsLoading(false));
   }

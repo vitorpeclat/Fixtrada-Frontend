@@ -1,5 +1,4 @@
 import { Feather } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -18,10 +17,11 @@ import {
   Input,
   useScreenAnimation,
 } from "@/components";
-import { API_BASE_URL } from "@/config/ip";
-import { strings } from "@/languages"; // <-- IMPLEMENTAÇÃO
+import { useVehicles } from "@/contexts/VehiclesContext";
+import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { styles } from "./styles";
+import api from "@/lib/api";
 
 type AnimatableViewRef = Animatable.View &
   View & {
@@ -49,6 +49,7 @@ function CadastroVeiculoContent() {
     useScreenAnimation();
   const optionalRef1 = useRef<AnimatableViewRef>(null);
   const optionalRef2 = useRef<AnimatableViewRef>(null);
+  const { reload } = useVehicles();
 
   const handleHideOptional = () => {
     optionalRef1.current?.fadeOutUp(200);
@@ -86,35 +87,28 @@ function CadastroVeiculoContent() {
     }
 
     try {
-      const token = await AsyncStorage.getItem("userToken");
       const placaFormatada = placa.toUpperCase().replace(/[^A-Z0-9]/g, "");
-      const response = await fetch(`${API_BASE_URL}/vehicle`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          carPlaca: placaFormatada,
-          carMarca: marca,
-          carModelo: modelo,
-          carAno: Number.parseInt(ano, 10),
-          carCor: cor,
-          carKM: Number.parseInt(kmLimpo, 10),
-          carTpCombust: tipoCombustivel || undefined,
-          carOpTracao: tracao || undefined,
-          carOpTrocaOleo: dataFormatter(trocaOleo),
-          carOpTrocaPneu: dataFormatter(trocaPneu),
-          carOpRevisao: dataFormatter(revisao),
-        }),
+      const response = await api.post("/vehicle", {
+        carPlaca: placaFormatada,
+        carMarca: marca,
+        carModelo: modelo,
+        carAno: Number.parseInt(ano, 10),
+        carCor: cor,
+        carKM: Number.parseInt(kmLimpo, 10),
+        carTpCombust: tipoCombustivel || undefined,
+        carOpTracao: tracao || undefined,
+        carOpTrocaOleo: dataFormatter(trocaOleo),
+        carOpTrocaPneu: dataFormatter(trocaPneu),
+        carOpRevisao: dataFormatter(revisao),
       });
 
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (response.status === 201) {
         Alert.alert(
           strings.global.success,
           strings.cadastroVeiculo.successMessage
         );
+        await reload(); // Recarrega a lista de veículos
         handleNavigatePush("/Home", "fadeOutUp");
       } else {
         formRef.current?.shake(800);
@@ -123,10 +117,10 @@ function CadastroVeiculoContent() {
           data.message || strings.cadastroVeiculo.unknownError
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro na requisição:", error);
       formRef.current?.shake(800);
-      Alert.alert(strings.global.error, strings.global.serverError);
+      Alert.alert(strings.global.error, error.response?.data?.message || strings.global.serverError);
     }
   };
 

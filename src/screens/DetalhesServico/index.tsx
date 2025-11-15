@@ -1,123 +1,118 @@
 import { AppText, Button } from "@/components";
-import { API_BASE_URL } from "@/config/ip";
-import { strings } from "@/languages";
+import api from "@/lib/api";
 import { Colors } from "@/theme/colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Car, ChevronLeft, Star } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
+import type { ServiceItem as BaseServiceItem } from "../Historico/index";
 
-// Importar o tipo ServiceItem da tela de histórico
-import type { ServiceItem } from "../Historico/index";
+// Extend the type to include the new chatId field
+type ServiceItem = BaseServiceItem & {
+    chatId?: string | null;
+}
 
-// Funções de formatação
+// --- Helper Functions ---
 function formatDate(dateStr?: string) {
   if (!dateStr) return "-";
-  const [year, month, day] = dateStr.split("-");
-  if (!year || !month || !day) return dateStr;
+  if (dateStr.includes('/')) return dateStr; // Already formatted
+  const [year, month, day] = dateStr.split("T")[0].split("-");
   return `${day}/${month}/${year}`;
 }
 
-function formatCNPJ(cnpj?: string) {
-  if (!cnpj) return "-";
-  return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+function translateStatus(status: string) {
+    switch (status?.toLowerCase()) {
+      case "pendente": return "Pendente";
+      case "aceito": return "Aceito";
+      case "recusado": return "Recusado";
+      case "em_andamento": return "Em Andamento";
+      case "concluído": return "Concluído";
+      case "cancelado": return "Cancelado";
+      default: return status;
+    }
 }
 
-function translateStatus(status: string) {
-  switch (status?.toLowerCase()) {
-    case "pendente": return "Pendente";
-    case "incompleto": return "Incompleto";
-    case "finalizado": return "Finalizado";
-    case "em andamento": return "Em Andamento";
-    default: return status;
-  }
-}
+// --- Rating Component ---
+const StarRatingInput = ({ rating, setRating, disabled = false }: { rating: number, setRating: (r: number) => void, disabled?: boolean }) => {
+    return (
+        <View style={styles.starRatingContainer}>
+            {[...Array(5)].map((_, index) => {
+                const starValue = index + 1;
+                return (
+                    <TouchableOpacity key={starValue} onPress={() => !disabled && setRating(starValue)} disabled={disabled}>
+                        <Star
+                            size={32}
+                            color={Colors.gold}
+                            fill={starValue <= rating ? Colors.gold : "none"}
+                        />
+                    </TouchableOpacity>
+                );
+            })}
+        </View>
+    );
+};
+
 
 function DetalhesServicoContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { serviceId } = useLocalSearchParams();
+  const { serviceId } = useLocalSearchParams<{ serviceId: string }>();
 
   const [service, setService] = useState<ServiceItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchServiceDetails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const token = await AsyncStorage.getItem("userToken");
-        if (!token) {
-          setError("Usuário não autenticado.");
-          setLoading(false);
-          return;
-        }
-        const response = await fetch(`${API_BASE_URL}/services/${serviceId}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Erro ao buscar detalhes do serviço");
-        }
-        const data = await response.json();
-        setService(data);
-      } catch (err: any) {
-        setError(err.message || "Erro desconhecido");
-      } finally {
-        setLoading(false);
+  // State for evaluation
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchServiceDetails = useCallback(async () => {
+    if (!serviceId) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get(`/services/${serviceId}`);
+      if (response.status === 200) {
+        setService(response.data);
+      } else {
+        throw new Error("Erro ao buscar detalhes do serviço");
       }
-    };
-    if (serviceId) {
-      fetchServiceDetails();
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || "Erro desconhecido");
+    } finally {
+      setLoading(false);
     }
   }, [serviceId]);
 
-  const handleBack = () => {
-    router.back();
-  };
+  useEffect(() => {
+    fetchServiceDetails();
+  }, [fetchServiceDetails]);
 
-  const handleFinalizeService = () => {
+  const handleBack = () => router.back();
+
+  const handleFinalizeService = async () => {
     if (!service) return;
     Alert.alert(
-      strings.global.attention,
-      "Tem certeza que deseja finalizar este serviço?",
+      "Finalizar Serviço",
+      "Tem certeza que deseja marcar este serviço como concluído?",
       [
+        { text: "Cancelar", style: "cancel" },
         {
-          text: strings.global.cancel,
-          style: "cancel",
-        },
-        {
-          text: strings.global.continue,
+          text: "Confirmar",
           onPress: async () => {
             try {
-              const token = await AsyncStorage.getItem("userToken");
-              const response = await fetch(`${API_BASE_URL}/services/${service.id}/finalize`, {
-                method: "PATCH",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  Accept: "application/json",
-                },
-              });
-              if (response.ok) {
-                Alert.alert(
-                  strings.global.success,
-                  "Serviço finalizado com sucesso!"
-                );
-                // Atualizar o serviço localmente
-                setService({ ...service, status: "finalizado" });
+              const response = await api.patch(`/services/${service.id}/finalize`);
+              if (response.status === 200) {
+                Alert.alert("Sucesso", "Serviço finalizado com sucesso!");
+                setService(prev => prev ? { ...prev, status: "concluído" } : null);
               } else {
-                Alert.alert(strings.global.error, "Erro ao finalizar serviço");
+                throw new Error(response.data?.message || "Erro ao finalizar serviço");
               }
-            } catch (error) {
-              Alert.alert(strings.global.error, "Erro ao finalizar serviço");
+            } catch (err: any) {
+              Alert.alert("Erro", err.response?.data?.message || "Não foi possível finalizar o serviço.");
             }
           },
         },
@@ -125,165 +120,133 @@ function DetalhesServicoContent() {
     );
   };
 
+  const handleAvaliarServico = async () => {
+    if (rating === 0) {
+        Alert.alert("Atenção", "Por favor, selecione uma nota (de 1 a 5 estrelas).");
+        return;
+    }
+    if (!service) return;
+
+    setIsSubmitting(true);
+    try {
+        const response = await api.post(`/cliente/servicos/${service.id}/avaliar`, {
+            nota: rating,
+            comentario: comment,
+        });
+
+        if (response.status === 200) {
+            Alert.alert("Sucesso", "Sua avaliação foi enviada!");
+            setService(prev => prev ? { ...prev, notaCliente: rating, comentarioCliente: comment } : null);
+        } else {
+            throw new Error(response.data?.message || "Erro ao enviar avaliação");
+        }
+    } catch (err: any) {
+        Alert.alert("Erro", err.response?.data?.message || "Não foi possível enviar sua avaliação.");
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
   const handleOpenChat = () => {
     if (!service) return;
+    if (!service.chatId) {
+        Alert.alert("Chat não disponível", "Não há um chat associado a este serviço.");
+        return;
+    }
     router.push({
       pathname: "/Chat",
-      params: { serviceId: service.id },
+      params: { chatId: service.chatId, serviceId: service.id },
     });
   };
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" color={Colors.primary} />
-        <AppText style={{ marginTop: 16 }}>Carregando detalhes...</AppText>
       </View>
     );
   }
 
   if (error || !service) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <AppText style={{ color: Colors.secondary, textAlign: "center" }}>
-          {error || "Serviço não encontrado"}
-        </AppText>
+      <View style={styles.centered}>
+        <AppText style={{ color: Colors.secondary }}>{error || "Serviço não encontrado"}</AppText>
         <Button title="Voltar" onPress={handleBack} containerStyle={{ marginTop: 16 }} />
       </View>
     );
   }
 
   const status = translateStatus(service.status);
-  const isPending = status === "Pendente" || status === "Incompleto";
+  const canFinalize = !['concluído', 'cancelado', 'recusado'].includes(service.status);
+  const canEvaluate = service.status === 'concluído' && service.notaCliente === null;
 
   return (
     <View style={styles.container}>
-      {/* Cabeçalho */}
       <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <ChevronLeft size={28} color={Colors.primary} />
-          <AppText style={styles.backButtonText}>
-            {strings.global.back}
-          </AppText>
         </TouchableOpacity>
-
-        {/* Botão "Finalizar Serviço" visível apenas se o status for "Incompleto" ou "Pendente" */}
-        {isPending && (
-          <Button
-            title="Finalizar Serviço"
-            onPress={handleFinalizeService}
-            containerStyle={styles.finalizeButton}
-            textStyle={styles.finalizeButtonText}
-          />
+        {canFinalize && (
+          <Button title="Finalizar Serviço" onPress={handleFinalizeService} />
         )}
       </View>
 
-      {/* Conteúdo da Página */}
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={[
-          styles.scrollContentContainer,
-          { paddingTop: insets.top + 80 },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Bloco da Oficina/Prestador */}
+      <ScrollView contentContainerStyle={styles.scrollContentContainer}>
         <View style={styles.shopBlock}>
-          <View style={styles.logoPlaceholder}>
             <Car size={50} color={Colors.darkGray} />
-          </View>
           <View style={styles.shopInfo}>
-            <AppText style={styles.shopName}>
-              {service.prestador?.mecLogin || "Prestador não informado"}
-            </AppText>
-            <AppText style={styles.shopDetail}>
-              CNPJ: {formatCNPJ(service.prestador?.mecCNPJ)}
-            </AppText>
-            {service.prestador?.mecNota && (
-              <View style={styles.shopRatingContainer}>
-                <AppText style={styles.shopRatingText}>
-                  Nota: {service.prestador.mecNota.toFixed(1)}
-                </AppText>
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={18}
-                    color={Colors.gold}
-                    fill={i < Math.floor(service.prestador?.mecNota || 0) ? Colors.gold : "none"}
-                    style={styles.starIcon}
-                  />
-                ))}
-              </View>
-            )}
+            <AppText style={styles.shopName}>{service.prestador?.mecLogin || "Prestador"}</AppText>
           </View>
         </View>
 
-        {/* Separador */}
         <View style={styles.separator}></View>
 
-        {/* Bloco da Ordem de Serviço */}
-        <View style={styles.orderBlock}>
-          <AppText style={styles.orderNumber}>
-            Ordem de serviço N° {service.codigo || "Não informado"}
-          </AppText>
-        </View>
-
-        {/* Detalhes do Veículo e Serviço */}
         <View style={styles.detailsBlock}>
-          <View style={styles.vehicleHeader}>
-            <Car size={30} color={Colors.secondary} />
-            <AppText style={styles.vehicleName}>
-              {service.carro?.carMarca} {service.carro?.carModelo} {service.carro?.carAno ? `(${service.carro.carAno})` : ""} - {service.carro?.carPlaca}
-            </AppText>
-          </View>
-          <AppText style={styles.serviceItem}>
-            Tipo de serviço:{" "}
-            <AppText style={styles.serviceItemValue}>
-              {service.tipoServico?.tseTipoProblema || "-"}
-            </AppText>
-          </AppText>
-          <AppText style={styles.serviceItem}>
-            Data:{" "}
-            <AppText style={styles.serviceItemValue}>
-              {formatDate(service.data)}
-            </AppText>
-          </AppText>
-          <AppText style={styles.serviceItem}>
-            Status:{" "}
-            <AppText
-              style={[
-                styles.serviceItemValue,
-                { color: isPending ? Colors.secondary : Colors.primary },
-              ]}
-            >
-              {status}
-            </AppText>
-          </AppText>
-
-          {/* Descrição do Problema */}
-          {service.descricao && (
-            <View style={styles.descriptionContainer}>
-              <AppText style={styles.descriptionLabel}>Descrição</AppText>
-              <AppText style={styles.descriptionText}>
-                {service.descricao}
-              </AppText>
-            </View>
-          )}
+            <AppText style={styles.serviceItem}>Tipo: <AppText style={styles.serviceItemValue}>{service.tipoServico?.tseTipoProblema || "-"}</AppText></AppText>
+            <AppText style={styles.serviceItem}>Data: <AppText style={styles.serviceItemValue}>{formatDate(service.data)}</AppText></AppText>
+            <AppText style={styles.serviceItem}>Status: <AppText style={[styles.serviceItemValue, { color: status === 'Pendente' ? Colors.secondary : Colors.primary }]}>{status}</AppText></AppText>
+            <AppText style={styles.serviceItem}>Veículo: <AppText style={styles.serviceItemValue}>{service.carro?.carMarca} {service.carro?.carModelo}</AppText></AppText>
+            {service.descricao && (
+                <View style={styles.descriptionContainer}>
+                    <AppText style={styles.descriptionLabel}>Descrição</AppText>
+                    <AppText style={styles.descriptionText}>{service.descricao}</AppText>
+                </View>
+            )}
         </View>
 
-        {/* Botão Abrir Chat */}
-        <Button
-          title="Abrir Chat"
-          onPress={handleOpenChat}
-          containerStyle={styles.openChatButton}
-          textStyle={styles.openChatButtonText}
-        />
+        {canEvaluate && (
+            <View style={styles.evaluationBlock}>
+                <AppText style={styles.evaluationTitle}>Avalie este serviço</AppText>
+                <StarRatingInput rating={rating} setRating={setRating} />
+                <TextInput
+                    style={styles.commentInput}
+                    placeholder="Deixe um comentário (opcional)"
+                    value={comment}
+                    onChangeText={setComment}
+                    multiline
+                />
+                <Button
+                    title={isSubmitting ? "Enviando..." : "Enviar Avaliação"}
+                    onPress={handleAvaliarServico}
+                    disabled={isSubmitting}
+                />
+            </View>
+        )}
+
+        {service.notaCliente !== null && (
+            <View style={styles.evaluationBlock}>
+                <AppText style={styles.evaluationTitle}>Sua Avaliação</AppText>
+                <StarRatingInput rating={service.notaCliente || 0} setRating={() => {}} disabled={true} />
+                {service.comentarioCliente && <AppText style={styles.commentText}>{service.comentarioCliente}</AppText>}
+            </View>
+        )}
+
+        <Button title="Abrir Chat" onPress={handleOpenChat} containerStyle={{ marginTop: 20 }} />
       </ScrollView>
     </View>
   );
 }
 
-// Componente principal para exportar
 export default function DetalhesServicoScreen() {
   return <DetalhesServicoContent />;
 }

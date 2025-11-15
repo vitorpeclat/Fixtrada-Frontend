@@ -1,177 +1,165 @@
-import { AppText, Button } from "@/components";
-import { useAuth } from "@/contexts/AuthContext";
-import { useVehicles } from "@/contexts/VehiclesContext";
-import { strings } from "@/languages";
-import { Colors } from "@/theme/colors";
-import { DrawerActions } from "@react-navigation/native";
-import { useNavigation, useRouter } from "expo-router";
-// @ts-ignore - adicionar tipo para nova rota dinâmica
-import { Car, Menu, Plus } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useAuth } from '@/contexts/AuthContext';
+import { DrawerActions } from '@react-navigation/native';
+import * as Location from 'expo-location';
+import { useNavigation } from 'expo-router';
+import { Menu } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  RefreshControl,
-  ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import {
-  Directions,
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
-import { runOnJS } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { styles } from "./styles";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MapView, { Marker } from 'react-native-maps';
 
+import api from '@/lib/api';
+import { Colors } from '@/theme/colors';
 
-function HomeContent() {
-  const insets = useSafeAreaInsets();
+interface Prestador {
+  cnpj: string;
+  login: string;
+  nota: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  distancia: number;
+}
+
+export default function HomeScreen() {
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null
+  );
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [prestadores, setPrestadores] = useState<Prestador[]>([]);
   const navigation = useNavigation();
-  const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
-  const { vehicles, loading: loadingVehicles, error: vehiclesError, reload } = useVehicles();
-  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) reload();
-  }, [isAuthenticated]);
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        setLoading(false);
+        return;
+      }
+
+      let currentLocation = await Location.getCurrentPositionAsync({});
+      setLocation(currentLocation);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (location && isAuthenticated) {
+      fetchNearbyPrestadores(
+        location.coords.latitude,
+        location.coords.longitude
+      );
+    }
+  }, [location, isAuthenticated]);
+
+  const fetchNearbyPrestadores = async (
+    latitude: number,
+    longitude: number
+  ) => {
+    try {
+      const response = await api.get('/prestadores/nearby', {
+        params: {
+          latitude,
+          longitude,
+          raioKm: 10, // ou um valor dinâmico
+        },
+      });
+      setPrestadores(response.data);
+    } catch (error) {
+      console.error('Failed to fetch nearby prestadores:', error);
+      setErrorMsg('Failed to fetch nearby providers.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
 
-  const flingGesture = Gesture.Fling()
-    .direction(Directions.RIGHT)
-    .onEnd(() => {
-      runOnJS(openDrawer)();
-    });
-
-  const onRefresh = useCallback(async () => {
-    if (refreshing || loadingVehicles) return;
-    setRefreshing(true);
-    try {
-      await reload();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [refreshing, loadingVehicles, reload]);
-
-  const handleDetails = (vehicleId?: string) => {
-    if (!vehicleId) return;
-    router.push({ pathname: "/DetalhesVeiculo", params: { id: vehicleId } });
-  };
-
-  return (
-    <GestureDetector gesture={flingGesture}>
-      <View style={styles.container}>
-        <TouchableOpacity
-          style={[styles.headerIcon, { top: insets.top + 10 }]}
-          onPress={openDrawer}
-          activeOpacity={0.7}
-        >
-          <Menu size={45} color={Colors.primary} />
-        </TouchableOpacity>
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={{
-            ...styles.contentContainer,
-            paddingTop: insets.top + 70,
-          }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[Colors.primary]} // Android
-              tintColor={Colors.primary} // iOS
-            />
-          }
-        >
-          <View style={styles.contentSection}>
-            <View style={styles.card}>
-              <Car size={48} color={Colors.primary} style={styles.cardIcon} />
-              <AppText style={styles.cardTitle}>
-                {strings.home.cardTitle}
-              </AppText>
-              <AppText style={styles.cardSubtitle}>
-                {strings.home.cardSubtitle}
-              </AppText>
-              <Button
-                title={strings.home.scheduleServiceButton}
-                onPress={() => router.push("/SolicitarServico")}
-                containerStyle={{ width: "100%" }}
-              />
-            </View>
-          </View>
-
-          <View style={styles.contentSection}>
-            <View style={styles.card}>
-              <AppText style={styles.cardTitle}>
-                Meus Veículos ({vehicles.length})
-              </AppText>
-
-              {loadingVehicles ? (
-                <ActivityIndicator size="small" color={Colors.primary} />
-              ) : vehiclesError ? (
-                <AppText style={{ color: "red" }}>{vehiclesError}</AppText>
-              ) : vehicles.length === 0 ? (
-                <AppText>Nenhum veículo cadastrado</AppText>
-              ) : (
-                vehicles.map((v: any, idx: number) => {
-                  const key = v.carID ?? idx.toString();
-                  return (
-                    <View key={key} style={styles.vehicleItemCard}>
-                      <View style={styles.vehicleItemInfo}>
-                        <View style={styles.vehicleInfoRow}>
-                          <AppText style={styles.vehicleLabel}>
-                            {strings.cadastroVeiculo.marcaLabel}:
-                          </AppText>
-                          <AppText style={styles.vehicleValue}>
-                            {v.carMarca || "-"}
-                          </AppText>
-                        </View>
-                        <View style={styles.vehicleInfoRow}>
-                          <AppText style={styles.vehicleLabel}>
-                            {strings.cadastroVeiculo.modeloLabel}:
-                          </AppText>
-                          <AppText style={styles.vehicleValue}>
-                            {v.carModelo || "-"}
-                          </AppText>
-                        </View>
-                        <View style={styles.vehicleInfoRow}>
-                          <AppText style={styles.vehicleLabel}>
-                            {strings.cadastroVeiculo.anoLabel}:
-                          </AppText>
-                          <AppText style={styles.vehicleValue}>
-                            {v.carAno || "-"}
-                          </AppText>
-                        </View>
-                      </View>
-                      <Button
-                        title="Mais detalhes"
-                        icon={<Plus size={18} color={Colors.white} />}
-                        onPress={() => handleDetails(v.carID)}
-                        containerStyle={styles.detailsButton}
-                        textStyle={styles.detailsButtonText}
-                      />
-                    </View>
-                  );
-                })
-              )}
-            </View>
-          </View>
-        </ScrollView>
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text>Loading Map...</Text>
       </View>
-    </GestureDetector>
+    );
+  }
+
+  if (errorMsg) {
+    return (
+      <View style={styles.centered}>
+        <Text>{errorMsg}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {location && (
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          showsUserLocation={true}
+        >
+          {prestadores.map((prestador) => {
+            if (prestador.latitude && prestador.longitude) {
+              return (
+                <Marker
+                  key={prestador.cnpj}
+                  coordinate={{
+                    latitude: prestador.latitude,
+                    longitude: prestador.longitude,
+                  }}
+                  title={prestador.login}
+                  description={`Nota: ${prestador.nota || 'N/A'}`}
+                />
+              );
+            }
+            return null;
+          })}
+        </MapView>
+      )}
+      <TouchableOpacity
+        style={[styles.headerIcon, { top: insets.top + 10 }]}
+        onPress={openDrawer}
+        activeOpacity={0.7}
+      >
+        <Menu size={45} color={Colors.primary} />
+      </TouchableOpacity>
+    </View>
   );
 }
 
-export default function HomeScreen() {
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <HomeContent />
-    </GestureHandlerRootView>
-  );
-}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerIcon: {
+    position: 'absolute',
+    left: 15,
+    zIndex: 1,
+  },
+});

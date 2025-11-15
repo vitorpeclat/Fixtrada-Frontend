@@ -1,9 +1,8 @@
 import { AppText, Input } from "@/components";
-import { API_BASE_URL } from "@/config/ip";
+import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import {
   CheckCircle2,
@@ -32,15 +31,13 @@ import { formatPhoneNumber, unformatPhoneNumber } from "../../utils/formatters";
 function DadosPessoaisContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { user, reloadUser } = useAuth();
 
   const [initialData, setInitialData] = useState({ nome: "", email: "", dataNascimento: "", telefone: "" });
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [erroData, setErroData] = useState("");
-  const [userToken, setUserToken] = useState<string | null>(null);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
@@ -56,66 +53,25 @@ function DadosPessoaisContent() {
     setModalValue("");
   }, []);
 
-  // First, get the user token and reset when authentication changes
+  // Load user data from context
   useEffect(() => {
-    const loadToken = async () => {
-      if (!isAuthenticated) {
-        setUserToken(null);
-        setNome("");
-        setEmail("");
-        setDataNascimento("");
-        setTelefone("");
-        setInitialData({ nome: "", email: "", dataNascimento: "", telefone: "" });
-        return;
-      }
-      const token = await AsyncStorage.getItem("userToken");
-      setUserToken(token);
-    };
-    loadToken();
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (!userToken) {
-      setNome("");
-      setEmail("");
-      setDataNascimento("");
-      setTelefone("");
-      setInitialData({ nome: "", email: "", dataNascimento: "", telefone: "" });
-      return;
-    }
-
-    const fetchUserData = async () => {
-      try {
-        const raw = await AsyncStorage.getItem("userData");
-        if (!raw) {
-          setNome("");
-          setEmail("");
-          setDataNascimento("");
-          setTelefone("");
-          setInitialData({ nome: "", email: "", dataNascimento: "", telefone: "" });
-          return;
-        }
-        const parsed = JSON.parse(raw);
-        const [ano, mes, dia] = parsed.dataNascimento.split('-');
-        const dataFormatada = `${dia}/${mes}/${ano}`;
+    if (user) {
+        const [ano, mes, dia] = (user.dataNascimento || '').split('T')[0].split('-');
+        const dataFormatada = dia ? `${dia}/${mes}/${ano}` : "";
 
         const initial = {
-          nome: parsed.nome || "",
-          email: parsed.email || "",
-          dataNascimento: dataFormatada || "",
-          telefone: parsed.telefone || "",
+          nome: user.nome || "",
+          email: user.email || "",
+          dataNascimento: dataFormatada,
+          telefone: user.telefone || "",
         };
         setInitialData(initial);
         setNome(initial.nome);
         setEmail(initial.email);
         setDataNascimento(initial.dataNascimento);
         setTelefone(formatPhoneNumber(initial.telefone));
-      } catch (e) {
-        console.error("Erro ao recuperar userData do AsyncStorage:", e);
-      }
-    };
-    fetchUserData();
-  }, [userToken]);
+    }
+  }, [user]);
 
   useEffect(() => {
     const handleHardwareBackPress = () => {
@@ -127,7 +83,6 @@ function DadosPessoaisContent() {
         router.back();
         return true;
       }
-
       return false;
     };
 
@@ -170,7 +125,7 @@ function DadosPessoaisContent() {
 
     if (nome !== initialData.nome) payload.nome = nome;
     if (email !== initialData.email) payload.email = email;
-    if (telefone !== initialData.telefone) payload.telefone = unformatPhoneNumber(telefone);
+    if (unformatPhoneNumber(telefone) !== initialData.telefone) payload.telefone = unformatPhoneNumber(telefone);
 
     if (Object.keys(payload).length === 0) {
       Alert.alert(strings.personalDataScreen.noChanges);
@@ -178,32 +133,18 @@ function DadosPessoaisContent() {
     }
 
     try {
-      const token = await AsyncStorage.getItem("userToken");
-      const response = await fetch(`${API_BASE_URL}/cliente/update`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await api.post("/cliente/update", payload);
+      const responseData = response.data;
 
-      const responseData = await response.json();
-
-      if (response.ok) {
+      if (response.status === 200) {
         Alert.alert(strings.personalDataScreen.success, strings.personalDataScreen.updateSuccess);
-        const newInitialData = { ...initialData, ...payload };
-        setInitialData(newInitialData);
-        const raw = await AsyncStorage.getItem("userData");
-        const parsed = raw ? JSON.parse(raw) : {};
-        const updatedUserData = { ...parsed, ...payload };
-        await AsyncStorage.setItem("userData", JSON.stringify(updatedUserData));
+        await reloadUser(); // Recarrega os dados do usuário no contexto
       } else {
         Alert.alert(strings.personalDataScreen.error, responseData.message || strings.personalDataScreen.updateError);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao salvar os dados:", error);
-      Alert.alert(strings.personalDataScreen.error, strings.personalDataScreen.networkError);
+      Alert.alert(strings.personalDataScreen.error, error.response?.data?.message || strings.personalDataScreen.networkError);
     }
   };
 

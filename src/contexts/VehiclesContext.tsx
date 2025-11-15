@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/config/ip';
+import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
@@ -29,43 +29,36 @@ interface VehiclesContextData {
 const VehiclesContext = createContext<VehiclesContextData>({} as VehiclesContextData);
 
 export const VehiclesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, loading: authLoading, user } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchVehicles = useCallback(async () => {
-    if (!isAuthenticated || !user?.token) {
+    if (!isAuthenticated) {
       setVehicles([]);
       setError(null);
       return;
     }
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/vehicles`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
+      const res = await api.get('/vehicles');
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Erro ${res.status}: ${text}`);
+      if (res.status !== 200) {
+        throw new Error(`Erro ${res.status}: ${res.data?.message}`);
       }
-      const data = await res.json();
+      const data = res.data;
       setVehicles(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err: any) {
       setVehicles([]);
-      setError(err?.message ?? String(err));
+      setError(err.response?.data?.message ?? err?.message ?? String(err));
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.token]);
+  }, [isAuthenticated]);
+
 
   useEffect(() => {
     if (authLoading) return;

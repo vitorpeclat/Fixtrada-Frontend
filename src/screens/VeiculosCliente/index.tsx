@@ -1,5 +1,4 @@
 import { AppText, Button } from "@/components"; // Reutilizando seus componentes
-import { useAuth } from "@/contexts/AuthContext";
 import type { Vehicle } from "@/contexts/VehiclesContext";
 import { useVehicles } from "@/contexts/VehiclesContext";
 import { strings } from "@/languages";
@@ -23,7 +22,6 @@ import { styles } from "./styles"; // Estilos para esta tela (abaixo)
 function VeiculosClienteContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const { vehicles, loading: loadingVehicles, error: vehiclesError, reload } = useVehicles();
   const [refreshing, setRefreshing] = useState(false);
 

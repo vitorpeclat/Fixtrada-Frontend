@@ -199,4 +199,53 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     color: Colors.white,
   },
+  // --- Evaluation Block ---
+  evaluationBlock: {
+    padding: 20,
+    marginHorizontal: 20,
+    marginTop: 20,
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  evaluationTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: Colors.primary,
+    textAlign: "center",
+    marginBottom: 15,
+  },
+  starRatingContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  commentInput: {
+    borderWidth: 1,
+    borderColor: Colors.gray,
+    borderRadius: 8,
+    padding: 10,
+    height: 100,
+    textAlignVertical: 'top',
+    marginBottom: 15,
+    fontSize: 15,
+  },
+  commentText: {
+      fontSize: 15,
+      color: Colors.darkGray,
+      textAlign: 'center',
+      fontStyle: 'italic',
+      marginTop: 10,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });

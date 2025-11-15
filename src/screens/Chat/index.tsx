@@ -1,186 +1,147 @@
-import { AppText } from "@/components";
-import { API_BASE_URL } from "@/config/ip";
+import { AppText, BackButton } from "@/components";
+import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSocket } from "@/contexts/SocketContext";
 import { Colors } from "@/theme/colors";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Send } from "lucide-react-native";
-import React, { useEffect, useState, useRef } from "react";
-import {
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  TextInput,
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
-} from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { io, Socket } from "socket.io-client";
-import { styles } from "./styles"; // Seus estilos corretos
-import { api } from "../ChatList/api"; // Reutilizando a instância da api
 
-// Define os tipos de mensagem
-type Message = {
-  id: string;
-  senderId: string; // ID de quem enviou
-  content: string;
-  timestamp: string;
-};
-
-// Define o que esperamos da rota (o chatId)
 type ChatScreenParams = {
   chatId: string;
+  serviceId?: string;
 };
+
+const formatMessage = (msg: any, currentUser: any): IMessage => ({
+  _id: msg.id || msg.menID,
+  text: msg.content || msg.menConteudo,
+  createdAt: new Date(msg.timestamp || msg.menData),
+  user: {
+    _id: msg.senderId,
+    name: msg.senderName || (msg.senderId === currentUser?.id ? currentUser?.nome : 'Prestador'),
+  },
+});
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { user } = useAuth(); // Pega o usuário logado
-  
-  // 1. Pega o 'chatId' passado pela tela de lista
-  const { chatId } = useLocalSearchParams<ChatScreenParams>();
+  const { user } = useAuth();
+  const { socket, isConnected } = useSocket();
+  const { chatId, serviceId } = useLocalSearchParams<ChatScreenParams>();
 
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [messages, setMessages] = useState<IMessage[]>([]);
+  const [shopName, setShopName] = useState("Chat");
   const [loading, setLoading] = useState(true);
-  const [shopName, setShopName] = useState("Chat"); // Nome da oficina
-  const socketRef = useRef<Socket | null>(null);
 
-  // 2. Conecta ao Socket.IO e busca mensagens antigas
   useEffect(() => {
-    if (!chatId || !user) {
-      setLoading(false);
-      return;
-    }
-
-    // --- Conexão Socket.IO ---
-    // Conecta ao seu backend (ajuste a URL se necessário)
-    const socket = io(API_BASE_URL, {
-      query: {
-        userId: user.id, // Envia o ID do usuário para autenticação no socket
-      },
-    });
-    socketRef.current = socket;
-
-    // Entra na "sala" do chat específico
-    socket.emit("joinChat", chatId);
-
-    // Ouve por novas mensagens
-    socket.on("newMessage", (message: Message) => {
-      setMessages((prevMessages) => [message, ...prevMessages]);
-    });
-
-    // --- Busca mensagens antigas ---
-    const fetchChatDetails = async () => {
+    const fetchHistory = async () => {
+      if (!chatId) return;
       try {
-        // Usando a instância 'api' que já injeta o token de autorização
+        setLoading(true);
         const response = await api.get(`/chats/${chatId}/messages`);
-
-        if (response.status === 200) {
-          setMessages(response.data.messages.reverse()); // Inverte para ordem cronológica
-          setShopName(response.data.shopName); // Pega o nome da oficina
-        } else {
-          console.error("Falha ao buscar mensagens:", response.data.message);
-        }
+        const formattedMessages = response.data.messages.map((msg: any) => formatMessage(msg, user));
+        setMessages(formattedMessages);
+        setShopName(response.data.shopName);
       } catch (error) {
-        console.error("Erro ao buscar chat:", error);
+        console.error("Failed to fetch chat history:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchChatDetails();
-
-    // Desconecta ao sair da tela
-    return () => {
-      socket.emit("leaveChat", chatId);
-      socket.disconnect();
-    };
+    fetchHistory();
   }, [chatId, user]);
 
-  // 3. Função para enviar mensagem
-  const handleSend = () => {
-    if (newMessage.trim() === "" || !socketRef.current || !user) return;
+  useEffect(() => {
+    if (!socket || !isConnected) return;
 
-    const messagePayload = {
-      chatId: chatId,
-      senderId: user.id, // ID do cliente logado
-      content: newMessage.trim(),
+    if (serviceId) {
+      socket.emit('join_service_chat', serviceId);
+      console.log(`Joined service chat room: ${serviceId}`);
+    }
+
+    const handleReceiveMessage = (newMessage: any) => {
+      if (newMessage.serviceId === serviceId) {
+        const formatted = formatMessage(newMessage, user);
+        setMessages((previousMessages) =>
+          GiftedChat.append(previousMessages, [formatted])
+        );
+      }
     };
 
-    // Emite o evento "sendMessage" para o servidor
-    socketRef.current.emit("sendMessage", messagePayload);
+    socket.on('receive_message', handleReceiveMessage);
 
-    // Limpa o input
-    setNewMessage("");
-  };
+    return () => {
+      socket.off('receive_message', handleReceiveMessage);
+    };
+  }, [socket, isConnected, serviceId, user]);
 
-  // 4. Renderiza cada bolha de mensagem
-  const renderMessageItem = ({ item }: { item: Message }) => {
-    const isSender = item.senderId === user.id; // Verifica se é o usuário logado
+  const onSend = useCallback((newMessages: IMessage[] = []) => {
+    if (!socket || !isConnected || !serviceId) {
+        console.log("Socket not connected or serviceId missing, cannot send message.");
+        return;
+    }
+    const message = newMessages[0];
+    const payload = {
+      serviceId: serviceId,
+      senderId: user.id,
+      senderName: user.nome,
+      content: message.text,
+    };
+    socket.emit('send_message', payload);
+  }, [socket, isConnected, serviceId, user]);
 
+  if (loading) {
     return (
-      <View style={styles.messageBubbleContainer}>
-        <View
-          style={[
-            styles.bubble,
-            isSender ? styles.senderBubble : styles.receiverBubble,
-          ]}
-        >
-          <AppText
-            style={isSender ? styles.senderText : styles.receiverText}
-          >
-            {item.content}
-          </AppText>
-        </View>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
-  };
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* --- Cabeçalho --- */}
       <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ChevronLeft size={30} color={Colors.primary} />
-          <AppText style={styles.backButtonText}>Voltar</AppText>
-        </TouchableOpacity>
+        <BackButton />
         <AppText style={styles.headerTitle}>{shopName}</AppText>
-        <View style={{ width: 80 }} /> {/* Espaço para centralizar o título */}
+        <View style={{ width: 50 }} />
       </View>
-
-      {/* --- Lista de Mensagens --- */}
-      {loading ? (
-        <ActivityIndicator style={{ flex: 1 }} size="large" color={Colors.primary} />
-      ) : (
-        <FlatList
-          style={styles.messageList}
-          contentContainerStyle={styles.messageListContent}
-          data={messages}
-          renderItem={renderMessageItem}
-          keyExtractor={(item) => item.id}
-          inverted // Começa de baixo para cima
-        />
-      )}
-
-      {/* --- Input de Mensagem --- */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? insets.bottom + 80 : 0}
-      >
-        <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 8 }]}>
-          <TextInput
-            style={styles.textInput}
-            value={newMessage}
-            onChangeText={setNewMessage}
-            placeholder="Digite sua mensagem..."
-            multiline
-          />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-            <Send size={24} color={Colors.white} />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+      <GiftedChat
+        messages={messages}
+        onSend={(msgs) => onSend(msgs)}
+        user={{
+          _id: user?.id,
+        }}
+        placeholder="Digite sua mensagem..."
+        renderUsernameOnMessage
+      />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.primary,
+  },
+});
