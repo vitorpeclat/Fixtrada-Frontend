@@ -36,18 +36,13 @@ function VerificarEmailContent() {
           try {
             const parsed = JSON.parse(value);
             setUserData(parsed);
-            if (!parsed || (!parsed.email)) {
-              console.log("userData (parsed) missing email/usuLogin:", parsed);
-            }
           } catch {
-            console.log("userData (raw, parse error):", value);
+            // Silently handle parsing error
           }
-        } else {
-          console.log("userData not set:", value);
         }
       })
-      .catch((err) => {
-        console.log("Erro ao ler userData:", err);
+      .catch(() => {
+        // Silently handle storage read error
       });
   }, []);
 
@@ -55,10 +50,6 @@ function VerificarEmailContent() {
     const finalEmail = (userData?.email)?.trim();
 
     if (!finalEmail) {
-      console.log(
-        "userData when trying to verify email:",
-        userData ?? userDataRaw
-      );
       Alert.alert(
         strings.global.attention,
         strings.global.emailPlaceholder || "E-mail não encontrado."
@@ -89,7 +80,6 @@ function VerificarEmailContent() {
         }
       })
       .catch((err) => {
-        console.error("Erro na verificação de e-mail:", err);
         Alert.alert(strings.global.error, err.response?.data?.message || strings.global.serverError);
       })
       .finally(() => setIsLoading(false));

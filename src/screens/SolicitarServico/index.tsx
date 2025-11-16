@@ -1,4 +1,7 @@
-// app/SolicitarServico/index.tsx
+// ============================================================================
+// TELA: Solicitação de Serviço
+// ============================================================================
+// Permite que clientes solicitem um novo serviço de reparo ou manutenção
 
 import { Feather } from "@expo/vector-icons";
 import * as Location from "expo-location";
@@ -25,10 +28,11 @@ import api from "@/lib/api";
 import { useVehicles } from "@/contexts/VehiclesContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
-import { formatCEP } from "@/utils/formatters";
 import { styles } from "./styles";
 
-// Tipo para o endereço
+// ============================================================================
+// TIPOS
+// ============================================================================
 interface EnderecoData {
   endCEP: string;
   endRua: string;
@@ -38,6 +42,9 @@ interface EnderecoData {
   endNumero?: string;
 }
 
+// ============================================================================
+// CONSTANTES
+// ============================================================================
 // Mapeamento de estados brasileiros para UF
 const ESTADOS_UF: Record<string, string> = {
   "Acre": "AC",
@@ -94,7 +101,8 @@ function toUF(possible: string | null | undefined): string | null {
   }
 
   // Tentar extrair uma UF de tokens de 2 letras (ex: "SP - São Paulo")
-  const tokens = trimmed.split(/[^A-Za-z]+/).filter(Boolean);
+  const tokens = trimmed.split(/[^A-Za-z]+/)
+    .filter(Boolean);
   for (const t of tokens) {
     if (t.length === 2) {
       const upper = t.toUpperCase();
@@ -260,7 +268,6 @@ function SolicitarServicoContent() {
           setTiposServicoDisponiveis(TIPOS_DE_SERVICO);
         }
       } catch (error) {
-        console.error("Erro ao buscar tipos de serviço:", error);
         // Fallback para valores estáticos se houver erro
         setTiposServicoDisponiveis(TIPOS_DE_SERVICO);
       } finally {
@@ -331,8 +338,7 @@ function SolicitarServicoContent() {
           "Não foi possível obter o endereço da sua localização."
         );
       }
-    } catch (error) {
-      console.error("Erro ao obter localização:", error);
+    } catch {
       Alert.alert(
         strings.global.error,
         "Erro ao obter sua localização. Tente novamente."
@@ -360,10 +366,8 @@ function SolicitarServicoContent() {
     } catch (error: any) {
         // Se a API retornar um erro de conflito, significa que o endereço já existe.
         if (error.response && error.response.status === 409) {
-            console.log("Endereço já existe, usando CEP existente.");
             return enderecoData.endCEP;
         }
-      console.error("Erro ao criar endereço:", error);
       throw error;
     }
   };
@@ -427,7 +431,7 @@ function SolicitarServicoContent() {
         } else {
           throw new Error("CEP não retornado");
         }
-      } catch (error) {
+      } catch {
         Alert.alert(
           strings.global.error,
           "Erro ao registrar o endereço. Tente novamente."
@@ -512,7 +516,7 @@ function SolicitarServicoContent() {
               <Text style={styles.label}>Endereço do Local do Serviço</Text>
               <View style={styles.pickerContainer}>
                 <TextInput
-                  style={[styles.pickerText, { flex: 1 }]}
+                  style={[styles.pickerText, { flex: 1 }]} 
                   placeholder="Use sua localização para preencher o endereço"
                   placeholderTextColor={Colors.primaryLight}
                   value={

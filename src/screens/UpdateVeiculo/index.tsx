@@ -141,7 +141,6 @@ function UpdateVeiculoContent() {
         Alert.alert(strings.global.error, data.message || "Erro ao atualizar veículo.");
       }
     } catch (error: any) {
-      console.error("Erro na requisição:", error);
       formRef.current?.shake(800);
       Alert.alert(strings.global.error, error.response?.data?.message || strings.global.serverError);
     }

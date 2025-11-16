@@ -1,4 +1,4 @@
-import { AppText, Button } from "@/components"; // Reutilizando seus componentes
+import { AppText, Button } from "@/components";
 import type { Vehicle } from "@/contexts/VehiclesContext";
 import { useVehicles } from "@/contexts/VehiclesContext";
 import { strings } from "@/languages";
@@ -15,9 +15,7 @@ import {
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { styles } from "./styles"; // Estilos para esta tela (abaixo)
-
-// Vehicle type centralizado em VehiclesContext
+import { styles } from "./styles";
 
 function VeiculosClienteContent() {
   const insets = useSafeAreaInsets();
