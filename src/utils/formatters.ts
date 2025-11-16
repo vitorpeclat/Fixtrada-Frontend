@@ -1,3 +1,12 @@
+// ============================================================================
+// UTILITÁRIOS: Formatadores
+// ============================================================================
+// Funções para formatação e desformatação de dados
+
+// ============================================================================
+// TELEFONE
+// ============================================================================
+// Formata: "11987654321" => "(11) 98765-4321"
 export function formatPhoneNumber(text: string): string {
     if (!text) return "";
     let userInput = text.replace(/\D/g, "");
@@ -14,11 +23,16 @@ export function formatPhoneNumber(text: string): string {
     }
 }
 
+// Remove formatação do telefone
 export function unformatPhoneNumber(text: string): string {
     if (!text) return "";
     return text.replace(/\D/g, "");
 }
 
+// ============================================================================
+// CEP
+// ============================================================================
+// Formata: "01234567" => "01234-567"
 export function formatCEP(text: string): string {
     if (!text) return "";
     let userInput = text.replace(/\D/g, "");
@@ -31,7 +45,38 @@ export function formatCEP(text: string): string {
     }
 }
 
+// Remove formatação do CEP
 export function unformatCEP(text: string): string {
     if (!text) return "";
     return text.replace(/\D/g, "");
+}
+
+// ============================================================================
+// DATA
+// ============================================================================
+// Formata data de ISO ou com hífens para DD/MM/YYYY
+export function formatDate(dateStr?: string): string {
+    if (!dateStr) return "-";
+    if (dateStr.includes('/')) return dateStr; // Already formatted
+    const [year, month, day] = dateStr.split("T")[0].split("-");
+    if (!year || !month || !day) return dateStr;
+    return `${day}/${month}/${year}`;
+}
+
+// ============================================================================
+// STATUS
+// ============================================================================
+// Traduz status para português
+export function translateStatus(status: string): string {
+    switch (status?.toLowerCase()) {
+        case "pendente": return "Pendente";
+        case "aceito": return "Aceito";
+        case "recusado": return "Recusado";
+        case "em_andamento": return "Em Andamento";
+        case "concluído": return "Concluído";
+        case "cancelado": return "Cancelado";
+        case "incompleto": return "Incompleto";
+        case "finalizado": return "Finalizado";
+        default: return status;
+    }
 }

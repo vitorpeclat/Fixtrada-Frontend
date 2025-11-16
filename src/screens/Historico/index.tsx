@@ -15,27 +15,8 @@ import {
 } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { formatDate, translateStatus } from "@/utils/formatters";
 import { styles } from "./styles";
-
-// Helper functions
-function formatDate(dateStr?: string) {
-  if (!dateStr) return "-";
-  const [year, month, day] = dateStr.split("-");
-  if (!year || !month || !day) return dateStr;
-  return `${day}/${month}/${year}`;
-}
-
-function translateStatus(status: string) {
-  switch (status?.toLowerCase()) {
-    case "pendente": return "Pendente";
-    case "aceito": return "Aceito";
-    case "recusado": return "Recusado";
-    case "em_andamento": return "Em Andamento";
-    case "concluído": return "Concluído";
-    case "cancelado": return "Cancelado";
-    default: return status;
-  }
-}
 
 export type ServiceItem = {
   id: string;

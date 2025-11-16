@@ -6,32 +6,13 @@ import { Car, ChevronLeft, Star } from "lucide-react-native";
 import React, { useEffect, useState, useCallback } from "react";
 import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { formatDate, translateStatus } from "@/utils/formatters";
 import { styles } from "./styles";
 import type { ServiceItem as BaseServiceItem } from "../Historico/index";
 
 // Extend the type to include the new chatId field
 type ServiceItem = BaseServiceItem & {
     chatId?: string | null;
-}
-
-// --- Helper Functions ---
-function formatDate(dateStr?: string) {
-  if (!dateStr) return "-";
-  if (dateStr.includes('/')) return dateStr; // Already formatted
-  const [year, month, day] = dateStr.split("T")[0].split("-");
-  return `${day}/${month}/${year}`;
-}
-
-function translateStatus(status: string) {
-    switch (status?.toLowerCase()) {
-      case "pendente": return "Pendente";
-      case "aceito": return "Aceito";
-      case "recusado": return "Recusado";
-      case "em_andamento": return "Em Andamento";
-      case "concluído": return "Concluído";
-      case "cancelado": return "Cancelado";
-      default: return status;
-    }
 }
 
 // --- Rating Component ---
