@@ -2,7 +2,6 @@ import { AnimationProvider } from '@/components';
 import { MenuContent } from '@/components/Menu';
 import { Colors } from '@/theme/colors';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
-import { Stack } from 'expo-router';
 import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -33,12 +32,7 @@ export default function RootLayout() {
                                     },
                                 }}
                             >
-                                <Stack
-                                    screenOptions={{
-                                        headerShown: false,
-                                        contentStyle: { backgroundColor: 'transparent' },
-                                    }}
-                                />
+                                <Drawer.Screen name="(app)" />
                             </Drawer>
                         </VehiclesProvider>
                     </AuthProvider>

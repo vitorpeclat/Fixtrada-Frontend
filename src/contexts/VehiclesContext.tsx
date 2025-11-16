@@ -1,7 +1,15 @@
+// ============================================================================
+// CONTEXTO: Veículos
+// ============================================================================
+// Gerencia lista de veículos do usuário autenticado
+
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
+// ============================================================================
+// TIPOS
+// ============================================================================
 export type Vehicle = {
   carID?: string;
   carPlaca?: string;
@@ -26,6 +34,9 @@ interface VehiclesContextData {
   reload: () => Promise<void>;
 }
 
+// ============================================================================
+// CONTEXTO
+// ============================================================================
 const VehiclesContext = createContext<VehiclesContextData>({} as VehiclesContextData);
 
 export const VehiclesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -35,6 +46,7 @@ export const VehiclesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Busca veículos do usuário autenticado
   const fetchVehicles = useCallback(async () => {
     if (!isAuthenticated) {
       setVehicles([]);
@@ -59,7 +71,7 @@ export const VehiclesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [isAuthenticated]);
 
-
+  // Carrega veículos quando autenticação está pronta
   useEffect(() => {
     if (authLoading) return;
     fetchVehicles();
@@ -73,5 +85,9 @@ export const VehiclesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 };
 
 export function useVehicles() {
-  return useContext(VehiclesContext);
+  const context = useContext(VehiclesContext);
+  if (!context) {
+    throw new Error('useVehicles deve ser usado dentro de VehiclesProvider');
+  }
+  return context;
 }

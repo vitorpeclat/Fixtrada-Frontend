@@ -1,3 +1,7 @@
+// ============================================================================
+// CONTEXTO: Socket.IO
+// ============================================================================
+// Gerencia conexão WebSocket para comunicação em tempo real
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
@@ -26,12 +30,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
 
       newSocket.on('connect', () => {
-        console.log('Socket connected:', newSocket.id);
+        console.log('Socket conectado:', newSocket.id);
         setIsConnected(true);
       });
 
       newSocket.on('disconnect', () => {
-        console.log('Socket disconnected');
+        console.log('Socket desconectado');
         setIsConnected(false);
       });
 
@@ -53,7 +57,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 export function useSocket() {
   const context = useContext(SocketContext);
   if (!context) {
-    throw new Error('useSocket must be used within a SocketProvider');
+    throw new Error('useSocket deve ser usado dentro de SocketProvider');
   }
   return context;
 }

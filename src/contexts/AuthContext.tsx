@@ -1,3 +1,8 @@
+// ============================================================================
+// CONTEXTO: Autenticação
+// ============================================================================
+// Gerencia estado de autenticação, usuário logado e dados persistidos
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
@@ -17,6 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Carrega dados armazenados na inicialização
   useEffect(() => {
     async function loadStorageData() {
       try {
@@ -31,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error('Error loading storage data:', error);
+        console.error('Erro ao carregar dados:', error);
         setUser(null);
         setIsAuthenticated(false);
       } finally {
@@ -42,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadStorageData();
   }, []);
 
+  // Login: armazena dados do usuário e token
   async function signIn(user: any) {
     try {
       await AsyncStorage.setItem('userData', JSON.stringify(user));
@@ -49,24 +56,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(user);
       setIsAuthenticated(true);
     } catch (error) {
-      console.error('Error during sign in:', error);
+      console.error('Erro durante login:', error);
       throw error;
     }
   }
 
+  // Logout: limpa todos os dados armazenados
   async function signOut() {
     try {
-      // Clear all AsyncStorage data
       await AsyncStorage.clear();
-      // Reset user state
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
-      console.error('Error during sign out:', error);
+      console.error('Erro durante logout:', error);
       throw error;
     }
   }
 
+  // Recarrega dados do usuário do armazenamento
   async function reloadUser() {
     try {
       const storagedUser = await AsyncStorage.getItem('userData');
@@ -79,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.error('Error reloading user:', error);
+      console.error('Erro ao recarregar usuário:', error);
     }
   }
 
@@ -92,6 +99,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export function useAuth() {
   const context = useContext(AuthContext);
-
+  if (!context) {
+    throw new Error('useAuth deve ser usado dentro de AuthProvider');
+  }
   return context;
 }
