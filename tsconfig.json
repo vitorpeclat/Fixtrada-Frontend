@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "strict": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"
       ]
     },
+    "strict": true,
     "strictNullChecks": true
   },
   "include": [
