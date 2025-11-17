@@ -55,19 +55,26 @@ export default function ChatScreen() {
 
     // --- Conexão Socket.IO ---
     // Conecta ao seu backend (ajuste a URL se necessário)
+    // Envia o JWT no campo `auth.token` para o middleware do servidor
     const socket = io(API_BASE_URL, {
-      query: {
-        userId: user.id, // Envia o ID do usuário para autenticação no socket
+      auth: {
+        token: user?.token,
       },
     });
     socketRef.current = socket;
 
-    // Entra na "sala" do chat específico
-    socket.emit("joinChat", chatId);
+    // Entra na sala do serviço/chat (nome do evento esperado pelo backend)
+    socket.emit("join_service_chat", chatId);
 
-    // Ouve por novas mensagens
-    socket.on("newMessage", (message: Message) => {
-      setMessages((prevMessages) => [message, ...prevMessages]);
+    // Ouve por novas mensagens (nome do evento emitido pelo backend)
+    socket.on("receive_message", (msg: any) => {
+      const mapped: Message = {
+        id: msg.menID || msg.id,
+        senderId: msg.senderId || msg.fk_remetente_usuID || msg.sender,
+        content: msg.content || msg.menConteudo,
+        timestamp: msg.menData || msg.timestamp,
+      };
+      setMessages((prevMessages) => [mapped, ...prevMessages]);
     });
 
     // --- Busca mensagens antigas ---
@@ -77,7 +84,9 @@ export default function ChatScreen() {
         const response = await api.get(`/chats/${chatId}/messages`);
 
         if (response.status === 200) {
-          setMessages(response.data.messages.reverse()); // Inverte para ordem cronológica
+          // Backend já retorna no formato correto, não precisa mapear
+          const messagesFromApi = response.data.messages || [];
+          setMessages(messagesFromApi); // Não inverter, já vem ordenado
           setShopName(response.data.shopName); // Pega o nome da oficina
         } else {
           console.error("Falha ao buscar mensagens:", response.data.message);
@@ -93,7 +102,7 @@ export default function ChatScreen() {
 
     // Desconecta ao sair da tela
     return () => {
-      socket.emit("leaveChat", chatId);
+      socket.emit("leave_service_chat", chatId);
       socket.disconnect();
     };
   }, [chatId, user]);
@@ -103,13 +112,15 @@ export default function ChatScreen() {
     if (newMessage.trim() === "" || !socketRef.current || !user) return;
 
     const messagePayload = {
-      chatId: chatId,
+      serviceId: chatId, // Backend espera 'serviceId' (registroServico.regID). Se não for regID, backend deve mapear.
       senderId: user.id, // ID do cliente logado
+      senderName:
+        user?.nome || user?.usuNome || user?.mecLogin || user?.name || user?.login,
       content: newMessage.trim(),
     };
 
-    // Emite o evento "sendMessage" para o servidor
-    socketRef.current.emit("sendMessage", messagePayload);
+    // Emite o evento esperado pelo backend
+    socketRef.current.emit("send_message", messagePayload);
 
     // Limpa o input
     setNewMessage("");
@@ -117,8 +128,8 @@ export default function ChatScreen() {
 
   // 4. Renderiza cada bolha de mensagem
   const renderMessageItem = ({ item }: { item: Message }) => {
-    const isSender = item.senderId === user.id; // Verifica se é o usuário logado
-
+    const isSender = item.senderId === user?.id;
+    
     return (
       <View style={styles.messageBubbleContainer}>
         <View
@@ -127,10 +138,9 @@ export default function ChatScreen() {
             isSender ? styles.senderBubble : styles.receiverBubble,
           ]}
         >
-          <AppText
-            style={isSender ? styles.senderText : styles.receiverText}
-          >
-            {item.content}
+          {/* Garante que o conteúdo é sempre renderizado dentro de AppText */}
+          <AppText style={isSender ? styles.senderText : styles.receiverText}>
+            {typeof item.content === 'string' ? item.content : String(item.content || '')}
           </AppText>
         </View>
       </View>
@@ -138,7 +148,7 @@ export default function ChatScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}> 
       {/* --- Cabeçalho --- */}
       <View style={styles.headerContainer}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -146,7 +156,9 @@ export default function ChatScreen() {
           <AppText style={styles.backButtonText}>Voltar</AppText>
         </TouchableOpacity>
         <AppText style={styles.headerTitle}>{shopName}</AppText>
-        <View style={{ width: 80 }} /> {/* Espaço para centralizar o título */}
+        <View style={{ width: 80 }}>
+          {/* Espaço para centralizar o título, sem texto puro */}
+        </View>
       </View>
 
       {/* --- Lista de Mensagens --- */}
@@ -168,7 +180,7 @@ export default function ChatScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? insets.bottom + 80 : 0}
       >
-        <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 8 }]}>
+        <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 8 }]}> 
           <TextInput
             style={styles.textInput}
             value={newMessage}
