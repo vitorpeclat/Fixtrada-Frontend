@@ -31,8 +31,8 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   tabText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 20,
+    fontWeight: '600',
     color: Colors.gray,
   },
   activeTabText: {
@@ -76,5 +76,110 @@ export const styles = StyleSheet.create({
   button: {
     width: '80%',
     alignSelf: 'center',
+  },
+  // Bottom sheet
+  sheetHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 6,
+    paddingBottom: 8,
+    gap: 2,
+  },
+  sheetTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.darkGray,
+  },
+  sheetSubtitle: {
+    fontSize: 16,
+    color: Colors.gray,
+  },
+  sheetList: {
+    paddingHorizontal: 12,
+    paddingBottom: 24,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+    marginVertical: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  cardAvatarWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: Colors.lightGray,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardAvatar: {
+    width: 48,
+    height: 48,
+  },
+  cardAvatarFallback: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardBody: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.darkGray,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  cardMeta: {
+    fontSize: 15,
+    color: Colors.gray,
+  },
+  cardAddress: {
+    fontSize: 15,
+    color: Colors.gray,
+    marginTop: 2,
+  },
+  // Radius filter
+  radiusFilterContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  radiusPill: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    backgroundColor: Colors.lightGray,
+  },
+  radiusPillActive: {
+    backgroundColor: Colors.primary,
+  },
+  radiusPillText: {
+    fontSize: 16,
+    color: Colors.darkGray,
+    fontWeight: '700',
+  },
+  radiusPillTextActive: {
+    color: Colors.white,
   },
 });
