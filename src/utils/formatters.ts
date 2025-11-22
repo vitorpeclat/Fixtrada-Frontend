@@ -18,3 +18,20 @@ export function unformatPhoneNumber(text: string): string {
     if (!text) return "";
     return text.replace(/\D/g, "");
 }
+
+export function formatCEP(text: string): string {
+    if (!text) return "";
+    let userInput = text.replace(/\D/g, "");
+    userInput = userInput.slice(0, 8);
+
+    if (userInput.length > 5) {
+        return `${userInput.slice(0, 5)}-${userInput.slice(5, 8)}`;
+    } else {
+        return userInput;
+    }
+}
+
+export function unformatCEP(text: string): string {
+    if (!text) return "";
+    return text.replace(/\D/g, "");
+}

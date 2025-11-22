@@ -1,11 +1,10 @@
 import { AppText } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
-import { strings } from "@/languages";
+import { useAuth } from "@/contexts/AuthContext";
 import { Colors } from "@/theme/colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Send } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -13,235 +12,187 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { io, Socket } from "socket.io-client";
-import { styles } from "./styles"; // Estilos no próximo arquivo
+import { styles } from "./styles"; // Seus estilos corretos
+import { api } from "../ChatList/api"; // Reutilizando a instância da api
 
-// Tipo para uma mensagem
+// Define os tipos de mensagem
 type Message = {
   id: string;
-  text: string;
-  senderId: "user" | "shop"; // 'user' é o cliente (azul), 'shop' é a oficina (cinza)
+  senderId: string; // ID de quem enviou
+  content: string;
+  timestamp: string;
 };
 
-interface SocketMessage {
-  menID: string; // ID da mensagem (UUID)
-  serviceId: string; // ID do serviço/chat
-  senderId: string; // ID do usuário que enviou (UUID)
-  senderName: string; // Nome de quem enviou
-  content: string; // O texto da mensagem
-  menData: string; // Data da mensagem (formato ISO string)
-}
-
-// Este é o payload que o servidor espera para 'send_message'
-interface SendMessagePayload {
-  serviceId: string;
-  senderId: string; // ID do usuário logado
-  senderName: string; // Nome do usuário logado
-  content: string; // O texto do input
-}
-
-// Componente para a bolha de mensagem
-const MessageBubble = ({ message }: { message: Message }) => {
-  const isSender = message.senderId === "user";
-
-  return (
-    <View
-      style={[
-        styles.messageBubbleContainer,
-        { alignItems: isSender ? "flex-end" : "flex-start" },
-      ]}
-    >
-      <View
-        style={[
-          styles.bubble,
-          isSender ? styles.senderBubble : styles.receiverBubble,
-        ]}
-      >
-        <AppText
-          style={isSender ? styles.senderText : styles.receiverText}
-          textAlign="left" // Garante alinhamento à esquerda dentro da bolha
-        >
-          {message.text}
-        </AppText>
-      </View>
-    </View>
-  );
+// Define o que esperamos da rota (o chatId)
+type ChatScreenParams = {
+  chatId: string;
 };
 
-function ChatContent() {
+export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth(); // Pega o usuário logado
+  
+  // 1. Pega o 'chatId' passado pela tela de lista
+  const { chatId } = useLocalSearchParams<ChatScreenParams>();
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [shopName, setShopName] = useState("Chat"); // Nome da oficina
   const socketRef = useRef<Socket | null>(null);
-  const { serviceId } = useLocalSearchParams();
 
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]); // Estado para as mensagens
-  const [user, setUser] = useState<any>(null);
-  const [token, setToken] = useState<string | null>(null);
-
+  // 2. Conecta ao Socket.IO e busca mensagens antigas
   useEffect(() => {
-    const loadUserData = async () => {
-      const token = await AsyncStorage.getItem("userToken");
-      const userData = await AsyncStorage.getItem("userData");
-      setToken(token);
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
-    };
-    loadUserData();
-  }, []);
-
-  const mapSocketMessageToFrontend = (
-    msg: SocketMessage,
-    currentUserId: string
-  ): Message => {
-    return {
-      id: msg.menID,
-      text: msg.content,
-      senderId: msg.senderId === currentUserId ? "user" : "shop",
-    };
-  };
-
-  useEffect(() => {
-    // 1. Não fazer nada se o usuário ou token não estiverem prontos
-    if (!user || !token) {
+    if (!chatId || !user) {
+      setLoading(false);
       return;
     }
 
-    // 2. Definir o ID do usuário com base no 'user' agora válido
-    const currentUserId = user.usuID || "";
-
-    // Conecta ao servidor
+    // --- Conexão Socket.IO ---
+    // Conecta ao seu backend (ajuste a URL se necessário)
+    // Envia o JWT no campo `auth.token` para o middleware do servidor
     const socket = io(API_BASE_URL, {
       auth: {
-        token: token,
+        token: user?.token,
       },
     });
     socketRef.current = socket;
 
-    socket.emit("join_service_chat", serviceId);
-    console.log(`Entrando no chat do serviço: ${serviceId}`);
+    // Entra na sala do serviço/chat (nome do evento esperado pelo backend)
+    socket.emit("join_service_chat", chatId);
 
-    socket.on(
-      "chat_history",
-      (data: { serviceId: string; history: SocketMessage[] }) => {
-        console.log("Histórico recebido:", data.history);
-        const mappedHistory = data.history.map((msg) =>
-          // 3. Usar o 'currentUserId' correto
-          mapSocketMessageToFrontend(msg, currentUserId)
-        );
-        setMessages(mappedHistory.reverse());
+    // Ouve por novas mensagens (nome do evento emitido pelo backend)
+    socket.on("receive_message", (msg: any) => {
+      const mapped: Message = {
+        id: msg.menID || msg.id,
+        senderId: msg.senderId || msg.fk_remetente_usuID || msg.sender,
+        content: msg.content || msg.menConteudo,
+        timestamp: msg.menData || msg.timestamp,
+      };
+      setMessages((prevMessages) => [mapped, ...prevMessages]);
+    });
+
+    // --- Busca mensagens antigas ---
+    const fetchChatDetails = async () => {
+      try {
+        // Usando a instância 'api' que já injeta o token de autorização
+        const response = await api.get(`/chats/${chatId}/messages`);
+
+        if (response.status === 200) {
+          // Backend já retorna no formato correto, não precisa mapear
+          const messagesFromApi = response.data.messages || [];
+          setMessages(messagesFromApi); // Não inverter, já vem ordenado
+          setShopName(response.data.shopName); // Pega o nome da oficina
+        } else {
+          console.error("Falha ao buscar mensagens:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar chat:", error);
+      } finally {
+        setLoading(false);
       }
-    );
+    };
 
-    socket.on("receive_message", (newMessage: SocketMessage) => {
-      console.log("Nova mensagem recebida:", newMessage);
-      const mappedMessage = mapSocketMessageToFrontend(
-        newMessage,
-        // 3. Usar o 'currentUserId' correto
-        currentUserId
-      );
-      setMessages((prevMessages) => [mappedMessage, ...prevMessages]);
-    });
+    fetchChatDetails();
 
-    socket.on("connect_error", (err) => {
-      console.error("Socket connection error:", err.message);
-    });
-
-    socket.on("auth_error", (msg) => {
-      console.error("Socket authentication error:", msg);
-      // Opcional: Deslogar o usuário ou mostrar um alerta
-    });
-
-    // Função de limpeza
+    // Desconecta ao sair da tela
     return () => {
+      socket.emit("leave_service_chat", chatId);
       socket.disconnect();
-      socketRef.current = null;
     };
-  }, [serviceId, token, user]); // 4. Adicionar 'user' ao array de dependências
+  }, [chatId, user]);
 
-  const handleBack = () => {
-    router.back();
-  };
-
+  // 3. Função para enviar mensagem
   const handleSend = () => {
-    if (message.trim().length === 0) return;
-    if (!socketRef.current) return; // Garante que o socket está conectado
+    if (newMessage.trim() === "" || !socketRef.current || !user) return;
 
-    // VERIFICAÇÃO ADICIONADA: Não envie se o usuário não estiver carregado
-    if (!user) {
-      console.error("Usuário não carregado, não é possível enviar a mensagem.");
-      return;
-    }
-
-    const payload: SendMessagePayload = {
-      serviceId: serviceId as string,
-      senderId: user.id, // Correção
-      senderName: user.usuNome,
-      content: message.trim(),
+    const messagePayload = {
+      serviceId: chatId, // Backend espera 'serviceId' (registroServico.regID). Se não for regID, backend deve mapear.
+      senderId: user.id, // ID do cliente logado
+      senderName:
+        user?.nome || user?.usuNome || user?.mecLogin || user?.name || user?.login,
+      content: newMessage.trim(),
     };
 
-    // 1. Emitir a mensagem para o servidor
-    socketRef.current.emit("send_message", payload);
+    // Emite o evento esperado pelo backend
+    socketRef.current.emit("send_message", messagePayload);
 
-    // 2. Limpar o input
-    setMessage("");
+    // Limpa o input
+    setNewMessage("");
+  };
+
+  // 4. Renderiza cada bolha de mensagem
+  const renderMessageItem = ({ item }: { item: Message }) => {
+    const isSender = item.senderId === user?.id;
+    
+    return (
+      <View style={styles.messageBubbleContainer}>
+        <View
+          style={[
+            styles.bubble,
+            isSender ? styles.senderBubble : styles.receiverBubble,
+          ]}
+        >
+          {/* Garante que o conteúdo é sempre renderizado dentro de AppText */}
+          <AppText style={isSender ? styles.senderText : styles.receiverText}>
+            {typeof item.content === 'string' ? item.content : String(item.content || '')}
+          </AppText>
+        </View>
+      </View>
+    );
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      {/* Cabeçalho */}
-      <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <ChevronLeft size={28} color={Colors.primary} />
-          <AppText style={styles.backButtonText}>
-            {strings.global.back}
-          </AppText>
+    <View style={[styles.container, { paddingTop: insets.top }]}> 
+      {/* --- Cabeçalho --- */}
+      <View style={styles.headerContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <ChevronLeft size={30} color={Colors.primary} />
+          <AppText style={styles.backButtonText}>Voltar</AppText>
         </TouchableOpacity>
-        <AppText style={styles.headerTitle}>Chat</AppText>
-        {/* Espaço reservado para alinhar o título ao centro */}
-        <View style={{ width: 80 }} />
+        <AppText style={styles.headerTitle}>{shopName}</AppText>
+        <View style={{ width: 80 }}>
+          {/* Espaço para centralizar o título, sem texto puro */}
+        </View>
       </View>
 
-      {/* Lista de Mensagens */}
-      <FlatList
-        style={styles.messageList}
-        contentContainerStyle={styles.messageListContent}
-        data={messages}
-        renderItem={({ item }) => <MessageBubble message={item} />}
-        keyExtractor={(item) => item.id}
-        inverted // Essencial para chat!
-      />
-
-      {/* Input de Mensagem */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Digite uma mensagem"
-          placeholderTextColor={Colors.gray}
-          value={message}
-          onChangeText={setMessage}
-          multiline
+      {/* --- Lista de Mensagens --- */}
+      {loading ? (
+        <ActivityIndicator style={{ flex: 1 }} size="large" color={Colors.primary} />
+      ) : (
+        <FlatList
+          style={styles.messageList}
+          contentContainerStyle={styles.messageListContent}
+          data={messages}
+          renderItem={renderMessageItem}
+          keyExtractor={(item) => item.id}
+          inverted // Começa de baixo para cima
         />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Send size={22} color={Colors.white} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
+      )}
 
-// Componente principal para exportar com KeyboardAvoidingView
-export default function ChatScreen() {
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0} // Ajuste conforme necessário
-    >
-      <ChatContent />
-    </KeyboardAvoidingView>
+      {/* --- Input de Mensagem --- */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.bottom + 80 : 0}
+      >
+        <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 8 }]}> 
+          <TextInput
+            style={styles.textInput}
+            value={newMessage}
+            onChangeText={setNewMessage}
+            placeholder="Digite sua mensagem..."
+            multiline
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <Send size={24} color={Colors.white} />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
   );
 }

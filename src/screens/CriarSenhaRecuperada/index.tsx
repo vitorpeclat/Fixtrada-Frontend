@@ -4,14 +4,14 @@ import { Alert, BackHandler, TouchableOpacity, View } from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
-    AnimatedView,
-    AnimationProvider,
-    AppText,
-    Button,
-    Input,
-    KeyboardShiftView,
-    PasswordValidation,
-    useScreenAnimation,
+  AnimatedView,
+  AnimationProvider,
+  AppText,
+  Button,
+  Input,
+  KeyboardShiftView,
+  PasswordValidation,
+  useScreenAnimation,
 } from "@/components";
 import { strings } from "@/languages"; // <-- IMPLEMENTAÇÃO
 import { Colors } from "@/theme/colors";
@@ -27,6 +27,7 @@ function CriarSenhaRecuperadaContent() {
   const [passwordCriteria, setPasswordCriteria] = useState({
     length: false,
     uppercase: false,
+    lowercase: false,
     specialChar: false,
     match: false,
   });
