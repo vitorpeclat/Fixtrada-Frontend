@@ -29,7 +29,7 @@ export const styles = StyleSheet.create({
   sectionContainer: {
     marginBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: Colors.background,
     paddingBottom: 8,
   },
   optionalToggle: {
