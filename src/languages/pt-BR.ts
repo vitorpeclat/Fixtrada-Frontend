@@ -37,7 +37,7 @@ export const ptBRStrings = {
     rememberMe: "Lembre de mim",
     forgotPassword: "Esqueci minha senha.",
     loginButton: "Logar-se",
-    noAccount: "Não tem conta?",
+    noAccount: "Não possui uma conta?",
     signUp: "Cadastrar-se",
     loginFailureTitle: "Falha no Login",
     passwordPlaceholder: "Digite sua senha",

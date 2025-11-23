@@ -54,7 +54,6 @@ function LoginContent() {
 
       if (response.ok) {
         if (data.token) {
-          // Use AuthContext signIn to properly set user data
           await signIn({ ...data.user, token: data.token });
           handleNavigatePush("/Home", "fadeOutUp");
         }
