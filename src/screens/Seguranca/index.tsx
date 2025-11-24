@@ -4,6 +4,8 @@ import {
   Input,
   PasswordValidation,
 } from "@/components";
+import { API_BASE_URL } from "@/config/ip";
+import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
 import { FilterStatus } from "@/types/FilterStatus";
@@ -38,6 +40,7 @@ import { styles } from "./styles";
 function SegurancaContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isCpfModalVisible, setIsCpfModalVisible] = useState(false);
   const [cpf, setCpf] = useState("");
@@ -45,6 +48,7 @@ function SegurancaContent() {
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [loadingChange, setLoadingChange] = useState(false);
   const [passwordVisibility, setPasswordVisibility] = useState(
     FilterStatus.HIDE
   );
@@ -88,7 +92,7 @@ function SegurancaContent() {
     });
   }, []);
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (!senhaAtual || !novaSenha || !confirmarSenha) {
       Alert.alert(strings.global.attention, strings.global.fillAllFields);
       return;
@@ -114,10 +118,31 @@ function SegurancaContent() {
       return;
     }
 
-    console.log("Senha Atual:", senhaAtual);
-    console.log("Nova Senha:", novaSenha);
-
-    handleClosePasswordSheet();
+    // Deriva email do objeto de usuário (ajusta conforme estrutura real)
+    const email = user?.email || user?.usuLogin || user?.mecLogin;
+    if (!email) {
+      Alert.alert(strings.global.attention, "E-mail do usuário não encontrado.");
+      return;
+    }
+    try {
+      setLoadingChange(true);
+      const response = await fetch(`${API_BASE_URL}/password/change`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senhaAtual: senhaAtual.trim(), novaSenha: novaSenha.trim() }),
+      });
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        Alert.alert(strings.global.attention, json.message || "Erro ao alterar a senha.");
+        return;
+      }
+      Alert.alert(strings.global.success, json.message || "Senha alterada com sucesso.");
+      handleClosePasswordSheet();
+    } catch (e) {
+      Alert.alert(strings.global.attention, "Não foi possível alterar a senha agora.");
+    } finally {
+      setLoadingChange(false);
+    }
   };
 
   const renderBackdrop = useCallback(
@@ -328,11 +353,12 @@ function SegurancaContent() {
     		onEyeIconPress={togglePasswordVisibility}
     		secureTextEntry={passwordVisibility === FilterStatus.HIDE}
     	  />
-    	  <Button
-    		title={strings.global.save} 
-    		onPress={handleChangePassword}
-    		containerStyle={{ width: "100%", marginTop: 10 }}
-    	  />
+      	  <Button
+    title={loadingChange ? "Salvando..." : strings.global.save} 
+    onPress={handleChangePassword}
+    containerStyle={{ width: "100%", marginTop: 10 }}
+    disabled={loadingChange}
+        />
     	</BottomSheetView>
       </BottomSheetModal>
     </View>

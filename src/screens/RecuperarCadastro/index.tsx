@@ -1,24 +1,24 @@
+import { API_BASE_URL } from "@/config/ip";
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import { Alert, BackHandler, TouchableOpacity, View } from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
-    AnimatedView,
-    AnimationProvider,
-    AppText,
-    Input,
-    KeyboardShiftView,
-    useScreenAnimation,
+  AnimatedView,
+  AnimationProvider,
+  AppText,
+  Input,
+  KeyboardShiftView,
+  useScreenAnimation,
 } from "@/components";
 import { strings } from "@/languages"; // <-- IMPLEMENTAÇÃO
 import { Colors } from "@/theme/colors";
 import { styles } from "./styles";
 
 function RecuperarCadastroContent() {
-  const [cpf, setCpf] = useState("");
-  const [dataNascimento, setDataNascimento] = useState("");
-  const [erroData, setErroData] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const formRef =
     useRef<Animatable.View & { shake: (duration: number) => void }>(null);
   const { handleGoBack, handleNavigatePush, handleHardwareBackPress } =
@@ -32,26 +32,45 @@ function RecuperarCadastroContent() {
     return () => backHandler.remove();
   }, [handleHardwareBackPress]);
 
-  function handleRecuperar() {
-    if (!cpf.trim() || !dataNascimento.trim()) {
-      Alert.alert(strings.global.attention, strings.global.fillAllFields);
-      formRef.current?.shake(800);
-      return;
-    }
-    if (erroData) {
-      Alert.alert(
-        strings.global.invalidDate,
-        strings.recuperarSenha.correctBirthDate
-      );
-      formRef.current?.shake(800);
-      return;
-    }
+  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-    Alert.alert(
-      strings.global.success,
-      strings.recuperarSenha.accountFoundMessage
-    );
-    handleNavigatePush("/CriarSenhaRecuperada", "fadeOutUp");
+  async function handleRecuperar() {
+    if (!email.trim()) {
+      Alert.alert(strings.global.attention, "Informe o e-mail.");
+      formRef.current?.shake(800);
+      return;
+    }
+    if (!emailValido) {
+      Alert.alert(strings.global.attention, "E-mail inválido.");
+      formRef.current?.shake(800);
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/password/request-reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      Alert.alert(
+        strings.global.success,
+        "Se o e-mail estiver cadastrado, enviamos um código de recuperação."
+      );
+      // Navega para a tela de verificação de código passando o e-mail
+      handleNavigatePush(`/VerificarCodigoRecuperacao?email=${encodeURIComponent(email.trim())}`, "fadeOutUp");
+    } catch (e) {
+      Alert.alert(strings.global.attention, "Não foi possível solicitar recuperação agora.");
+      formRef.current?.shake(800);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -73,46 +92,24 @@ function RecuperarCadastroContent() {
         </AnimatedView>
 
         <Animatable.View ref={formRef} style={styles.form}>
-          <AnimatedView style={styles.row}>
+          <AnimatedView style={{ width: '90%' }}>
             <Input
-              label={strings.global.cpfLabel}
-              placeholder={strings.global.cpfPlaceholder}
-              value={cpf}
-              onChangeText={setCpf}
-              type="cpf"
-              keyboardType="numeric"
-              maxLength={14}
-              containerStyle={{ width: "48%" }}
+              label={"E-mail"}
+              placeholder={"seuemail@exemplo.com"}
+              value={email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              onChangeText={setEmail}
             />
-            <View style={{ width: "48%" }}>
-              <Input
-                label={strings.recuperarSenha.dataNascLabel}
-                placeholder={strings.global.datePlaceholder}
-                value={dataNascimento}
-                type="date"
-                onDateChange={({ date, error }) => {
-                  setDataNascimento(date);
-                  setErroData(error);
-                }}
-              />
-              {erroData ? (
-                <AppText style={styles.errorText}>{erroData}</AppText>
-              ) : null}
-            </View>
           </AnimatedView>
-
           <AnimatedView style={{ width: "60%" }}>
             <TouchableOpacity
-              style={[
-                styles.button,
-                (!cpf.trim() || !dataNascimento.trim()) &&
-                  styles.buttonDisabled,
-              ]}
+              style={[styles.button, (!emailValido || loading) && styles.buttonDisabled]}
               onPress={handleRecuperar}
-              disabled={!cpf.trim() || !dataNascimento.trim()}
+              disabled={!emailValido || loading}
               activeOpacity={0.7}
             >
-              <AppText style={styles.buttonText}>{strings.global.continue}</AppText>
+              <AppText style={styles.buttonText}>{loading ? "Enviando..." : strings.global.continue}</AppText>
             </TouchableOpacity>
           </AnimatedView>
         </Animatable.View>

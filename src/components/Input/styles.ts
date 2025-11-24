@@ -5,6 +5,7 @@ import { StyleSheet } from "react-native"
 export const styles = StyleSheet.create({
     wrapperWithLabel: {
         marginVertical: 8,
+        width: '100%',
     },
     container: {
         backgroundColor: Colors.background,

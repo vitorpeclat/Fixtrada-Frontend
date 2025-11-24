@@ -1,4 +1,6 @@
+import { API_BASE_URL } from "@/config/ip";
 import { Feather } from "@expo/vector-icons";
+import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, BackHandler, TouchableOpacity, View } from "react-native";
 import * as Animatable from "react-native-animatable";
@@ -19,6 +21,7 @@ import { FilterStatus } from "@/types/FilterStatus";
 import { styles } from "./styles";
 
 function CriarSenhaRecuperadaContent() {
+  const { email } = useLocalSearchParams<{ email?: string }>();
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [passwordVisibility, setPasswordVisibility] = useState(
@@ -56,7 +59,9 @@ function CriarSenhaRecuperadaContent() {
     );
   };
 
-  function handleSavePassword() {
+  const [loading, setLoading] = useState(false);
+
+  async function handleSavePassword() {
     if (!novaSenha.trim() || !confirmarSenha.trim()) {
       Alert.alert(strings.global.attention, strings.global.fillAllFields);
       formRef.current?.shake(800);
@@ -75,11 +80,31 @@ function CriarSenhaRecuperadaContent() {
       formRef.current?.shake(800);
       return;
     }
-    Alert.alert(
-      strings.global.success,
-      strings.recuperarSenha.passwordChangedSuccess
-    );
-    handleNavigateReplace("/Login", "fadeOutUp");
+    if (!email) {
+      Alert.alert(strings.global.attention, "E-mail ausente.");
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/password/update-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, novaSenha: novaSenha.trim() }),
+      });
+      if (!response.ok) {
+        throw new Error("Update failed");
+      }
+      Alert.alert(
+        strings.global.success,
+        strings.recuperarSenha.passwordChangedSuccess
+      );
+      handleNavigateReplace("/Login", "fadeOutUp");
+    } catch (e) {
+      Alert.alert(strings.global.attention, "Não foi possível atualizar a senha.");
+      formRef.current?.shake(800);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -132,9 +157,10 @@ function CriarSenhaRecuperadaContent() {
           </AnimatedView>
           <AnimatedView>
             <Button
-              title={strings.recuperarSenha.savePasswordButton}
+              title={loading ? "Salvando..." : strings.recuperarSenha.savePasswordButton}
               onPress={handleSavePassword}
               containerStyle={{ width: "60%" }}
+              disabled={loading}
             />
           </AnimatedView>
         </Animatable.View>
