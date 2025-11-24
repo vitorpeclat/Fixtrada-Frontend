@@ -38,6 +38,13 @@ export default function AuthLayout() {
                     animation: 'slide_from_bottom',
                 }}
             />
+                        <Stack.Screen 
+                name="Admin/index"
+                options={{
+                    presentation: 'modal',
+                    animation: 'slide_from_bottom',
+                }}
+            />
         </Stack>
     );
 }

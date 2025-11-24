@@ -9,9 +9,8 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   Pencil,
-  UserRound,
+  UserRound
 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -285,18 +284,6 @@ function DadosPessoaisContent() {
           </View>
         </View>
         <View style={styles.divider} />
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          activeOpacity={0.7}
-          onPress={() => handleOpenModal("idioma", strings.personalDataScreen.language, strings.personalDataScreen.languageSubtitle)}
-        >
-          <View style={styles.menuItemContent}>
-            <AppText style={styles.menuItemTitle}>{strings.personalDataScreen.language}</AppText>
-            <AppText style={styles.menuItemValue}>{strings.personalDataScreen.languageSubtitle}</AppText>
-          </View>
-          <ExternalLink size={20} color={Colors.gray} />
-        </TouchableOpacity>
 
         <View style={{ marginTop: 30, paddingHorizontal: 20 }}>
             <TouchableOpacity
