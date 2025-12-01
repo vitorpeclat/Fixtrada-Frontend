@@ -1,4 +1,5 @@
 import { AppText, Button } from "@/components";
+import { GOOGLE_MAPS_API_KEY } from "@/config/apiKeys";
 import { API_BASE_URL } from "@/config/ip";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
@@ -56,6 +57,7 @@ function ServicosContent() {
   const [userLocation, setUserLocation] = useState<Coord | null>(null);
   const [prestadores, setPrestadores] = useState<Prestador[]>([]);
   const [loading, setLoading] = useState(false);
+  const [geocodingProgress, setGeocodingProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedCNPJ, setSelectedCNPJ] = useState<string | null>(null);
   const [maxDistanceKm, setMaxDistanceKm] = useState<number>(7); // raio configurável
@@ -124,20 +126,177 @@ function ServicosContent() {
     }
   }, []);
 
+  // Delay helper para evitar muitas requisições simultâneas
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Converte CEP + número para coordenadas usando Google Maps Geocoding API
+  const geocodeAddress = async (cep: string, numero?: string | null): Promise<{ latitude: number; longitude: number } | null> => {
+    try {
+      // Remove formatação do CEP
+      const cleanCEP = cep.replace(/\D/g, '');
+      if (cleanCEP.length !== 8) {
+        console.log('CEP inválido:', cep);
+        return null;
+      }
+
+      console.log('Geocodificando:', cep, numero);
+
+      // 1. Busca o endereço completo via ViaCEP
+      const viaCepRes = await axios.get(`https://viacep.com.br/ws/${cleanCEP}/json/`, { timeout: 5000 });
+      if (viaCepRes.data.erro) {
+        console.log('CEP não encontrado no ViaCEP:', cep);
+        return null;
+      }
+
+      const { logradouro, bairro, localidade, uf } = viaCepRes.data;
+      
+      // Se não tem logradouro, usa apenas CEP
+      if (!logradouro) {
+        console.log('CEP sem logradouro detalhado:', cep);
+      }
+
+      // 2. Monta query + components para geocodificação (maior precisão)
+      const addressParts = [
+        logradouro,
+        numero,
+        bairro,
+        localidade,
+        uf,
+        'Brasil'
+      ].filter(Boolean);
+      const addressQuery = addressParts.join(', ');
+      const components = [
+        `country:BR`,
+        `postal_code:${cleanCEP}`,
+        localidade ? `locality:${localidade}` : null,
+        uf ? `administrative_area:${uf}` : null,
+        logradouro ? `route:${logradouro}` : null,
+      ].filter(Boolean).join('|');
+      
+      console.log('Endereço para geocodificação:', addressQuery);
+
+      // Pequeno delay entre requisições
+      await sleep(200);
+
+      // 3. Geocodifica usando Google Maps API
+      const googleRes = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+        params: {
+          address: addressQuery || `${cleanCEP}, Brasil`,
+          components,
+          region: 'br',
+          key: GOOGLE_MAPS_API_KEY,
+        },
+        timeout: 10000
+      });
+
+      if (googleRes.data.status === 'OK' && googleRes.data.results.length > 0) {
+        const location = googleRes.data.results[0].geometry.location;
+        const coords = {
+          latitude: location.lat,
+          longitude: location.lng,
+        };
+        console.log('Coordenadas encontradas:', cep, coords);
+        return coords;
+      } else {
+        console.log('Google não encontrou coordenadas. Status:', googleRes.data.status);
+        return null;
+      }
+    } catch (error) {
+      console.warn('Erro ao geocodificar endereço:', cep, numero, error);
+      return null;
+    }
+  };
+
   const fetchPrestadores = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const url = `${API_BASE_URL}/prestadores?ativo=true&limit=200&offset=0`;
+      console.log('Buscando prestadores de:', url);
       const res = await axios.get<Prestador[]>(url);
-      const normalized = (res.data || []).map((p) => {
+      const data = res.data || [];
+      console.log('Prestadores recebidos:', data.length);
+      
+      // Normaliza dados existentes
+      const normalized = data.map((p) => {
         const lat = typeof p.latitude === 'string' ? parseFloat(p.latitude) : p.latitude;
         const lon = typeof p.longitude === 'string' ? parseFloat(p.longitude) : p.longitude;
-        return { ...p, latitude: isFinite(lat as number) ? lat : null, longitude: isFinite(lon as number) ? lon : null } as Prestador;
+        return { 
+          ...p, 
+          latitude: isFinite(lat as number) ? lat : null, 
+          longitude: isFinite(lon as number) ? lon : null 
+        } as Prestador;
       });
-      const valid = normalized.filter((p) => typeof p.latitude === 'number' && typeof p.longitude === 'number');
-      setPrestadores(valid);
+
+      console.log('Prestadores com coordenadas existentes:', normalized.filter(p => p.latitude && p.longitude).length);
+      console.log('Prestadores sem coordenadas:', normalized.filter(p => !p.latitude || !p.longitude).length);
+
+      // Geocodifica prestadores que não têm coordenadas mas têm CEP
+      // Processa em sequência para evitar rate limit
+      const withCoords: Prestador[] = [];
+      const toGeocode = normalized.filter(p => !p.latitude && !p.longitude && p.fk_endereco_endCEP);
+      let geocoded = 0;
+      
+      for (const p of normalized) {
+        // Se já tem coordenadas válidas, adiciona direto
+        if (typeof p.latitude === 'number' && typeof p.longitude === 'number') {
+          withCoords.push(p);
+          continue;
+        }
+        
+        // Se tem CEP, tenta geocodificar (incluindo número do endereço)
+        if (p.fk_endereco_endCEP) {
+          geocoded++;
+          setGeocodingProgress(`Localizando ${geocoded}/${toGeocode.length}...`);
+          const coords = await geocodeAddress(p.fk_endereco_endCEP, p.mecEnderecoNum);
+          if (coords) {
+            withCoords.push({ ...p, ...coords });
+          } else {
+            withCoords.push(p); // Adiciona mesmo sem coordenadas
+          }
+        } else {
+          withCoords.push(p);
+        }
+      }
+
+      setGeocodingProgress(null);
+
+      // Filtra apenas prestadores com coordenadas válidas
+      const valid = withCoords.filter((p) => typeof p.latitude === 'number' && typeof p.longitude === 'number');
+
+      // Separa prestadores que ficaram exatamente no mesmo ponto (evita sobreposição visual)
+      // Agrupa por coordenadas arredondadas (~1.1m por 6 casas decimais)
+      const keyFor = (lat: number, lon: number) => `${lat.toFixed(6)}_${lon.toFixed(6)}`;
+      const groups = new Map<string, Prestador[]>();
+      for (const p of valid) {
+        const key = keyFor(p.latitude as number, p.longitude as number);
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(p);
+      }
+
+      // Aplica deslocamento circular leve para grupos com mais de um prestador
+      const radius = 0.00008; // ~8-9 metros
+      const separated: Prestador[] = [];
+      for (const [key, arr] of groups) {
+        if (arr.length === 1) {
+          separated.push(arr[0]);
+          continue;
+        }
+        // Distribui ao redor do ponto original
+        const baseLat = arr[0].latitude as number;
+        const baseLon = arr[0].longitude as number;
+        arr.forEach((p, idx) => {
+          const angle = (idx * 2 * Math.PI) / arr.length;
+          const offLat = baseLat + Math.cos(angle) * radius;
+          const offLon = baseLon + Math.sin(angle) * radius;
+          separated.push({ ...p, latitude: offLat, longitude: offLon });
+        });
+      }
+
+      console.log('Prestadores válidos para exibir no mapa (separados):', separated.length);
+      setPrestadores(separated);
     } catch (err: any) {
+      console.error('Erro ao carregar prestadores:', err);
       setError("Falha ao carregar prestadores");
     } finally {
       setLoading(false);
@@ -285,13 +444,19 @@ function ServicosContent() {
                             ? `CEP ${p.fk_endereco_endCEP}${p.mecEnderecoNum ? ", Nº " + p.mecEnderecoNum : ""}`
                             : undefined
                         }
-                        pinColor={selectedCNPJ === p.mecCNPJ ? Colors.primary : undefined}
-                        onPress={() =>
-                          centerOn(
-                            { latitude: p.latitude as number, longitude: p.longitude as number },
-                            p.mecCNPJ
-                          )
-                        }
+                        onPress={() => {
+                          if (selectedCNPJ === p.mecCNPJ) {
+                            router.push({
+                              pathname: "/DetalhesMecanica" as any,
+                              params: { cnpj: p.mecCNPJ },
+                            });
+                          } else {
+                            centerOn(
+                              { latitude: p.latitude as number, longitude: p.longitude as number },
+                              p.mecCNPJ
+                            );
+                          }
+                        }}
                       />
                     ))}
                   </MapView>
@@ -328,7 +493,9 @@ function ServicosContent() {
                         </AppText>
                       </TouchableOpacity>
                     </View>
-                    {loading ? (
+                    {geocodingProgress ? (
+                      <AppText style={styles.sheetSubtitle}>{geocodingProgress}</AppText>
+                    ) : loading ? (
                       <AppText style={styles.sheetSubtitle}>Carregando…</AppText>
                     ) : error ? (
                       <AppText style={[styles.sheetSubtitle, { color: Colors.error }]}> {error} </AppText>
@@ -358,10 +525,10 @@ function ServicosContent() {
                           ]}
                           activeOpacity={0.8}
                           onPress={() =>
-                            centerOn(
-                              { latitude: item.latitude as number, longitude: item.longitude as number },
-                              item.mecCNPJ
-                            )
+                            router.push({
+                              pathname: "/DetalhesMecanica" as any,
+                              params: { cnpj: item.mecCNPJ },
+                            })
                           }
                         >
                           <View style={styles.cardAvatarWrap}>

@@ -34,6 +34,9 @@ yarn-error.*
 .env*.local
 .env
 
+# API Keys (não versionar credenciais sensíveis)
+src/config/apiKeys.ts
+
 # typescript
 *.tsbuildinfo
 

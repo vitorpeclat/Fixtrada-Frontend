@@ -118,18 +118,26 @@ function SegurancaContent() {
       return;
     }
 
-    // Deriva email do objeto de usuário (ajusta conforme estrutura real)
+    // Deriva email e role do objeto de usuário
     const email = user?.email || user?.usuLogin || user?.mecLogin;
+    const role = 'cliente';
+    
     if (!email) {
       Alert.alert(strings.global.attention, "E-mail do usuário não encontrado.");
       return;
     }
+    
     try {
       setLoadingChange(true);
       const response = await fetch(`${API_BASE_URL}/password/change`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senhaAtual: senhaAtual.trim(), novaSenha: novaSenha.trim() }),
+        body: JSON.stringify({ 
+          email, 
+          role,
+          senhaAtual: senhaAtual.trim(), 
+          novaSenha: novaSenha.trim() 
+        }),
       });
       const json = await response.json().catch(() => ({}));
       if (!response.ok) {

@@ -101,6 +101,12 @@ export default function AppLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="DetalhesMecanica/index"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
