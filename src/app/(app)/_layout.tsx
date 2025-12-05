@@ -1,6 +1,6 @@
 import { Colors } from "@/theme/colors";
 import { Tabs } from "expo-router";
-import { Home, User, Wrench } from "lucide-react-native";
+import { Home, MapPin, User, Wrench } from "lucide-react-native";
 
 export default function AppLayout() {
   return (
@@ -26,6 +26,13 @@ export default function AppLayout() {
         options={{
           title: "Serviços",
           tabBarIcon: ({ color }) => <Wrench color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="Mapa/index"
+        options={{
+          title: "Mapa",
+          tabBarIcon: ({ color }) => <MapPin color={color} />,
         }}
       />
       <Tabs.Screen

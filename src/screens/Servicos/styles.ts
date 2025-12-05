@@ -1,10 +1,7 @@
-// app/Servicos/styles.ts
-
 import { Colors } from '@/theme/colors';
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
-  // Estilos reutilizados da Home para consistência
   container: {
     flex: 1,
     backgroundColor: Colors.background,
@@ -14,172 +11,101 @@ export const styles = StyleSheet.create({
     left: 20,
     zIndex: 10,
   },
-  // Novos estilos para a tela de Serviços
   contentContainer: {
     flex: 1,
   },
-  tabsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
-    marginHorizontal: 20,
-  },
-  tab: {
-    paddingVertical: 16,
+  tabContentContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 0,
+    paddingVertical: 12,
+    justifyContent: 'center',
     alignItems: 'center',
-    flex: 1,
-  },
-  tabText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.gray,
-  },
-  activeTabText: {
-    color: Colors.primary,
-    fontWeight: 'bold',
-  },
-  activeTabIndicator: {
-    height: 3,
-    width: '100%',
-    backgroundColor: Colors.primary,
-    position: 'absolute',
-    bottom: -1,
-  },
-  bodyContainer: {
-    flex: 1,
-    flexDirection: "row",
-  },
-  tabContent: {
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 30,
-    gap: 24,
-    flex: 1,
-  },
-  mapContainer: {
-    flex: 1,
-    width: '100%',
-    minHeight: 300,
-    borderRadius: 12,
-    overflow: 'hidden',
   },
   carImage: {
     marginBottom: 16,
+    marginTop: 40,
+    alignSelf: 'center',
   },
   messageText: {
     fontSize: 18,
     color: Colors.darkGray,
     fontWeight: 'bold',
     textAlign: 'center',
+    marginVertical: 20,
+    marginHorizontal: 16,
+    maxWidth: '90%',
   },
   button: {
-    width: '80%',
+    width: '90%',
+    maxWidth: 400,
     alignSelf: 'center',
+    marginBottom: 20,
   },
-  // Bottom sheet
-  sheetHeader: {
-    paddingHorizontal: 16,
-    paddingTop: 6,
-    paddingBottom: 8,
-    gap: 2,
-  },
-  sheetTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.darkGray,
-  },
-  sheetSubtitle: {
-    fontSize: 16,
-    color: Colors.gray,
-  },
-  sheetList: {
-    paddingHorizontal: 12,
-    paddingBottom: 24,
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
+  // Estilos para os cards de propostas
+  propostaCard: {
+    marginHorizontal: 16,
+    marginVertical: 8,
     backgroundColor: Colors.white,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: Colors.lightGray,
-    marginVertical: 6,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
+    elevation: 2,
   },
-  cardAvatarWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: Colors.lightGray,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardAvatar: {
-    width: 48,
-    height: 48,
-  },
-  cardAvatarFallback: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  propostaHeader: {
     backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
-  cardBody: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.darkGray,
-  },
-  cardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
-  },
-  cardMeta: {
-    fontSize: 15,
-    color: Colors.gray,
-  },
-  cardAddress: {
-    fontSize: 15,
-    color: Colors.gray,
-    marginTop: 2,
-  },
-  // Radius filter
-  radiusFilterContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  radiusPill: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 16,
-    backgroundColor: Colors.lightGray,
-  },
-  radiusPillActive: {
-    backgroundColor: Colors.primary,
-  },
-  radiusPillText: {
+  propostaTitle: {
     fontSize: 16,
-    color: Colors.darkGray,
     fontWeight: '700',
-  },
-  radiusPillTextActive: {
     color: Colors.white,
+  },
+  propostaBody: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  propostaRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  propostaLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.darkGray,
+    minWidth: 80,
+  },
+  propostaValue: {
+    fontSize: 14,
+    color: Colors.gray,
+    flex: 1,
+  },
+  propostaValueHighlight: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.secondary,
+  },
+  propostaActions: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.lightGray,
+  },
+  propostaButtonAccept: {
+    flex: 1,
+    backgroundColor: Colors.secondary,
+  },
+  propostaButtonReject: {
+    flex: 1,
+    backgroundColor: Colors.error,
   },
 });
