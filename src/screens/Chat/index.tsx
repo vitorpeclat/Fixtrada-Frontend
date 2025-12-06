@@ -148,38 +148,39 @@ export default function ChatScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}> 
-      {/* --- Cabeçalho --- */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ChevronLeft size={30} color={Colors.primary} />
-          <AppText style={styles.backButtonText}>Voltar</AppText>
-        </TouchableOpacity>
-        <AppText style={styles.headerTitle}>{shopName}</AppText>
-        <View style={{ width: 80 }}>
-          {/* Espaço para centralizar o título, sem texto puro */}
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <View style={[styles.container, { paddingTop: insets.top }]}> 
+        {/* --- Cabeçalho --- */}
+        <View style={styles.headerContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <ChevronLeft size={30} color={Colors.primary} />
+            <AppText style={styles.backButtonText}>Voltar</AppText>
+          </TouchableOpacity>
+          <AppText style={styles.headerTitle}>{shopName}</AppText>
+          <View style={{ width: 80 }}>
+            {/* Espaço para centralizar o título, sem texto puro */}
+          </View>
         </View>
-      </View>
 
-      {/* --- Lista de Mensagens --- */}
-      {loading ? (
-        <ActivityIndicator style={{ flex: 1 }} size="large" color={Colors.primary} />
-      ) : (
-        <FlatList
-          style={styles.messageList}
-          contentContainerStyle={styles.messageListContent}
-          data={messages}
-          renderItem={renderMessageItem}
-          keyExtractor={(item) => item.id}
-          inverted // Começa de baixo para cima
-        />
-      )}
+        {/* --- Lista de Mensagens --- */}
+        {loading ? (
+          <ActivityIndicator style={{ flex: 1 }} size="large" color={Colors.primary} />
+        ) : (
+          <FlatList
+            style={styles.messageList}
+            contentContainerStyle={styles.messageListContent}
+            data={messages}
+            renderItem={renderMessageItem}
+            keyExtractor={(item) => item.id}
+            inverted // Começa de baixo para cima
+          />
+        )}
 
-      {/* --- Input de Mensagem --- */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? insets.bottom + 80 : 0}
-      >
+        {/* --- Input de Mensagem --- */}
         <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 8 }]}> 
           <TextInput
             style={styles.textInput}
@@ -192,7 +193,7 @@ export default function ChatScreen() {
             <Send size={24} color={Colors.white} />
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }

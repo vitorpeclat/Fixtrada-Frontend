@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "@/config/ip";
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
-import { Alert, BackHandler, TouchableOpacity, View } from "react-native";
+import { Alert, BackHandler, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
@@ -9,7 +9,6 @@ import {
   AnimationProvider,
   AppText,
   Input,
-  KeyboardShiftView,
   useScreenAnimation,
 } from "@/components";
 import { strings } from "@/languages"; // <-- IMPLEMENTAÇÃO
@@ -74,8 +73,18 @@ function RecuperarCadastroContent() {
   }
 
   return (
-    <KeyboardShiftView style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
         <AnimatedView style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -114,7 +123,8 @@ function RecuperarCadastroContent() {
           </AnimatedView>
         </Animatable.View>
       </View>
-    </KeyboardShiftView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

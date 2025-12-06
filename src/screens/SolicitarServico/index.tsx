@@ -15,9 +15,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
-import { AppText, Button, KeyboardShiftView } from "@/components";
+import { AppText, Button } from "@/components";
 import { API_BASE_URL } from "@/config/ip";
 import { useVehicles } from "@/contexts/VehiclesContext";
 import { strings } from "@/languages";
@@ -336,8 +338,12 @@ function SolicitarServicoContent() {
   };
 
   return (
-    <View style={styles.container}>
-      <KeyboardShiftView>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <View style={styles.container}>
         {/* Cabeçalho */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -463,8 +469,8 @@ function SolicitarServicoContent() {
             </View>
           </View>
         </ScrollView>
-      </KeyboardShiftView>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 

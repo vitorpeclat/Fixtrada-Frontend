@@ -60,7 +60,7 @@ function SegurancaContent() {
     match: false,
   });
 
-  const snapPoints = useMemo(() => ["65%"], []);
+  const snapPoints = useMemo(() => ["95%"], []);
 
   useEffect(() => {
     const arePasswordsMatching =

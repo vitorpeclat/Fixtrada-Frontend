@@ -2,14 +2,13 @@ import { API_BASE_URL } from "@/config/ip";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, BackHandler, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, BackHandler, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
   AnimatedView,
   AnimationProvider,
   AppText,
-  KeyboardShiftView,
   useScreenAnimation,
 } from "@/components";
 import { strings } from "@/languages";
@@ -94,8 +93,18 @@ function VerificarCodigoRecuperacaoContent() {
   }, [email, resendCooldown]);
 
   return (
-    <KeyboardShiftView style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
         <AnimatedView style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -160,7 +169,8 @@ function VerificarCodigoRecuperacaoContent() {
           </AnimatedView>
         </Animatable.View>
       </View>
-    </KeyboardShiftView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

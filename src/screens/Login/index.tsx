@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Alert, Image, TouchableOpacity, View } from "react-native";
+import { Alert, Image, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import * as Animatable from "react-native-animatable";
 
 import {
@@ -8,7 +8,6 @@ import {
   AppText,
   Button,
   Input,
-  KeyboardShiftView,
   SquareIcon,
   useScreenAnimation,
 } from "@/components";
@@ -69,8 +68,18 @@ function LoginContent() {
   }
 
   return (
-    <View style={styles.container}>
-      <KeyboardShiftView style={styles.content}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
         <AnimatedView>
           <Image
             source={require("@/assets/logo-fixtrada.png")}
@@ -142,8 +151,9 @@ function LoginContent() {
             </TouchableOpacity>
           </AnimatedView>
         </Animatable.View>
-      </KeyboardShiftView>
-    </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
