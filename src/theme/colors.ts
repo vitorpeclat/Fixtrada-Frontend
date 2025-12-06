@@ -20,10 +20,12 @@ export const Colors = {
   // Cores neutras
   white: '#FFFFFF',
   black: '#000000',
+  border: '#E5E7EB',
   
   // Cores personalizadas
   background: '#F0F2F5',
   text: '#121214',
+  textSecondary: '#4B5563',
 
   // Cores de ícones
   gold: '#e0bf00ff',

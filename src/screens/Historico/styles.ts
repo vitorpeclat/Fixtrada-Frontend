@@ -6,7 +6,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  // --- Cabeçalho ---
   headerContainer: {
     position: "absolute",
     left: 0,
@@ -17,9 +16,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     zIndex: 10,
-    backgroundColor: Colors.background, // Fundo do cabeçalho
+    backgroundColor: Colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray, // Linha divisória
+    borderBottomColor: Colors.gray,
   },
   headerIcon: {
     padding: 0,
@@ -27,87 +26,142 @@ export const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: Colors.primary, // Cor do texto
+    color: Colors.primary,
   },
-  // --- Conteúdo ---
   scrollContainer: {
     flex: 1,
     width: "100%",
   },
   scrollContentContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 40,
   },
-  // --- Card do Histórico ---
+  // --- Novo design moderno do card ---
   card: {
     backgroundColor: Colors.white,
     borderRadius: 16,
-    padding: 16,
     marginBottom: 16,
-    flexDirection: "row",
-    alignItems: "center",
+    overflow: "hidden",
     shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 4,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  // Placeholder para o logo (substitua por Image)
-  logoPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  cardHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     backgroundColor: Colors.lightGray,
-    justifyContent: "center",
+    borderLeftWidth: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginRight: 16,
-    borderWidth: 1,
-    borderColor: Colors.gray,
+  },
+  codeAndStatus: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  cardCode: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: Colors.secondary,
+  },
+  cardStatusPill: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.white,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
+  },
+  cardBody: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  prestadorSection: {
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+  },
+  prestadorName: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: Colors.text,
+  },
+  infoGrid: {
+    gap: 10,
+  },
+  infoRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  infoPair: {
+    flex: 1,
+  },
+  infoLabel: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: Colors.textSecondary,
+    marginBottom: 3,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: Colors.text,
+  },
+  cardFooter: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.lightGray,
+    alignItems: "center",
+  },
+  cardFooterText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  // --- Fallback styles (se necessário) ---
+  logoPlaceholder: {
+    display: "none",
   },
   infoContainer: {
-    flex: 1,
-    justifyContent: "center",
+    display: "none",
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.primary,
-    textAlign: "left",
-    marginBottom: 4,
+    display: "none",
+  },
+  cardRow: {
+    display: "none",
+  },
+  cardMetaSeparator: {
+    display: "none",
+  },
+  cardMeta: {
+    display: "none",
   },
   cardDate: {
-    fontSize: 14,
-    color: Colors.darkGray,
-    textAlign: "left",
-    marginBottom: 4,
+    display: "none",
+  },
+  cardStatusBadge: {
+    display: "none",
   },
   cardStatus: {
-    fontSize: 16,
-    fontWeight: "500",
-    textAlign: "left",
-    marginBottom: 12,
+    display: "none",
   },
-  // --- Botões ---
   detailsButton: {
-    backgroundColor: Colors.primary,
-    height: 44,
-    width: "100%",
-    borderRadius: 8,
+    display: "none",
   },
   detailsButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-    fontSize: 14,
+    display: "none",
   },
   detailsButtonPending: {
-    backgroundColor: Colors.secondary, // Laranja
-    height: 44,
-    width: "100%",
-    borderRadius: 8,
+    display: "none",
   },
   detailsButtonTextPending: {
-    color: Colors.white, // Texto branco no botão laranja
-    fontWeight: "bold",
-    fontSize: 14,
+    display: "none",
   },
 });

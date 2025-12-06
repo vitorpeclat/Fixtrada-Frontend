@@ -1,11 +1,15 @@
 import { Feather } from "@expo/vector-icons";
+import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   BackHandler,
+  ActivityIndicator,
   ScrollView,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 
@@ -15,7 +19,6 @@ import {
   AppText,
   Button,
   Input,
-  KeyboardShiftView,
   PasswordValidation,
   useScreenAnimation,
 } from "@/components";
@@ -40,6 +43,10 @@ function CadastroContent() {
   const [passwordVisibility, setPasswordVisibility] = useState(
     FilterStatus.HIDE
   );
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [localDisplay, setLocalDisplay] = useState<string>("");
+  const [loadingLocation, setLoadingLocation] = useState(false);
   const [passwordCriteria, setPasswordCriteria] = useState({
     length: false,
     uppercase: false,
@@ -85,6 +92,54 @@ function CadastroContent() {
   }, [usuLogin, confirmarEmail]);
 
   const { signIn } = useAuth();
+
+  const obterLocalizacao = async () => {
+    try {
+      setLoadingLocation(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          strings.global.attention,
+          "Permissão de localização negada. Habilite nas configurações."
+        );
+        return;
+      }
+
+      const pos = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      const [geocode] = await Location.reverseGeocodeAsync({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      });
+
+      setLatitude(pos.coords.latitude);
+      setLongitude(pos.coords.longitude);
+
+      if (geocode) {
+        const rua = geocode.street || geocode.name || "";
+        const numero = geocode.streetNumber || "";
+        const bairro = geocode.district || geocode.subregion || "";
+        const cidade = geocode.city || geocode.subregion || geocode.name || "";
+        const estado = geocode.region || geocode.subregion || "";
+        setLocalDisplay(
+          `${rua}${numero ? ", " + numero : ""}${bairro ? " - " + bairro : ""}${cidade ? " - " + cidade : ""}${estado ? " - " + estado : ""}`
+        );
+        Alert.alert(
+          "Localização obtida",
+          `${rua}${numero ? ", " + numero : ""}\n${bairro ? bairro + " - " : ""}${cidade}${estado ? "/" + estado : ""}`
+        );
+      } else {
+        setLocalDisplay("Coordenadas capturadas");
+      }
+    } catch (error) {
+      console.error("Erro ao obter localização:", error);
+      Alert.alert(strings.global.error, "Não foi possível obter sua localização.");
+    } finally {
+      setLoadingLocation(false);
+    }
+  };
 
   async function handleCadastro() {
     const campos = [
@@ -136,6 +191,15 @@ function CadastroContent() {
       return;
     }
 
+    if (latitude === null || longitude === null) {
+      Alert.alert(
+        strings.global.attention,
+        "Capture sua localização antes de finalizar o cadastro."
+      );
+      formRef.current?.shake(800);
+      return;
+    }
+
     const [dia, mes, ano] = usuDataNasc.split("/");
     const dataFormatada = `${ano}-${mes}-${dia}`;
 
@@ -152,6 +216,8 @@ function CadastroContent() {
           usuTelefone: usuTelefone.replace(/\D/g, ""),
           usuLogin,
           usuSenha,
+          latitude,
+          longitude,
         }),
       });
 
@@ -174,24 +240,30 @@ function CadastroContent() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
-      keyboardShouldPersistTaps="handled"
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
-      <KeyboardShiftView style={styles.content}>
-        <AnimatedView style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => handleGoBack("fadeOutDown")}
-            activeOpacity={0.7}
-          >
-            <Feather name="chevron-left" size={24} color={Colors.primary} />
-            <AppText style={styles.backButtonText}>
-              {strings.global.backToLogin}
-            </AppText>
-          </TouchableOpacity>
-        </AnimatedView>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
+          <AnimatedView style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => handleGoBack("fadeOutDown")}
+              activeOpacity={0.7}
+            >
+              <Feather name="chevron-left" size={24} color={Colors.primary} />
+              <AppText style={styles.backButtonText}>
+                {strings.global.backToLogin}
+              </AppText>
+            </TouchableOpacity>
+          </AnimatedView>
 
         <AnimatedView style={{ marginBottom: 20 }}>
           <AppText style={styles.title}>
@@ -311,10 +383,34 @@ function CadastroContent() {
               containerStyle={{ width: "60%" }}
               onPress={handleCadastro}
             />
+            <View style={{ marginTop: 12, alignItems: "center", width: "100%" }}>
+              <TouchableOpacity
+                onPress={obterLocalizacao}
+                disabled={loadingLocation}
+                style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingVertical: 8 }}
+              >
+                {loadingLocation ? (
+                  <ActivityIndicator size="small" color={Colors.primary} />
+                ) : (
+                  <Feather name="map-pin" size={18} color={Colors.primary} />
+                )}
+                <AppText style={{ marginLeft: 8, color: Colors.primary }}>
+                  {localDisplay
+                    ? `Local selecionado: ${localDisplay}`
+                    : "Usar minha localização"}
+                </AppText>
+              </TouchableOpacity>
+              {(!latitude || !longitude) && (
+                <AppText style={{ marginTop: 4, fontSize: 12, color: Colors.primaryLight }}>
+                  Capturar localização é obrigatório para cadastro.
+                </AppText>
+              )}
+            </View>
           </AnimatedView>
         </Animatable.View>
-      </KeyboardShiftView>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

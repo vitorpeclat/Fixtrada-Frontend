@@ -7,4 +7,5 @@ export * from './Input'
 export * from './KeyboardShiftView'
 export * from './Menu'
 export * from './PasswordValidation'
+export * from './LocationUpdater'
 

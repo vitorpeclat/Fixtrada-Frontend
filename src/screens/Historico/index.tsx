@@ -216,43 +216,74 @@ function HistoricoContent() {
             services.map((item, idx) => {
               const status = translateStatus(item.status);
               const isPending = status === "Pendente" || status === "Incompleto";
-              const buttonStyle = isPending ? styles.detailsButtonPending : styles.detailsButton;
-              const buttonTextStyle = isPending ? styles.detailsButtonTextPending : styles.detailsButtonText;
+              const statusColor = isPending ? Colors.secondary : Colors.primary;
 
               return (
-                <View key={item.id || idx} style={styles.card}>
-                  {/* Logo Placeholder - Substitua por <Image /> */}
-                  <View style={styles.logoPlaceholder}>
-                    <Car size={36} color={Colors.darkGray} />
+                <TouchableOpacity 
+                  key={item.id || idx} 
+                  style={styles.card}
+                  onPress={() => handleDetailsPress(item)}
+                  activeOpacity={0.7}
+                >
+                  {/* Header com código e status */}
+                  <View style={[styles.cardHeader, { borderLeftColor: statusColor }]}>
+                    <View style={styles.codeAndStatus}>
+                      <AppText style={styles.cardCode}>#{item.codigo || "N/A"}</AppText>
+                      <AppText style={[styles.cardStatusPill, { backgroundColor: statusColor }]}>
+                        {status}
+                      </AppText>
+                    </View>
                   </View>
 
-                  {/* Informações detalhadas do serviço */}
-                  <View style={styles.infoContainer}>
-                    <AppText style={styles.cardTitle}>
-                      {item.tipoServico?.tseTipoProblema || "Tipo de serviço não informado"}
-                    </AppText>
-                    <AppText style={styles.cardDate}>
-                      Veículo: {item.carro?.carMarca || "-"} {item.carro?.carModelo || "-"} {item.carro?.carAno ? `(${item.carro.carAno})` : ""}
-                    </AppText>
-                    <AppText style={styles.cardDate}>
-                      {item.data ? formatDate(item.data) : "-"}
-                    </AppText>
-                    <AppText
-                      style={[
-                        styles.cardStatus,
-                        { color: isPending ? Colors.secondary : Colors.primary },
-                      ]}
-                    >
-                      Status: {status}
-                    </AppText>
-                    <Button
-                      title="Abrir detalhes"
-                      onPress={() => handleDetailsPress(item)}
-                      containerStyle={buttonStyle}
-                      textStyle={buttonTextStyle}
-                    />
+                  {/* Body do card */}
+                  <View style={styles.cardBody}>
+                    {/* Prestador - destaque principal */}
+                    <View style={styles.prestadorSection}>
+                      <AppText style={styles.prestadorName} numberOfLines={1}>
+                        {item.prestador?.mecLogin || "-"}
+                      </AppText>
+                    </View>
+
+                    {/* Informações em grid */}
+                    <View style={styles.infoGrid}>
+                      {/* Tipo + Carro */}
+                      <View style={styles.infoRow}>
+                        <View style={styles.infoPair}>
+                          <AppText style={styles.infoLabel}>Problema</AppText>
+                          <AppText style={styles.infoValue} numberOfLines={1}>
+                            {item.tipoServico?.tseTipoProblema || "-"}
+                          </AppText>
+                        </View>
+                        <View style={styles.infoPair}>
+                          <AppText style={styles.infoLabel}>Veículo</AppText>
+                          <AppText style={styles.infoValue} numberOfLines={1}>
+                            {item.carro?.carMarca || "-"} {item.carro?.carModelo || "-"}
+                          </AppText>
+                        </View>
+                      </View>
+
+                      {/* Data */}
+                      <View style={styles.infoRow}>
+                        <View style={styles.infoPair}>
+                          <AppText style={styles.infoLabel}>Data</AppText>
+                          <AppText style={styles.infoValue}>
+                            {item.data ? formatDate(item.data) : "-"}
+                          </AppText>
+                        </View>
+                      </View>
+                    </View>
                   </View>
-                </View>
+
+                  {/* Footer - Botão */}
+                  <TouchableOpacity 
+                    style={[styles.cardFooter, { backgroundColor: statusColor + "15" }]}
+                    onPress={() => handleDetailsPress(item)}
+                  >
+                    <AppText style={[styles.cardFooterText, { color: statusColor }]}>
+                      Ver detalhes →
+                    </AppText>
+                  </TouchableOpacity>
+                </TouchableOpacity>
               );
             })
           )}

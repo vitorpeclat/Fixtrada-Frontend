@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
     content: {
         alignItems: 'center',
         paddingHorizontal: 20,
+        paddingTop: 20,
         width: '100%',
     },
     header: {

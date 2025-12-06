@@ -1,4 +1,4 @@
-import { AnimationProvider } from '@/components';
+import { AnimationProvider, LocationUpdater } from '@/components';
 import { MenuContent } from '@/components/Menu';
 import { Colors } from '@/theme/colors';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
@@ -22,6 +22,7 @@ export default function RootLayout() {
                 <AnimationProvider>
                     <AuthProvider>
                         <VehiclesProvider>
+                            <LocationUpdater />
                             <Drawer
                                 drawerContent={(props: DrawerContentComponentProps) => <MenuContent {...props} />}
                                 screenOptions={{

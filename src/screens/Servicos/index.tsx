@@ -212,49 +212,83 @@ function ServicosContent() {
                 <>
                   <AppText style={styles.sectionTitle}>Propostas Recebidas</AppText>
                   {propostasRecebidas.map((proposta) => (
-                    <View key={proposta.id} style={styles.propostaCard}>
-                      <View style={styles.logoPlaceholder}>
-                        <Car size={36} color={Colors.darkGray} />
-                      </View>
-
-                      <View style={styles.infoContainer}>
-                        <AppText style={styles.propostaTitle} numberOfLines={1}>
-                          {proposta.prestador?.mecLogin || "Prestador não identificado"}
-                        </AppText>
-                        <AppText style={styles.propostaRow} numberOfLines={1}>
-                          Código: {proposta.codigo}
-                        </AppText>
-                        {proposta.data && (
-                          <AppText style={styles.propostaRow}>
-                            {proposta.data}
+                    <TouchableOpacity 
+                      key={proposta.id} 
+                      style={styles.propostaCard}
+                      onPress={() => handleDetailsPress(proposta)}
+                      activeOpacity={0.7}
+                    >
+                      {/* Header com código e status */}
+                      <View style={[styles.cardHeader, { borderLeftColor: Colors.secondary }]}>
+                        <View style={styles.codeAndStatus}>
+                          <AppText style={styles.cardCode}>#{proposta.codigo}</AppText>
+                          <AppText style={[styles.cardStatusPill, { backgroundColor: Colors.secondary }]}>
+                            Proposta
                           </AppText>
-                        )}
-                        <AppText
-                          style={[styles.propostaRow, { color: Colors.secondary, fontWeight: '600' }]}
-                        >
-                          R$ {proposta.valor.toFixed(2)}
-                        </AppText>
+                          <AppText style={styles.cardValue}>
+                            R$ {proposta.valor.toFixed(2)}
+                          </AppText>
+                        </View>
                       </View>
 
-                      <View style={styles.propostaActions}>
-                        <Button
-                          title="Abrir detalhes"
-                          onPress={() => handleDetailsPress(proposta)}
-                          containerStyle={styles.detailsButton}
-                          textStyle={styles.detailsButtonText}
-                        />
-                        <Button
-                          title="Recusar"
-                          onPress={() => recusarProposta(proposta.id)}
-                          containerStyle={styles.propostaButtonReject}
-                        />
-                        <Button
-                          title="Aceitar"
-                          onPress={() => aceitarProposta(proposta.id)}
-                          containerStyle={styles.propostaButtonAccept}
-                        />
+                      {/* Body */}
+                      <View style={styles.cardBody}>
+                        {/* Prestador */}
+                        <View style={styles.prestadorSection}>
+                          <AppText style={styles.prestadorName} numberOfLines={1}>
+                            {proposta.prestador?.mecLogin || "-"}
+                          </AppText>
+                        </View>
+
+                        {/* Info Grid */}
+                        <View style={styles.infoGrid}>
+                          <View style={styles.infoRow}>
+                            <View style={styles.infoPair}>
+                              <AppText style={styles.infoLabel}>Problema</AppText>
+                              <AppText style={styles.infoValue} numberOfLines={1}>
+                                {proposta.tipoServico?.tseTipoProblema || "-"}
+                              </AppText>
+                            </View>
+                            <View style={styles.infoPair}>
+                              <AppText style={styles.infoLabel}>Veículo</AppText>
+                              <AppText style={styles.infoValue} numberOfLines={1}>
+                                {proposta.carro?.carMarca || "-"} {proposta.carro?.carModelo || "-"}
+                              </AppText>
+                            </View>
+                          </View>
+                          {proposta.data && (
+                            <View style={styles.infoRow}>
+                              <View style={styles.infoPair}>
+                                <AppText style={styles.infoLabel}>Data</AppText>
+                                <AppText style={styles.infoValue}>{proposta.data}</AppText>
+                              </View>
+                            </View>
+                          )}
+                        </View>
                       </View>
-                    </View>
+
+                      {/* Footer - Ações */}
+                      <View style={styles.cardActionsFooter}>
+                        <TouchableOpacity 
+                          style={styles.actionButtonSmall}
+                          onPress={() => handleDetailsPress(proposta)}
+                        >
+                          <AppText style={styles.actionButtonSmallText}>Detalhes</AppText>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={[styles.actionButtonSmall, { backgroundColor: Colors.error }]}
+                          onPress={() => recusarProposta(proposta.id)}
+                        >
+                          <AppText style={styles.actionButtonSmallText}>Recusar</AppText>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={[styles.actionButtonSmall, { backgroundColor: Colors.secondary }]}
+                          onPress={() => aceitarProposta(proposta.id)}
+                        >
+                          <AppText style={styles.actionButtonSmallText}>Aceitar</AppText>
+                        </TouchableOpacity>
+                      </View>
+                    </TouchableOpacity>
                   ))}
                 </>
               )}
@@ -263,41 +297,68 @@ function ServicosContent() {
                 <>
                   <AppText style={[styles.sectionTitle, { marginTop: 24 }]}>Serviços em Andamento</AppText>
                   {servicosAndamento.map((servico) => (
-                    <View key={servico.id} style={[styles.propostaCard, styles.servicoEmAndamentoCard]}>
-                      <View style={styles.logoPlaceholder}>
-                        <Car size={36} color={Colors.darkGray} />
-                      </View>
-
-                      <View style={styles.infoContainer}>
-                        <AppText style={styles.propostaTitle} numberOfLines={1}>
-                          {servico.prestador?.mecLogin || "Prestador não identificado"}
-                        </AppText>
-                        <AppText style={styles.propostaRow} numberOfLines={1}>
-                          Código: {servico.codigo}
-                        </AppText>
-                        {servico.data && (
-                          <AppText style={styles.propostaRow}>
-                            {servico.data}
+                    <TouchableOpacity 
+                      key={servico.id} 
+                      style={styles.propostaCard}
+                      onPress={() => handleDetailsPress(servico)}
+                      activeOpacity={0.7}
+                    >
+                      {/* Header com código e status */}
+                      <View style={[styles.cardHeader, { borderLeftColor: Colors.primary }]}>
+                        <View style={styles.codeAndStatus}>
+                          <AppText style={styles.cardCode}>#{servico.codigo}</AppText>
+                          <AppText style={[styles.cardStatusPill, { backgroundColor: Colors.primary }]}>
+                            Em andamento
                           </AppText>
-                        )}
-                        <AppText
-                          style={[
-                            styles.propostaRow,
-                            { color: Colors.secondary, fontWeight: '600' },
-                          ]}
-                        >
-                          Status: Em andamento
-                        </AppText>
-                        <View style={styles.propostaActions}>
-                          <Button
-                            title="Abrir detalhes"
-                            onPress={() => handleDetailsPress(servico)}
-                            containerStyle={styles.detailsButton}
-                            textStyle={styles.detailsButtonText}
-                          />
                         </View>
                       </View>
-                    </View>
+
+                      {/* Body */}
+                      <View style={styles.cardBody}>
+                        {/* Prestador */}
+                        <View style={styles.prestadorSection}>
+                          <AppText style={styles.prestadorName} numberOfLines={1}>
+                            {servico.prestador?.mecLogin || "-"}
+                          </AppText>
+                        </View>
+
+                        {/* Info Grid */}
+                        <View style={styles.infoGrid}>
+                          <View style={styles.infoRow}>
+                            <View style={styles.infoPair}>
+                              <AppText style={styles.infoLabel}>Problema</AppText>
+                              <AppText style={styles.infoValue} numberOfLines={1}>
+                                {servico.tipoServico?.tseTipoProblema || "-"}
+                              </AppText>
+                            </View>
+                            <View style={styles.infoPair}>
+                              <AppText style={styles.infoLabel}>Veículo</AppText>
+                              <AppText style={styles.infoValue} numberOfLines={1}>
+                                {servico.carro?.carMarca || "-"} {servico.carro?.carModelo || "-"}
+                              </AppText>
+                            </View>
+                          </View>
+                          {servico.data && (
+                            <View style={styles.infoRow}>
+                              <View style={styles.infoPair}>
+                                <AppText style={styles.infoLabel}>Data</AppText>
+                                <AppText style={styles.infoValue}>{servico.data}</AppText>
+                              </View>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+
+                      {/* Footer */}
+                      <View style={styles.cardActionsFooter}>
+                        <TouchableOpacity 
+                          style={styles.actionButtonSmall}
+                          onPress={() => handleDetailsPress(servico)}
+                        >
+                          <AppText style={styles.actionButtonSmallText}>Detalhes</AppText>
+                        </TouchableOpacity>
+                      </View>
+                    </TouchableOpacity>
                   ))}
                 </>
               )}

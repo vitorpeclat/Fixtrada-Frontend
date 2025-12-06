@@ -38,116 +38,156 @@ export const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 20,
   },
-  // Estilos para as seções
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: Colors.primary,
     marginHorizontal: 0,
-    marginVertical: 12,
+    marginVertical: 16,
+    marginTop: 4,
   },
-  // Estilos para os cards de propostas
+  // --- Novo design moderno do card ---
   propostaCard: {
-    marginVertical: 12,
     backgroundColor: Colors.white,
     borderRadius: 16,
-    padding: 16,
-    flexDirection: 'column',
+    marginVertical: 8,
+    overflow: 'hidden',
     shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 4,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  logoPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  cardHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     backgroundColor: Colors.lightGray,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    alignSelf: 'center',
-    borderWidth: 1,
-    borderColor: Colors.gray,
-  },
-  infoContainer: {
-    marginBottom: 12,
+    borderLeftWidth: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  propostaHeader: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  propostaTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  propostaBody: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+  codeAndStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
-  propostaRow: {
-    fontSize: 14,
-    color: Colors.darkGray,
-    textAlign: 'center',
-    marginBottom: 2,
-  },
-  propostaLabel: {
-    fontSize: 14,
-    color: Colors.darkGray,
-    textAlign: 'left',
-  },
-  propostaValue: {
-    fontSize: 14,
-    color: Colors.gray,
-    textAlign: 'left',
-  },
-  propostaValueHighlight: {
-    fontSize: 16,
+  cardCode: {
+    fontSize: 18,
     fontWeight: '700',
     color: Colors.secondary,
   },
-  propostaActions: {
+  cardValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.secondary,
+    marginLeft: 'auto',
+  },
+  cardStatusPill: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.white,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
+  },
+  cardBody: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  prestadorSection: {
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+  },
+  prestadorName: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  infoGrid: {
+    gap: 10,
+  },
+  infoRow: {
     flexDirection: 'row',
-    gap: 8,
-    paddingTop: 12,
+    gap: 12,
+  },
+  infoPair: {
+    flex: 1,
+  },
+  infoLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: Colors.textSecondary,
+    marginBottom: 3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: Colors.text,
+  },
+  cardActionsFooter: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: Colors.lightGray,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionButtonSmall: {
+    flex: 1,
+    paddingVertical: 10,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  actionButtonSmallText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.white,
+  },
+  // --- Fallback styles ---
+  logoPlaceholder: {
+    display: 'none',
+  },
+  infoContainer: {
+    display: 'none',
+  },
+  cardRow: {
+    display: 'none',
+  },
+  cardMetaSeparator: {
+    display: 'none',
+  },
+  propostaRow: {
+    display: 'none',
+  },
+  propostaTitle: {
+    display: 'none',
+  },
+  cardStatusBadge: {
+    display: 'none',
+  },
+  propostaActions: {
+    display: 'none',
   },
   detailsButton: {
-    backgroundColor: Colors.primary,
-    height: 40,
-    borderRadius: 8,
-    flex: 1,
+    display: 'none',
   },
   detailsButtonText: {
-    color: Colors.white,
-    fontWeight: 'bold',
-    fontSize: 14,
+    display: 'none',
   },
   propostaButtonAccept: {
-    flex: 1,
-    backgroundColor: Colors.secondary,
-    height: 40,
+    display: 'none',
   },
   propostaButtonReject: {
-    flex: 1,
-    backgroundColor: Colors.error,
-    height: 40,
+    display: 'none',
   },
   servicoEmAndamentoCard: {
-    opacity: 0.95,
-  },
-  servicoEmAndamentoHeader: {
-    backgroundColor: Colors.warning,
-  },
-  servicoEmAndamentoActions: {
-    width: '100%',
+    display: 'none',
   },
 });

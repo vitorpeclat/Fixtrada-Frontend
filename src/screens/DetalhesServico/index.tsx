@@ -194,11 +194,13 @@ function DetalhesServicoContent() {
           </View>
           <View style={styles.shopInfo}>
             <AppText style={styles.shopName}>
-              {service.prestador?.mecLogin || "Prestador não informado"}
+              {service.prestador?.mecLogin ? service.prestador.mecLogin : "-"}
             </AppText>
-            <AppText style={styles.shopDetail}>
-              CNPJ: {formatCNPJ(service.prestador?.mecCNPJ)}
-            </AppText>
+            {service.prestador?.mecCNPJ && (
+              <AppText style={styles.shopDetail}>
+                CNPJ: {formatCNPJ(service.prestador?.mecCNPJ)}
+              </AppText>
+            )}
             {service.prestador?.mecNota && (
               <View style={styles.shopRatingContainer}>
                 <AppText style={styles.shopRatingText}>
