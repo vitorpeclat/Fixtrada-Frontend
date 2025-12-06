@@ -7,6 +7,8 @@ import {
   FlatList,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 
@@ -148,7 +150,12 @@ function CadastroVeiculoContent() {
   }, [handleHardwareBackPress]);
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <View style={styles.container}>
       <AnimatedView style={styles.header}>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -340,7 +347,8 @@ function CadastroVeiculoContent() {
           title={strings.cadastroVeiculo.button}
         />
       </View>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 

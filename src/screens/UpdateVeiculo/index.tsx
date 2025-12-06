@@ -7,6 +7,8 @@ import {
   FlatList,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import * as Animatable from "react-native-animatable";
 
@@ -180,7 +182,12 @@ function UpdateVeiculoContent() {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <View style={styles.container}>
       <AnimatedView style={styles.header}>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -358,7 +365,8 @@ function UpdateVeiculoContent() {
           title="Atualizar Veículo"
         />
       </View>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
