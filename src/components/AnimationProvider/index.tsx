@@ -59,7 +59,9 @@ export function AnimationProvider({ children }: AnimationProviderProps) {
     const handleGoBack = (exitAnimation: ExitAnimation) => {
         setAnimationType(exitAnimation);
         setAnimationKey(prevKey => prevKey + 1);
-        setTimeout(() => { if (router.canGoBack()) { router.back() } }, 600);
+        setTimeout(() => { 
+            router.back();
+        }, 600);
     };
 
     const handleNavigatePush = (path: string, exitAnimation: ExitAnimation) => {

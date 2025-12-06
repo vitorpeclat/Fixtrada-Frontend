@@ -148,7 +148,7 @@ function UpdateVeiculoContent() {
       if (response.ok) {
         await reload(); // Atualizar contexto
         Alert.alert(strings.global.success, "Veículo atualizado com sucesso!");
-        handleNavigatePush("/Home", "fadeOutUp");
+        handleGoBack("fadeOutDown");
       } else {
         formRef.current?.shake(800);
         Alert.alert(strings.global.error, data.message || "Erro ao atualizar veículo.");

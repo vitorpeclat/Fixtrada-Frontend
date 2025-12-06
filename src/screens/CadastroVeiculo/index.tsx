@@ -117,7 +117,7 @@ function CadastroVeiculoContent() {
           strings.global.success,
           strings.cadastroVeiculo.successMessage
         );
-        handleNavigatePush("/Home", "fadeOutUp");
+        handleGoBack("fadeOutDown");
       } else {
         formRef.current?.shake(800);
         Alert.alert(
