@@ -58,7 +58,6 @@ function ServicosContent() {
     setErrorPropostas(null);
     try {
       const url = `${API_BASE_URL}/services/proposta/list`;
-      console.log('Buscando propostas de:', url);
       const token = user?.token || await AsyncStorage.getItem('userToken');
       const response = await fetch(url, {
         method: 'GET',
@@ -74,7 +73,6 @@ function ServicosContent() {
       
       const data = await response.json();
       const propostas = Array.isArray(data) ? data : [];
-      console.log('Propostas recebidas:', propostas.length);
       setPropostas(propostas);
     } catch (err: any) {
       console.error('Erro ao carregar propostas:', err);
@@ -86,9 +84,7 @@ function ServicosContent() {
 
   const aceitarProposta = async (id: string) => {
     try {
-      console.log('Aceitando proposta ID:', id);
       const token = user?.token || await AsyncStorage.getItem('userToken');
-      console.log('URL:', `${API_BASE_URL}/services/${id}/aceitar-proposta`);
       
       const response = await fetch(`${API_BASE_URL}/services/${id}/aceitar-proposta`, {
         method: 'POST',
@@ -96,10 +92,7 @@ function ServicosContent() {
           Authorization: `Bearer ${token}`
         }
       });
-
-      console.log('Response status:', response.status);
       const responseText = await response.text();
-      console.log('Response body:', responseText);
 
       if (!response.ok) {
         let errorMessage = 'Erro ao aceitar proposta';
@@ -114,7 +107,37 @@ function ServicosContent() {
       }
 
       const data = JSON.parse(responseText);
-      console.log('Proposta aceita:', data);
+      
+      // Buscar a proposta aceita para obter os dados necessários
+      const propostaAceita = propostas.find(p => p.id === id);
+      
+      if (propostaAceita && propostaAceita.prestador && user?.sub) {
+        // Criar chat entre cliente e prestador
+        try {
+          const chatResponse = await fetch(`${API_BASE_URL}/chats/servico`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              clienteId: user.sub,
+              prestadorCnpj: propostaAceita.prestador.mecCNPJ,
+              registroServicoId: id
+            })
+          });
+
+          if (chatResponse.ok) {
+            const chatData = await chatResponse.json();
+            console.log('Chat criado:', chatData);
+          } else {
+            console.error('Erro ao criar chat, mas proposta foi aceita');
+          }
+        } catch (chatError) {
+          console.error('Erro ao criar chat:', chatError);
+          // Não bloqueia o fluxo se falhar a criação do chat
+        }
+      }
       
       fetchPropostas();
       alert('Proposta aceita com sucesso!');
@@ -126,10 +149,7 @@ function ServicosContent() {
 
   const recusarProposta = async (id: string) => {
     try {
-      console.log('Recusando proposta ID:', id);
       const token = user?.token || await AsyncStorage.getItem('userToken');
-      console.log('URL:', `${API_BASE_URL}/services/${id}/recusar-proposta`);
-      
       const response = await fetch(`${API_BASE_URL}/services/${id}/recusar-proposta`, {
         method: 'POST',
         headers: {
@@ -137,9 +157,7 @@ function ServicosContent() {
         }
       });
 
-      console.log('Response status:', response.status);
       const responseText = await response.text();
-      console.log('Response body:', responseText);
 
       if (!response.ok) {
         let errorMessage = 'Erro ao recusar proposta';
@@ -154,7 +172,6 @@ function ServicosContent() {
       }
 
       const data = JSON.parse(responseText);
-      console.log('Proposta recusada:', data);
       
       fetchPropostas();
       alert('Proposta recusada com sucesso!');
@@ -164,9 +181,19 @@ function ServicosContent() {
     }
   };
 
+  const handleDetailsPress = (item: Proposta) => {
+    router.push({
+      pathname: "/DetalhesServico",
+      params: { serviceId: item.id },
+    });
+  };
+
   useEffect(() => {
     fetchPropostas();
   }, [fetchPropostas]);
+
+  const propostasRecebidas = propostas.filter(p => p.status === 'proposta');
+  const servicosAndamento = propostas.filter(p => p.status === 'em_andamento');
 
   return (
     <View style={styles.container}>
@@ -181,59 +208,102 @@ function ServicosContent() {
         <ScrollView contentContainerStyle={[styles.tabContentContainer, { paddingBottom: 32 }]}>
           {propostas.length > 0 ? (
             <>
-              <AppText style={styles.messageText}>Propostas Recebidas</AppText>
-              {propostas.map((proposta) => (
-                <View key={proposta.id} style={styles.propostaCard}>
-                  <View style={styles.propostaHeader}>
-                    <AppText style={styles.propostaTitle}>
-                      Código: {proposta.codigo}
-                    </AppText>
-                  </View>
-                  
-                  <View style={styles.propostaBody}>
-                    {proposta.prestador && (
-                      <View style={styles.propostaRow}>
-                        <AppText style={styles.propostaLabel}>Prestador:</AppText>
-                        <AppText style={styles.propostaValue}>
-                          {proposta.prestador.mecLogin || "Não identificado"}
+              {propostasRecebidas.length > 0 && (
+                <>
+                  <AppText style={styles.sectionTitle}>Propostas Recebidas</AppText>
+                  {propostasRecebidas.map((proposta) => (
+                    <View key={proposta.id} style={styles.propostaCard}>
+                      <View style={styles.logoPlaceholder}>
+                        <Car size={36} color={Colors.darkGray} />
+                      </View>
+
+                      <View style={styles.infoContainer}>
+                        <AppText style={styles.propostaTitle} numberOfLines={1}>
+                          {proposta.prestador?.mecLogin || "Prestador não identificado"}
+                        </AppText>
+                        <AppText style={styles.propostaRow} numberOfLines={1}>
+                          Código: {proposta.codigo}
+                        </AppText>
+                        {proposta.data && (
+                          <AppText style={styles.propostaRow}>
+                            {proposta.data}
+                          </AppText>
+                        )}
+                        <AppText
+                          style={[styles.propostaRow, { color: Colors.secondary, fontWeight: '600' }]}
+                        >
+                          R$ {proposta.valor.toFixed(2)}
                         </AppText>
                       </View>
-                    )}
-                    
-                    <View style={styles.propostaRow}>
-                      <AppText style={styles.propostaLabel}>Valor:</AppText>
-                      <AppText style={styles.propostaValueHighlight}>
-                        R$ {proposta.valor.toFixed(2)}
-                      </AppText>
+
+                      <View style={styles.propostaActions}>
+                        <Button
+                          title="Abrir detalhes"
+                          onPress={() => handleDetailsPress(proposta)}
+                          containerStyle={styles.detailsButton}
+                          textStyle={styles.detailsButtonText}
+                        />
+                        <Button
+                          title="Recusar"
+                          onPress={() => recusarProposta(proposta.id)}
+                          containerStyle={styles.propostaButtonReject}
+                        />
+                        <Button
+                          title="Aceitar"
+                          onPress={() => aceitarProposta(proposta.id)}
+                          containerStyle={styles.propostaButtonAccept}
+                        />
+                      </View>
                     </View>
+                  ))}
+                </>
+              )}
 
-                    {proposta.descricao && (
-                      <View style={styles.propostaRow}>
-                        <AppText style={styles.propostaLabel}>Descrição:</AppText>
-                        <AppText style={styles.propostaValue}>
-                          {proposta.descricao}
-                        </AppText>
+              {servicosAndamento.length > 0 && (
+                <>
+                  <AppText style={[styles.sectionTitle, { marginTop: 24 }]}>Serviços em Andamento</AppText>
+                  {servicosAndamento.map((servico) => (
+                    <View key={servico.id} style={[styles.propostaCard, styles.servicoEmAndamentoCard]}>
+                      <View style={styles.logoPlaceholder}>
+                        <Car size={36} color={Colors.darkGray} />
                       </View>
-                    )}
-                  </View>
 
-                  <View style={styles.propostaActions}>
-                    <Button
-                      title="Recusar"
-                      onPress={() => recusarProposta(proposta.id)}
-                      containerStyle={styles.propostaButtonReject}
-                    />
-                    <Button
-                      title="Aceitar"
-                      onPress={() => aceitarProposta(proposta.id)}
-                      containerStyle={styles.propostaButtonAccept}
-                    />
-                  </View>
-                </View>
-              ))}
+                      <View style={styles.infoContainer}>
+                        <AppText style={styles.propostaTitle} numberOfLines={1}>
+                          {servico.prestador?.mecLogin || "Prestador não identificado"}
+                        </AppText>
+                        <AppText style={styles.propostaRow} numberOfLines={1}>
+                          Código: {servico.codigo}
+                        </AppText>
+                        {servico.data && (
+                          <AppText style={styles.propostaRow}>
+                            {servico.data}
+                          </AppText>
+                        )}
+                        <AppText
+                          style={[
+                            styles.propostaRow,
+                            { color: Colors.secondary, fontWeight: '600' },
+                          ]}
+                        >
+                          Status: Em andamento
+                        </AppText>
+                        <View style={styles.propostaActions}>
+                          <Button
+                            title="Abrir detalhes"
+                            onPress={() => handleDetailsPress(servico)}
+                            containerStyle={styles.detailsButton}
+                            textStyle={styles.detailsButtonText}
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  ))}
+                </>
+              )}
             </>
           ) : loadingPropostas ? (
-            <AppText style={styles.messageText}>Carregando propostas...</AppText>
+            <AppText style={styles.messageText}>Carregando serviços...</AppText>
           ) : errorPropostas ? (
             <AppText style={[styles.messageText, { color: Colors.error }]}>
               {errorPropostas}

@@ -154,7 +154,7 @@ function DetalhesServicoContent() {
   }
 
   const status = translateStatus(service.status);
-  const isPending = status === "Pendente" || status === "Incompleto";
+  const isPending = status === "Pendente";
 
   return (
     <View style={styles.container}>
