@@ -22,5 +22,5 @@ export default function AppEntry() {
   if (token) {
     return <Redirect href="/Home" />;
   }
-  return <Redirect href="/Home" />;
+  return <Redirect href="/Login" />;
 }

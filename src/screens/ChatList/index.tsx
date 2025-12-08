@@ -4,10 +4,11 @@ import { Colors } from "@/theme/colors";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { Menu, MessageSquare } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     FlatList,
+    RefreshControl,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -40,32 +41,44 @@ function ChatListContent() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [chats, setChats] = useState<ChatSummary[] | null>(null);
 
   const { user } = useAuth();
 
-  useEffect(() => {
-    const fetchChats = async () => {
-      // Garante que o usuário está logado antes de buscar
-      if (!user) {
-        setChats([]);
-        setLoading(false);
-        return;
-      }
-      
-      setLoading(true);
-      try {
-        const response = await api.get('/cliente/meus-chats');
-        setChats(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar chats:", error);
-        setChats([]); // Define como vazio em caso de erro para mostrar a mensagem correta
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchChats();
+  const fetchChats = useCallback(async () => {
+    // Garante que o usuário está logado antes de buscar
+    if (!user) {
+      setChats([]);
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const response = await api.get('/cliente/meus-chats');
+      setChats(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar chats:", error);
+      setChats([]); // Define como vazio em caso de erro para mostrar a mensagem correta
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchChats();
+  }, [user, fetchChats]);
+
+  const onRefresh = useCallback(async () => {
+    if (refreshing || loading) return;
+    setRefreshing(true);
+    try {
+      await fetchChats();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, loading, fetchChats]);
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
@@ -152,6 +165,14 @@ function ChatListContent() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ flexGrow: 1 }}
           ListEmptyComponent={renderEmptyOrLoading}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[Colors.primary]} // Android
+              tintColor={Colors.primary} // iOS
+            />
+          }
         />
 
       </View>

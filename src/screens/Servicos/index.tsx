@@ -3,12 +3,13 @@ import { API_BASE_URL } from "@/config/ip";
 import { useAuth } from "@/contexts/AuthContext";
 import { strings } from "@/languages";
 import { Colors } from "@/theme/colors";
+import { formatDate } from "@/utils/formatters";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { Car, Menu } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
 
@@ -48,10 +49,21 @@ function ServicosContent() {
   const [propostas, setPropostas] = useState<Proposta[]>([]);
   const [loadingPropostas, setLoadingPropostas] = useState(false);
   const [errorPropostas, setErrorPropostas] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const openDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
+
+  const onRefresh = useCallback(async () => {
+    if (refreshing || loadingPropostas) return;
+    setRefreshing(true);
+    try {
+      await fetchPropostas();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, loadingPropostas, fetchPropostas]);
 
   const fetchPropostas = useCallback(async () => {
     setLoadingPropostas(true);
@@ -205,7 +217,17 @@ function ServicosContent() {
         <Menu size={45} color={Colors.primary} />
       </TouchableOpacity>
       <View style={[styles.contentContainer, { paddingTop: insets.top + 60 }]}>
-        <ScrollView contentContainerStyle={[styles.tabContentContainer, { paddingBottom: 32 }]}>
+        <ScrollView 
+          contentContainerStyle={[styles.tabContentContainer, { paddingBottom: 32 }]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[Colors.primary]}
+              tintColor={Colors.primary}
+            />
+          }
+        >
           {propostas.length > 0 ? (
             <>
               {propostasRecebidas.length > 0 && (
@@ -260,7 +282,7 @@ function ServicosContent() {
                             <View style={styles.infoRow}>
                               <View style={styles.infoPair}>
                                 <AppText style={styles.infoLabel}>Data</AppText>
-                                <AppText style={styles.infoValue}>{proposta.data}</AppText>
+                                <AppText style={styles.infoValue}>{formatDate(proposta.data)}</AppText>
                               </View>
                             </View>
                           )}
@@ -342,7 +364,7 @@ function ServicosContent() {
                             <View style={styles.infoRow}>
                               <View style={styles.infoPair}>
                                 <AppText style={styles.infoLabel}>Data</AppText>
-                                <AppText style={styles.infoValue}>{servico.data}</AppText>
+                                <AppText style={styles.infoValue}>{formatDate(servico.data)}</AppText>
                               </View>
                             </View>
                           )}

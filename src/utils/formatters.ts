@@ -35,3 +35,26 @@ export function unformatCEP(text: string): string {
     if (!text) return "";
     return text.replace(/\D/g, "");
 }
+
+export function formatDate(dateString: string): string {
+    if (!dateString) return "-";
+    
+    try {
+        // Trata formatos: YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss
+        const date = new Date(dateString);
+        
+        // Verifica se a data é válida
+        if (isNaN(date.getTime())) {
+            return "-";
+        }
+        
+        // Formata para DD/MM/YYYY
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        
+        return `${day}/${month}/${year}`;
+    } catch (error) {
+        return "-";
+    }
+}

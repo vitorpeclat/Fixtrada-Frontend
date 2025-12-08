@@ -39,7 +39,8 @@ function translateStatus(status: string) {
 function DetalhesServicoContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { serviceId } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const serviceId = Array.isArray(params.serviceId) ? params.serviceId[0] : params.serviceId;
 
   const [service, setService] = useState<ServiceItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,11 +66,14 @@ function DetalhesServicoContent() {
           },
         });
         if (!response.ok) {
-          throw new Error("Erro ao buscar detalhes do serviço");
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage = errorData?.message || `HTTP ${response.status}: Erro ao buscar detalhes do serviço`;
+          throw new Error(errorMessage);
         }
         const data = await response.json();
         setService(data);
       } catch (err: any) {
+        console.error('Erro ao carregar detalhes:', err);
         setError(err.message || "Erro desconhecido");
       } finally {
         setLoading(false);
