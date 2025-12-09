@@ -40,7 +40,13 @@ export function formatDate(dateString: string): string {
     if (!dateString) return "-";
     
     try {
-        // Trata formatos: YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss
+        // Se a string está no formato YYYY-MM-DD, faz parsing manual
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+        
+        // Para outros formatos, tenta usar Date
         const date = new Date(dateString);
         
         // Verifica se a data é válida

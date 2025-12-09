@@ -7,7 +7,7 @@ import { formatDate } from "@/utils/formatters";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { Car, Menu } from "lucide-react-native";
+import { Car, Menu, Plus } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { RefreshControl, ScrollView, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -377,6 +377,7 @@ function ServicosContent() {
                           style={styles.actionButtonSmall}
                           onPress={() => handleDetailsPress(servico)}
                         >
+                          <Plus size={16} color={Colors.white} style={{ marginRight: 4 }} />
                           <AppText style={styles.actionButtonSmallText}>Detalhes</AppText>
                         </TouchableOpacity>
                       </View>

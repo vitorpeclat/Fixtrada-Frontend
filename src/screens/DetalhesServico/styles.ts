@@ -42,6 +42,18 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     color: Colors.white,
   },
+  rateButton: {
+    width: "auto",
+    paddingHorizontal: 15,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: Colors.gold, // Dourado para "Avaliar Serviço"
+  },
+  rateButtonText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: Colors.white,
+  },
   // --- ScrollView Content ---
   scrollContainer: {
     flex: 1,
@@ -97,6 +109,13 @@ export const styles = StyleSheet.create({
     color: Colors.darkGray,
     textAlign: "left",
     marginBottom: 2,
+  },
+  shopSubtext: {
+    fontSize: 12,
+    color: Colors.gray,
+    textAlign: "left",
+    marginTop: 4,
+    fontStyle: "italic",
   },
   shopRatingContainer: {
     flexDirection: "row",
@@ -195,6 +214,135 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
   },
   openChatButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: Colors.white,
+  },
+  openChatButtonDisabled: {
+    backgroundColor: Colors.lightGray,
+  },
+  openChatButtonTextDisabled: {
+    color: Colors.darkGray,
+  },
+  // --- Modal de Avaliação ---
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 24,
+    width: "85%",
+    maxWidth: 400,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: Colors.primary,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  starsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    gap: 8,
+  },
+  starWrapper: {
+    position: "relative",
+    width: 45,
+    height: 45,
+  },
+  starBase: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+  starFillOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    overflow: "hidden",
+    height: 45,
+  },
+  starTouchLeft: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "50%",
+    height: "100%",
+    zIndex: 10,
+  },
+  starTouchRight: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: "50%",
+    height: "100%",
+    zIndex: 10,
+  },
+  starButton: {
+    padding: 5,
+  },
+  ratingText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.primary,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  commentLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.darkGray,
+    marginBottom: 8,
+  },
+  commentInput: {
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.gray,
+    padding: 12,
+    fontSize: 14,
+    color: Colors.darkGray,
+    minHeight: 100,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    height: 45,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelButton: {
+    backgroundColor: Colors.lightGray,
+    borderWidth: 1,
+    borderColor: Colors.gray,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.darkGray,
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
+  },
+  submitButtonText: {
     fontSize: 16,
     fontWeight: "bold",
     color: Colors.white,

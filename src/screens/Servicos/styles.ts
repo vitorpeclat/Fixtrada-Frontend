@@ -144,6 +144,8 @@ export const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
   actionButtonSmallText: {
     fontSize: 13,

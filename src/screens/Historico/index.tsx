@@ -7,7 +7,7 @@ import { DrawerActions, useFocusEffect, useNavigation } from "@react-navigation/
 import { useRouter } from "expo-router";
 import { Car, Menu } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, TouchableOpacity, View } from "react-native";
 import {
   Directions,
   Gesture,
@@ -78,6 +78,7 @@ export type ServiceItem = {
   valor?: number | string | null;
   notaCliente?: number | null;
   comentarioCliente?: string | null;
+  chatID?: string | null;
   carro?: {
     carID: string;
     carPlaca?: string;
@@ -120,6 +121,7 @@ function HistoricoContent() {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchServices = useCallback(async () => {
     try {
@@ -157,6 +159,16 @@ function HistoricoContent() {
       fetchServices();
     }, [fetchServices])
   );
+
+  const onRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await fetchServices();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, fetchServices]);
 
   // Função para abrir o drawer
   const openDrawer = () => {
@@ -205,6 +217,14 @@ function HistoricoContent() {
             { paddingTop: insets.top + 70 },
           ]}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[Colors.primary]} // Android
+              tintColor={Colors.primary} // iOS
+            />
+          }
         >
           {loading ? (
             <AppText style={{ textAlign: "center", marginTop: 32 }}>Carregando...</AppText>

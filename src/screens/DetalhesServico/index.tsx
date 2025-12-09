@@ -6,7 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Car, ChevronLeft, Star } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View, Modal, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
 
@@ -29,8 +29,11 @@ function formatCNPJ(cnpj?: string) {
 function translateStatus(status: string) {
   switch (status?.toLowerCase()) {
     case "pendente": return "Pendente";
+    case "proposta": return "Proposta";
     case "incompleto": return "Incompleto";
     case "finalizado": return "Finalizado";
+    case "concluído": return "Finalizado";
+    case "em_andamento": return "Em Andamento";
     case "em andamento": return "Em Andamento";
     default: return status;
   }
@@ -45,6 +48,10 @@ function DetalhesServicoContent() {
   const [service, setService] = useState<ServiceItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -130,11 +137,55 @@ function DetalhesServicoContent() {
   };
 
   const handleOpenChat = () => {
-    if (!service) return;
+    if (!service || !service.chatID) return;
     router.push({
       pathname: "/Chat",
-      params: { serviceId: service.id },
+      params: { chatId: service.chatID },
     });
+  };
+
+  const handleRateService = () => {
+    setShowRatingModal(true);
+  };
+
+  const submitRating = async () => {
+    if (!service || rating === 0) {
+      Alert.alert(strings.global.error, "Por favor, selecione uma nota de 0.5 a 5.");
+      return;
+    }
+
+    try {
+      setSubmittingRating(true);
+      const token = await AsyncStorage.getItem("userToken");
+      const response = await fetch(`${API_BASE_URL}/cliente/servicos/${service.id}/avaliar`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nota: rating,
+          comentario: comment || undefined,
+        }),
+      });
+
+      if (response.ok) {
+        Alert.alert(strings.global.success, "Avaliação enviada com sucesso!");
+        setShowRatingModal(false);
+        setRating(0);
+        setComment("");
+        // Atualizar o serviço localmente
+        setService({ ...service, notaCliente: rating, comentarioCliente: comment });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        Alert.alert(strings.global.error, errorData?.message || "Erro ao enviar avaliação");
+      }
+    } catch (error) {
+      Alert.alert(strings.global.error, "Erro ao enviar avaliação");
+    } finally {
+      setSubmittingRating(false);
+    }
   };
 
   if (loading) {
@@ -158,7 +209,10 @@ function DetalhesServicoContent() {
   }
 
   const status = translateStatus(service.status);
-  const isPending = status === "Pendente";
+  const statusLower = service.status?.toLowerCase();
+  const showFinalizeButton = statusLower === "pendente" || statusLower === "proposta";
+  const showRateButton = statusLower === "concluído" && !service.notaCliente;
+  const hasChatID = !!service.chatID;
 
   return (
     <View style={styles.container}>
@@ -171,13 +225,23 @@ function DetalhesServicoContent() {
           </AppText>
         </TouchableOpacity>
 
-        {/* Botão "Finalizar Serviço" visível apenas se o status for "Incompleto" ou "Pendente" */}
-        {isPending && (
+        {/* Botão "Finalizar Serviço" visível para status "Pendente" ou "Proposta" */}
+        {showFinalizeButton && (
           <Button
             title="Finalizar Serviço"
             onPress={handleFinalizeService}
             containerStyle={styles.finalizeButton}
             textStyle={styles.finalizeButtonText}
+          />
+        )}
+        
+        {/* Botão "Avaliar Serviço" visível para status "Em Andamento" */}
+        {showRateButton && (
+          <Button
+            title="Avaliar Serviço"
+            onPress={handleRateService}
+            containerStyle={styles.rateButton}
+            textStyle={styles.rateButtonText}
           />
         )}
       </View>
@@ -198,8 +262,13 @@ function DetalhesServicoContent() {
           </View>
           <View style={styles.shopInfo}>
             <AppText style={styles.shopName}>
-              {service.prestador?.mecLogin ? service.prestador.mecLogin : "-"}
+              {service.prestador?.mecLogin ? service.prestador.mecLogin : "Mecânica Não Associada"}
             </AppText>
+            {!service.prestador && (
+              <AppText style={styles.shopSubtext}>
+                Esperando a mecânica enviar proposta
+              </AppText>
+            )}
             {service.prestador?.mecCNPJ && (
               <AppText style={styles.shopDetail}>
                 CNPJ: {formatCNPJ(service.prestador?.mecCNPJ)}
@@ -259,10 +328,18 @@ function DetalhesServicoContent() {
             <AppText
               style={[
                 styles.serviceItemValue,
-                { color: isPending ? Colors.secondary : Colors.primary },
+                { color: statusLower === "pendente" ? Colors.secondary : Colors.primary },
               ]}
             >
               {status}
+            </AppText>
+          </AppText>
+          <AppText style={styles.serviceItem}>
+            Valor:{" "}
+            <AppText style={styles.serviceItemValue}>
+              {service.valor 
+                ? `R$ ${Number(service.valor).toFixed(2).replace('.', ',')}` 
+                : "Não informado"}
             </AppText>
           </AppText>
 
@@ -281,10 +358,125 @@ function DetalhesServicoContent() {
         <Button
           title="Abrir Chat"
           onPress={handleOpenChat}
-          containerStyle={styles.openChatButton}
-          textStyle={styles.openChatButtonText}
+          disabled={!hasChatID}
+          containerStyle={[
+            styles.openChatButton,
+            !hasChatID && styles.openChatButtonDisabled
+          ]}
+          textStyle={[
+            styles.openChatButtonText,
+            !hasChatID && styles.openChatButtonTextDisabled
+          ]}
         />
       </ScrollView>
+
+      {/* Modal de Avaliação */}
+      <Modal
+        visible={showRatingModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowRatingModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <AppText style={styles.modalTitle}>Avaliar Serviço</AppText>
+            
+            {/* Estrelas de Avaliação */}
+            <View style={styles.starsContainer}>
+              {[1, 2, 3, 4, 5].map((star) => {
+                const isFullFilled = star <= rating;
+                const isHalfFilled = star - 0.5 === rating;
+                
+                return (
+                  <View key={star} style={styles.starWrapper}>
+                    {/* Estrela base (vazia) */}
+                    <View style={styles.starBase}>
+                      <Star
+                        size={45}
+                        color={Colors.gold}
+                        fill="none"
+                        strokeWidth={2}
+                      />
+                    </View>
+                    
+                    {/* Camada de preenchimento */}
+                    <View style={[
+                      styles.starFillOverlay,
+                      { width: isFullFilled ? '100%' : isHalfFilled ? '50%' : '0%' }
+                    ]}>
+                      <Star
+                        size={45}
+                        color={Colors.gold}
+                        fill={Colors.gold}
+                        strokeWidth={2}
+                      />
+                    </View>
+                    
+                    {/* Áreas clicáveis invisíveis */}
+                    <TouchableOpacity
+                      style={styles.starTouchLeft}
+                      onPress={() => setRating(star - 0.5)}
+                      activeOpacity={1}
+                    />
+                    <TouchableOpacity
+                      style={styles.starTouchRight}
+                      onPress={() => setRating(star)}
+                      activeOpacity={1}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+            
+            {/* Exibir nota selecionada */}
+            {rating > 0 && (
+              <AppText style={styles.ratingText}>
+                Nota: {rating.toFixed(1)} estrela{rating !== 1 ? "s" : ""}
+              </AppText>
+            )}
+
+            {/* Campo de Comentário */}
+            <AppText style={styles.commentLabel}>Comentário (opcional)</AppText>
+            <TextInput
+              style={styles.commentInput}
+              placeholder="Deixe seu comentário sobre o serviço..."
+              placeholderTextColor={Colors.gray}
+              multiline
+              numberOfLines={4}
+              maxLength={500}
+              value={comment}
+              onChangeText={setComment}
+              textAlignVertical="top"
+            />
+
+            {/* Botões */}
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setShowRatingModal(false);
+                  setRating(0);
+                  setComment("");
+                }}
+              >
+                <AppText style={styles.cancelButtonText}>Cancelar</AppText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.submitButton]}
+                onPress={submitRating}
+                disabled={submittingRating}
+              >
+                {submittingRating ? (
+                  <ActivityIndicator size="small" color={Colors.white} />
+                ) : (
+                  <AppText style={styles.submitButtonText}>Enviar</AppText>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
