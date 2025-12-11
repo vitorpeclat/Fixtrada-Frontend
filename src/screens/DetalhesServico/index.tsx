@@ -5,8 +5,8 @@ import { Colors } from "@/theme/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Car, ChevronLeft, Star } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View, Modal, TextInput } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, TouchableOpacity, View, Modal, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "./styles";
 
@@ -48,48 +48,60 @@ function DetalhesServicoContent() {
   const [service, setService] = useState<ServiceItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submittingRating, setSubmittingRating] = useState(false);
 
-  useEffect(() => {
-    const fetchServiceDetails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const token = await AsyncStorage.getItem("userToken");
-        if (!token) {
-          setError("Usuário não autenticado.");
-          setLoading(false);
-          return;
-        }
-        const response = await fetch(`${API_BASE_URL}/services/${serviceId}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          const errorMessage = errorData?.message || `HTTP ${response.status}: Erro ao buscar detalhes do serviço`;
-          throw new Error(errorMessage);
-        }
-        const data = await response.json();
-        setService(data);
-      } catch (err: any) {
-        console.error('Erro ao carregar detalhes:', err);
-        setError(err.message || "Erro desconhecido");
-      } finally {
+  const fetchServiceDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        setError("Usuário não autenticado.");
         setLoading(false);
+        return;
       }
-    };
+      const response = await fetch(`${API_BASE_URL}/services/${serviceId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData?.message || `HTTP ${response.status}: Erro ao buscar detalhes do serviço`;
+        throw new Error(errorMessage);
+      }
+      const data = await response.json();
+      setService(data);
+    } catch (err: any) {
+      console.error('Erro ao carregar detalhes:', err);
+      setError(err.message || "Erro desconhecido");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (serviceId) {
       fetchServiceDetails();
     }
   }, [serviceId]);
+
+  const onRefresh = useCallback(async () => {
+    if (refreshing || loading) return;
+    setRefreshing(true);
+    try {
+      await fetchServiceDetails();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, loading, serviceId]);
 
   const handleBack = () => {
     router.back();
@@ -254,6 +266,14 @@ function DetalhesServicoContent() {
           { paddingTop: insets.top + 80 },
         ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[Colors.primary]} // Android
+            tintColor={Colors.primary} // iOS
+          />
+        }
       >
         {/* Bloco da Oficina/Prestador */}
         <View style={styles.shopBlock}>

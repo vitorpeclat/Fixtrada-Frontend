@@ -71,6 +71,12 @@ function ServicosContent() {
     try {
       const url = `${API_BASE_URL}/services/proposta/list`;
       const token = user?.token || await AsyncStorage.getItem('userToken');
+      
+      if (!token) {
+        setLoadingPropostas(false);
+        return;
+      }
+      
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -87,8 +93,11 @@ function ServicosContent() {
       const propostas = Array.isArray(data) ? data : [];
       setPropostas(propostas);
     } catch (err: any) {
-      console.error('Erro ao carregar propostas:', err);
-      setErrorPropostas("Falha ao carregar propostas");
+      // Só mostra erro se ainda houver um token válido
+      const token = user?.token || await AsyncStorage.getItem('userToken');
+      if (token) {
+        setErrorPropostas("Falha ao carregar propostas");
+      }
     } finally {
       setLoadingPropostas(false);
     }
@@ -201,8 +210,10 @@ function ServicosContent() {
   };
 
   useEffect(() => {
-    fetchPropostas();
-  }, [fetchPropostas]);
+    if (user?.token) {
+      fetchPropostas();
+    }
+  }, [fetchPropostas, user?.token]);
 
   const propostasRecebidas = propostas.filter(p => p.status === 'proposta');
   const servicosAndamento = propostas.filter(p => p.status === 'em_andamento');
